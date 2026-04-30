@@ -27,7 +27,8 @@ O **Chat Unifier** é uma ferramenta **100% gratuita** e poderosa para streamers
 4. Use a **URL de Live** no OBS e a **URL Monitor** para acompanhar as mensagens.
 
 </div>
-<img width="1183" height="698" alt="Captura de tela 2026-04-30 115707" src="https://github.com/user-attachments/assets/719edd9a-f099-4052-a4d9-ba72f981ee51" />
+<img width="1178" height="697" alt="br" src="https://github.com/user-attachments/assets/23b2040c-9400-473f-8abf-be63609826d7" />
+
 ---
 
 <div id="english">
@@ -53,7 +54,8 @@ O **Chat Unifier** é uma ferramenta **100% gratuita** e poderosa para streamers
 4. Use the **Live URL** in OBS and the **Monitor URL** to track messages.
 
 </div>
-<img width="1189" height="701" alt="Captura de tela 2026-04-30 115616" src="https://github.com/user-attachments/assets/0622790e-1f23-457c-a6c4-9f9c22ed2ff4" />
+<img width="1178" height="697" alt="en" src="https://github.com/user-attachments/assets/46ee9a7e-73f6-4fc7-9c34-bb411f0c514b" />
+
 ---
 
 ### 🤝 Apoie o Projeto / Support
