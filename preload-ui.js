@@ -10,5 +10,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   updateOverlay: () => ipcRenderer.send('update-overlay-config'),
   onPreviewMessage: (callback) => ipcRenderer.on('preview-message', (event, value) => callback(value)),
   copyText: (text) => ipcRenderer.send('copy-to-clipboard', text),
-  openExternal: (url) => ipcRenderer.send('open-external', url)
+  openExternal: (url) => ipcRenderer.send('open-external', url),
+  showScraper: (id) => ipcRenderer.send('show-scraper-window', id),
+  openLoginWindow: (platform) => ipcRenderer.send('open-login-window', platform)
 });

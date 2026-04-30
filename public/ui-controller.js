@@ -203,7 +203,8 @@ function renderMessage(msg) {
     const badges = {
         twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
         youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
-        kick: 'https://kick.com/favicon.ico'
+        kick: 'https://kick.com/favicon.ico',
+        tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
     };
     const badgeUrl = badges[msg.platform] || '';
 
@@ -346,6 +347,9 @@ function renderPlatforms(filter = '') {
                 </div>
             </div>
             <div class="flex items-center gap-3">
+                <button onclick="showScraper('${p.id}')" title="Debug: Mostrar Janela" class="opacity-0 group-hover:opacity-100 text-white/20 hover:text-blue-400 transition p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" ${p.enabled ? 'checked' : ''} onchange="togglePlatform(${index})" class="sr-only peer">
                     <div class="w-8 h-4 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
@@ -363,6 +367,7 @@ function getPlatformColor(type) {
     if (type === 'twitch') return '#9146ff';
     if (type === 'youtube') return '#ff0000';
     if (type === 'kick') return '#53fc18';
+    if (type === 'tiktok') return '#ff0050';
     return '#ccc';
 }
 
@@ -408,6 +413,14 @@ if (elements.modalSave) {
         appConfig.platforms.push(platform);
         await api.saveConfig(appConfig);
         renderPlatforms(elements.searchChannels.value);
+        
+        if (type === 'tiktok' && !appConfig.hasLoggedTikTok) {
+            alert('Você adicionou o TikTok pela primeira vez!\n\nPara que o aplicativo consiga ler o chat, uma janela será aberta agora. Faça o seu login no TikTok e, depois de concluído, você pode fechar essa nova janela.');
+            api.openLoginWindow('tiktok');
+            appConfig.hasLoggedTikTok = true;
+            await api.saveConfig(appConfig);
+        }
+
         if (elements.statusBadge.innerText === 'CONECTADO') api.startSingle(platform);
         elements.modalAdd.classList.add('hidden');
         elements.newUrl.value = '';
@@ -426,6 +439,10 @@ window.togglePlatform = async (index) => {
     }
     renderPlatforms(elements.searchChannels.value);
     saveAndUpdate();
+};
+
+window.showScraper = (id) => {
+    api.showScraper(id);
 };
 
 window.removePlatform = async (index) => {

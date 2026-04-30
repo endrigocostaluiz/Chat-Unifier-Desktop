@@ -1,5 +1,11 @@
 const { ipcRenderer } = require('electron');
 
+// Força o site a achar que a aba está sempre visível e em foco (Bypass de background throttling)
+Object.defineProperty(document, 'visibilityState', { get: () => 'visible' });
+Object.defineProperty(document, 'hidden', { get: () => false });
+Object.defineProperty(document, 'hasFocus', { get: () => true });
+window.addEventListener('visibilitychange', (e) => e.stopImmediatePropagation(), true);
+
 window.addEventListener('DOMContentLoaded', () => {
   console.log('DriftChat Scraper Ativo: ' + window.location.href);
 
@@ -176,6 +182,36 @@ window.addEventListener('DOMContentLoaded', () => {
     if (kickEntries && kickEntries.length > 0) {
       kickEntries.forEach(e => processKickEntry(e));
     }
+
+    // ─── TIKTOK ───────────────────────────────────────────
+    const tiktokMsg = (
+      node.getAttribute?.('data-e2e') === 'chat-message' ? node : 
+      node.closest?.('[data-e2e="chat-message"]') ||
+      node.closest?.('div[class*="ChatMessage"]') ||
+      node.closest?.('div[class*="ChatItem"]')
+    );
+
+    if (tiktokMsg) {
+      const authorEl = tiktokMsg.querySelector('[data-e2e="message-owner-name"], [data-e2e="chat-message-user-name"], span[class*="Username"]');
+      const author = authorEl?.innerText?.replace(':', '').trim();
+      const msgEl = tiktokMsg.querySelector('.w-full.break-words.align-middle, [data-e2e="chat-message-text"], span[class*="MessageText"]');
+      const message = parseMessageContent(msgEl);
+      
+      if (author && message) {
+        const rawId = `tiktok-${author}-${message.substring(0, 40)}`;
+        if (!processedIds.has(rawId)) {
+          processedIds.add(rawId);
+          setTimeout(() => processedIds.delete(rawId), 10000);
+          
+          // Tenta pegar o avatar (geralmente é a única imagem dentro do card de mensagem)
+          const avatarImg = tiktokMsg.querySelector('img');
+          const avatar = avatarImg?.src || null;
+          
+          ipcRenderer.send('new-message', { author, message, avatar, timestamp: Date.now(), platform: 'tiktok' });
+        }
+      }
+      return;
+    }
   }
 
   const observer = new MutationObserver((mutations) => {
@@ -184,13 +220,26 @@ window.addEventListener('DOMContentLoaded', () => {
         if (node.nodeType !== 1) continue;
         processNode(node);
         // "Raio-X": escaneia filhos para capturar mensagens dentro de containers
-        node.querySelectorAll?.('.chat-line__message, yt-live-chat-text-message-renderer, yt-live-chat-paid-message-renderer, [data-chat-entry], .chat-entry, [data-index]')
+        node.querySelectorAll?.('.chat-line__message, yt-live-chat-text-message-renderer, yt-live-chat-paid-message-renderer, [data-chat-entry], .chat-entry, [data-index], [data-e2e="chat-message"], div[class*="ChatMessage"]')
           .forEach(child => processNode(child));
       }
     }
   });
 
   observer.observe(document.body, { childList: true, subtree: true });
+
+  // ─── RESILIÊNCIA TIKTOK ────────────────────────────────
+  if (window.location.href.includes('tiktok.com')) {
+    // Tenta remover banners de cookies e login que podem bloquear a renderização do chat
+    setInterval(() => {
+      const popups = document.querySelectorAll('div[class*="LoginPopup"], div[class*="ConsentBanner"], [data-e2e="login-popup"]');
+      popups.forEach(p => p.remove());
+      
+      // Tenta clicar no botão de "Não agora" se aparecer
+      const notNowBtn = document.querySelector('button[class*="NotNow"], div[class*="CloseButton"]');
+      notNowBtn?.click();
+    }, 5000);
+  }
 
   // ─── RESILIÊNCIA YOUTUBE ────────────────────────────────
   if (window.location.href.includes('youtube.com/live_chat')) {

@@ -5,6 +5,11 @@ const http = require('http');
 const express = require('express');
 const { Server } = require('socket.io');
 
+// Força o Chromium a não congelar as janelas que estão fora da tela
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');
+app.commandLine.appendSwitch('disable-renderer-backgrounding', 'true');
+app.commandLine.appendSwitch('disable-background-timer-throttling', 'true');
+
 // Configurações e Persistência
 const CONFIG_PATH = path.join(app.getPath('userData'), 'driftweb-stream-chat.json');
 
@@ -239,6 +244,15 @@ function startScraper(platform) {
   } else if (platform.type === 'kick' && !url.includes('chatroom')) {
     const channel = url.replace(/\/$/, "").split('/').pop();
     url = `https://kick.com/${channel}/chatroom`;
+  } else if (platform.type === 'tiktok') {
+    // Garante que a URL do TikTok termine em /live para carregar o chat
+    if (!url.includes('/live')) {
+      url = url.replace(/\/$/, '') + '/live';
+    }
+    // Caso o usuário tenha colocado apenas @usuario ou algo similar
+    if (!url.startsWith('http')) {
+      url = 'https://www.tiktok.com/' + (url.startsWith('@') ? url : '@' + url) + '/live';
+    }
   }
 
   win.loadURL(url);
@@ -339,15 +353,51 @@ ipcMain.on('stop-all-scrapers', () => {
 ipcMain.on('copy-to-clipboard', (e, text) => { clipboard.writeText(text); });
 ipcMain.on('open-external', (e, url) => { require('electron').shell.openExternal(url); });
 
-app.whenReady().then(async () => {
-  await loadConfig();
-  server.listen(config.port, () => {
-    console.log(`Servidor rodando em http://localhost:${config.port}`);
-  });
-  createMainWindow();
-  createTray();
+ipcMain.on('show-scraper-window', (e, id) => {
+  if (scrapers[id]) {
+    scrapers[id].setPosition(100, 100);
+    scrapers[id].show();
+    scrapers[id].setSkipTaskbar(false);
+    scrapers[id].setFocusable(true);
+  }
 });
 
-app.on('window-all-closed', () => { 
-  if (process.platform !== 'darwin' && app.isQuiting) app.quit(); 
+ipcMain.on('open-login-window', (e, platform) => {
+  if (platform === 'tiktok') {
+    const win = new BrowserWindow({
+      width: 1000,
+      height: 800,
+      title: "Login TikTok - Chat Unifier",
+      autoHideMenuBar: true
+    });
+    win.loadURL('https://www.tiktok.com/login');
+  }
 });
+
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // Quando uma segunda instância tentar abrir, foca na janela principal já existente
+    if (mainWindow) {
+      if (!mainWindow.isVisible()) mainWindow.show();
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus();
+    }
+  });
+
+  app.whenReady().then(async () => {
+    await loadConfig();
+    server.listen(config.port, () => {
+      console.log(`Servidor rodando em http://localhost:${config.port}`);
+    });
+    createMainWindow();
+    createTray();
+  });
+
+  app.on('window-all-closed', () => { 
+    if (process.platform !== 'darwin' && app.isQuiting) app.quit(); 
+  });
+}
