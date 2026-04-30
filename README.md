@@ -11,7 +11,7 @@
 O **Chat Unifier** é uma ferramenta **100% gratuita** e poderosa para streamers. Ele unifica as mensagens do **YouTube (incluindo Shorts), Twitch e Kick** em um único feed elegante, sem a necessidade de chaves de API.
 
 ### ✨ Principais Recursos
-- **Unificação Total:** Suporte para YouTube (Lives e Shorts), Twitch e Kick.
+- **Unificação Total:** Suporte para YouTube (Lives e Shorts), TikTok, Twitch e Kick.
 - **100% Gratuito:** Todas as funcionalidades estão liberadas sem custos.
 - **Sistema de Overlay Duplo:** 
     - **URL de Live:** Otimizada para o OBS com foco em estética premium.
@@ -35,7 +35,7 @@ O **Chat Unifier** é uma ferramenta **100% gratuita** e poderosa para streamers
 
 ## 🇺🇸 English
 
-**Chat Unifier** is a **100% free** and powerful tool for streamers. It unifies messages from **YouTube (including Shorts), Twitch, and Kick** into a single, elegant feed, without the need for API keys.
+**Chat Unifier** is a **100% free** and powerful tool for streamers. It unifies messages from **YouTube (including Shorts), TikTok, Twitch, and Kick** into a single, elegant feed, without the need for API keys.
 
 ### ✨ Key Features
 - **Total Unification:** Support for YouTube (Lives and Shorts), Twitch, and Kick.
