@@ -15,7 +15,7 @@ O **Chat Unifier** é uma ferramenta **100% gratuita** e poderosa para streamers
 - **100% Gratuito:** Todas as funcionalidades estão liberadas sem custos.
 - **Sistema de Overlay Duplo:** 
     - **URL de Live:** Otimizada para o OBS com foco em estética premium.
-    - **URL de Monitoramento:** Uma segunda URL independente com visual diferente para você acompanhar o chat em outro monitor.
+    - **URL de Monitoramento:** Uma segunda URL independente com visual diferente para você acompanhar o chat em outro monitor ou OBS.
 - **Scraping Local Inteligente:** Funciona via captura de DOM em janelas ocultas.
 - **Temas Customizáveis:** Moderno, Cyberpunk, Glassmorphism, Retro e mais.
 - **Modo Lento (Fila):** Controle o fluxo de mensagens para evitar poluição visual.
@@ -27,7 +27,7 @@ O **Chat Unifier** é uma ferramenta **100% gratuita** e poderosa para streamers
 4. Use a **URL de Live** no OBS e a **URL Monitor** para acompanhar as mensagens.
 
 </div>
-
+<img width="1183" height="698" alt="Captura de tela 2026-04-30 115707" src="https://github.com/user-attachments/assets/719edd9a-f099-4052-a4d9-ba72f981ee51" />
 ---
 
 <div id="english">
@@ -53,7 +53,7 @@ O **Chat Unifier** é uma ferramenta **100% gratuita** e poderosa para streamers
 4. Use the **Live URL** in OBS and the **Monitor URL** to track messages.
 
 </div>
-
+<img width="1189" height="701" alt="Captura de tela 2026-04-30 115616" src="https://github.com/user-attachments/assets/0622790e-1f23-457c-a6c4-9f9c22ed2ff4" />
 ---
 
 ### 🤝 Apoie o Projeto / Support
