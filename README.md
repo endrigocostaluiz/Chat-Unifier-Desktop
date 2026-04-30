@@ -8,27 +8,23 @@
 
 ## 🇧🇷 Português
 
-**Chat Unifier** é um agregador de chats de alto desempenho para streamers. Ele unifica as mensagens do **YouTube, Twitch e Kick** em um único feed elegante para o seu OBS, sem a necessidade de chaves de API complexas.
+O **Chat Unifier** é uma ferramenta **100% gratuita** e poderosa para streamers. Ele unifica as mensagens do **YouTube (incluindo Shorts), Twitch e Kick** em um único feed elegante, sem a necessidade de chaves de API.
 
 ### ✨ Principais Recursos
-- **Unificação Multi-Plataforma:** YouTube, Twitch e Kick em um só lugar.
-- **Scraping Local Inteligente:** Funciona via captura de DOM em janelas ocultas (sem necessidade de APIs oficiais).
-- **Overlay Customizável:** Diversos temas (Moderno, Cyberpunk, Glassmorphism, Retro, etc).
-- **Preview em Tempo Real:** Veja como o chat aparecerá antes de colocar na live.
+- **Unificação Total:** Suporte para YouTube (Lives e Shorts), Twitch e Kick.
+- **100% Gratuito:** Todas as funcionalidades estão liberadas sem custos.
+- **Sistema de Overlay Duplo:** 
+    - **URL de Live:** Otimizada para o OBS com foco em estética premium.
+    - **URL de Monitoramento:** Uma segunda URL independente com visual diferente para você acompanhar o chat em outro monitor.
+- **Scraping Local Inteligente:** Funciona via captura de DOM em janelas ocultas.
+- **Temas Customizáveis:** Moderno, Cyberpunk, Glassmorphism, Retro e mais.
 - **Modo Lento (Fila):** Controle o fluxo de mensagens para evitar poluição visual.
-- **Interface Premium:** Design moderno com suporte a temas e animações suaves.
-
-### 🛠️ Tecnologias Utilizadas
-- **Electron.js:** Para uma experiência desktop robusta.
-- **Socket.io:** Comunicação em tempo real entre o app e o OBS.
-- **Express:** Servidor local para os overlays.
-- **Tailwind CSS:** Design de interface moderno e responsivo.
 
 ### 🚀 Como Começar
 1. Baixe a versão mais recente em [Releases](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases).
 2. Adicione os links dos seus canais.
 3. Clique em **"Iniciar Captura"**.
-4. Copie a URL gerada e adicione como **Fonte de Navegador** no OBS.
+4. Use a **URL de Live** no OBS e a **URL Monitor** para acompanhar as mensagens.
 
 </div>
 
@@ -38,27 +34,23 @@
 
 ## 🇺🇸 English
 
-**Chat Unifier** is a high-performance chat aggregator for streamers. It unifies messages from **YouTube, Twitch, and Kick** into a single, elegant feed for your OBS, without the need for complex API keys.
+**Chat Unifier** is a **100% free** and powerful tool for streamers. It unifies messages from **YouTube (including Shorts), Twitch, and Kick** into a single, elegant feed, without the need for API keys.
 
 ### ✨ Key Features
-- **Multi-Platform Unification:** YouTube, Twitch, and Kick all in one place.
-- **Smart Local Scraping:** Works via DOM capture in hidden windows (no official APIs required).
-- **Customizable Overlay:** Multiple themes (Modern, Cyberpunk, Glassmorphism, Retro, etc).
-- **Real-time Preview:** See how the chat will look before going live.
-- **Slow Mode (Queue):** Control the flow of messages to prevent visual clutter.
-- **Premium Interface:** Modern design with theme support and smooth animations.
-
-### 🛠️ Technologies Used
-- **Electron.js:** For a robust desktop experience.
-- **Socket.io:** Real-time communication between the app and OBS.
-- **Express:** Local server for overlays.
-- **Tailwind CSS:** Modern and responsive UI design.
+- **Total Unification:** Support for YouTube (Lives and Shorts), Twitch, and Kick.
+- **100% Free:** All features are available at no cost.
+- **Dual Overlay System:**
+    - **Live URL:** Optimized for OBS with a focus on premium aesthetics.
+    - **Monitor URL:** A second independent URL with a different look for you to track the chat on another monitor.
+- **Smart Local Scraping:** Works via DOM capture in hidden windows.
+- **Customizable Themes:** Modern, Cyberpunk, Glassmorphism, Retro, and more.
+- **Slow Mode (Queue):** Control the message flow to prevent visual clutter.
 
 ### 🚀 How to Get Started
 1. Download the latest version from [Releases](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases).
 2. Add your channel links.
 3. Click **"Start Capture"**.
-4. Copy the generated URL and add it as a **Browser Source** in OBS.
+4. Use the **Live URL** in OBS and the **Monitor URL** to track messages.
 
 </div>
 
@@ -68,7 +60,8 @@
 Se este projeto te ajudou, considere fazer uma doação para manter o desenvolvimento ativo!
 *If this project helped you, consider making a donation to keep development active!*
 
-**PIX (E-mail):** `endrigocosta@hotmail.com`
+- **Buy Me a Coffee:** [buymeacoffee.com/endrigo](https://buymeacoffee.com/endrigo)
+- **PIX (Brasil):** `endrigocosta@hotmail.com`
 
 ---
 *Desenvolvido por endrigocostaluiz*
