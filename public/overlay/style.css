@@ -1,0 +1,211 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    overflow: hidden;
+    background-color: transparent;
+}
+
+#chat-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 100vh;
+    padding: 20px;
+    gap: var(--msg-spacing, 12px);
+}
+
+/* Variável Global para Cor do Card */
+:root {
+    --card-bg: rgba(15, 23, 42, 0.85);
+    --msg-spacing: 12px;
+}
+
+/* Base da Mensagem */
+.message-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 12px;
+    background: var(--card-bg);
+    backdrop-filter: blur(8px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border-left: 4px solid #fff;
+    max-width: fit-content;
+}
+
+/* Cores por Plataforma (Borda Esquerda) */
+.message-item.twitch { border-left-color: #9146ff; }
+.message-item.youtube { border-left-color: #ff0000; }
+.message-item.kick { border-left-color: #53fc18; }
+
+/* Ocultar bordas se solicitado */
+body.hide-borders .message-item {
+    border-left: none !important;
+}
+
+.avatar, .avatar-placeholder {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.message-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Garante que o nome e o texto alinhem à esquerda */
+    gap: 4px;
+    flex: 1; /* Ocupa o espaço restante */
+}
+
+.author-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.platform-badge {
+    width: 14px;
+    height: 14px;
+}
+
+.author-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.text {
+    color: #e2e8f0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+/* Estilo para Emotes e Emojis */
+.chat-emote {
+    height: 1.1em !important;
+    max-height: 24px !important;
+    width: auto !important;
+    vertical-align: middle !important;
+    margin: 0 3px !important;
+    display: inline-block !important;
+    transform: translateY(-1px); /* Ajuste fino de alinhamento */
+}
+
+/* --- LAYOUTS --- */
+
+/* Layout Bubble (Balões) */
+.layout-bubble .message-item {
+    border-radius: 20px;
+    border-bottom-left-radius: 4px;
+    border-left: none;
+    box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+}
+
+/* Layout Cyberpunk (Neon) */
+.layout-cyberpunk .message-item {
+    background: rgba(0, 0, 0, 0.9) !important;
+    border: 2px solid #0ff;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.5), inset 0 0 5px rgba(0, 255, 255, 0.2);
+    border-radius: 2px;
+    margin-bottom: 4px;
+}
+.layout-cyberpunk .author-name { color: #f0f !important; text-shadow: 0 0 8px rgba(255, 0, 255, 0.8); font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+.layout-cyberpunk .text { color: #0ff; text-shadow: 0 0 5px rgba(0, 255, 255, 0.3); font-family: 'Inter', sans-serif; font-weight: 600; }
+
+/* Layout Glassmorphism */
+.layout-glass .message-item {
+    background: rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Layout Retro (Terminal) */
+.layout-retro .message-item {
+    background: #000 !important;
+    border: 2px solid #333;
+    border-radius: 0;
+}
+.layout-retro .author-name { font-family: monospace; color: #0f0 !important; }
+.layout-retro .text { font-family: monospace; color: #0f0; }
+
+/* Layout Card Float (Cartão Flutuante) */
+.layout-card .message-item {
+    background: #ffffff !important;
+    color: #1e293b;
+    border-radius: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    border-left: 6px solid #10b981; /* Borda lateral mais grossa */
+}
+.layout-card .text { color: #334155; }
+.layout-card .author-name { color: #1e293b !important; }
+.layout-card .avatar { border: 2px solid #f1f5f9; }
+
+/* Layout Slim (Ultra Compacto) */
+.layout-slim .message-item {
+    padding: 4px 10px;
+    border-radius: 6px;
+    gap: 8px;
+    border-left: none !important;
+    background: var(--card-bg) !important; /* Usa a cor escolhida pelo usuário */
+    align-items: center;
+}
+
+.layout-slim .avatar, .layout-slim .avatar-placeholder {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+}
+
+.layout-slim .message-content { 
+    display: flex;
+    flex-direction: row; 
+    align-items: center; 
+    gap: 6px; 
+    flex-wrap: wrap;
+}
+
+.layout-slim .author-name {
+    font-size: 0.8rem;
+}
+
+.layout-slim .text {
+    font-size: 0.85rem;
+    line-height: 1.2;
+}
+
+/* Animações */
+.slide-in { animation: slideIn 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+.fade-in { animation: fadeIn 0.5s ease-out; }
+.bounce-in { animation: bounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bounceIn {
+    from { opacity: 0; transform: scale(0.3); }
+    to { opacity: 1; transform: scale(1); }
+}

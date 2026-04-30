@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Unifier - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0a0a0a; color: #e5e5e5; }
+        .sidebar-item { transition: all 0.2s; cursor: pointer; }
+        .sidebar-item.active { background: #10b981; color: #000; border-radius: 12px; font-weight: 600; }
+        .sidebar-item:not(.active):hover { background: rgba(255,255,255,0.05); border-radius: 12px; }
+        .card { background: #161616; border: 1px solid rgba(255,255,255,0.03); transition: border 0.2s; }
+        .card:hover { border-color: rgba(16, 185, 129, 0.3); }
+        .emerald-btn { background: #10b981; color: #000; font-weight: 600; transition: all 0.2s; }
+        .emerald-btn:hover { background: #34d399; transform: translateY(-1px); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        /* Sincronização Total com Overlay */
+        .message-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 14px; border-radius: 12px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); border-left: 4px solid #fff; max-width: fit-content; }
+        .hide-borders-preview .message-item { border-left: none !important; }
+        .message-item.twitch { border-left-color: #9146ff; }
+        .message-item.youtube { border-left-color: #ff0000; }
+        .message-item.kick { border-left-color: #53fc18; }
+        .avatar, .avatar-placeholder { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .avatar-placeholder { display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; }
+        .message-content { display: flex; flex-direction: column; gap: 2px; }
+        .author-row { display: flex; align-items: center; gap: 5px; }
+        .author-name { font-weight: 700; font-size: 0.85rem; }
+        
+        /* Layouts no Preview */
+        .layout-modern .message-item { background: var(--card-bg, rgba(15, 23, 42, 0.85)); border-radius: 12px; }
+        
+        .layout-slim .message-item { 
+            background: var(--card-bg, rgba(0,0,0,0.4)); 
+            border-left: none; 
+            padding: 4px 8px; 
+            border-radius: 4px; 
+            gap: 6px;
+            font-size: 0.75rem;
+        }
+        .layout-slim .avatar, .layout-slim .avatar-placeholder { width: 18px; height: 18px; font-size: 8px; }
+        .layout-slim .author-row { display: inline-flex; }
+        .layout-slim .message-content { flex-direction: row; align-items: center; gap: 6px; }
+
+        .layout-minimalist .message-item { background: none; backdrop-filter: none; padding: 2px 0; border-left: none; }
+        
+        /* Animações Preview */
+        .slide-in { animation: previewSlideIn 0.3s ease-out; }
+        .fade-in { animation: previewFadeIn 0.5s ease-out; }
+        .bounce-in { animation: previewBounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        @keyframes previewSlideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes previewFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes previewBounceIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top Bar -->
+        <header class="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0a]/50 backdrop-blur-md z-10">
+            <div class="flex items-center gap-4">
+                <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
+                    <span class="text-black font-black text-xs">CU</span>
+                </div>
+                <h1 class="text-lg font-bold tracking-tight">Chat Unifier</h1>
+            </div>
+            
+            <div class="flex items-center gap-4 relative">
+                <input type="text" id="search-channels" placeholder="Pesquisar canais..." class="w-96 bg-[#161616] border border-white/5 rounded-xl py-2 px-10 text-sm focus:outline-none focus:border-emerald-500/50">
+                <svg class="absolute left-3 top-2.5 text-white/20" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+            </div>
+            <div class="flex items-center gap-4">
+                <button id="btn-start" class="emerald-btn px-6 py-2 rounded-xl text-sm transition shadow-lg shadow-emerald-500/10">Iniciar Captura</button>
+                <button id="btn-stop" class="hidden bg-red-500/10 text-red-500 border border-red-500/20 px-6 py-2 rounded-xl text-sm font-bold transition">Parar Captura</button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto p-8">
+            <div class="flex gap-8 animate-in fade-in slide-in-from-left-4 duration-500">
+                <!-- Seção de Canais -->
+                <section class="w-[350px] flex-none space-y-6">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-sm font-bold uppercase tracking-widest text-white/40">Canais Ativos</h2>
+                        <button id="btn-add" class="text-emerald-500 text-xs font-bold hover:underline">+ Adicionar</button>
+                    </div>
+                    <div id="platform-list" class="space-y-3">
+                        <!-- Cards de canais via JS -->
+                    </div>
+
+                    <div class="pt-6 border-t border-white/5">
+                        <h2 class="text-sm font-bold uppercase tracking-widest text-white/40 mb-4">Configurações de Overlay</h2>
+                        <div class="space-y-4">
+                            <div class="card p-4 rounded-2xl">
+                                <label class="block text-xs text-white/40 mb-2 uppercase">Estilo Visual</label>
+                                <select id="select-layout" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500">
+                                    <option value="modern">Moderno (Avatares)</option>
+                                    <option value="bubble">Bubble (Balões)</option>
+                                    <option value="cyberpunk">Cyberpunk (Neon)</option>
+                                    <option value="glass">Glassmorphism (Vidro)</option>
+                                    <option value="card">Card Float (Flutuante)</option>
+                                    <option value="slim">Dark Slim (Compacto)</option>
+                                    <option value="retro">Retro (8-Bit)</option>
+                                </select>
+                            </div>
+
+                            <div class="card p-4 rounded-2xl">
+                                <label class="block text-xs text-white/40 mb-2 uppercase">Animação de Entrada</label>
+                                <select id="select-animation" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500">
+                                    <option value="slide">Deslizar (Slide)</option>
+                                    <option value="fade">Suave (Fade)</option>
+                                    <option value="bounce">Pular (Bounce)</option>
+                                </select>
+                            </div>
+
+                            <div class="card p-4 rounded-2xl space-y-4">
+                                <h3 class="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Fundo do Overlay</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-1.5">
+                                        <label class="block text-[10px] opacity-40 uppercase">Cor do Fundo</label>
+                                        <div class="relative group">
+                                            <input type="color" id="bg-color" value="#000000" class="h-10 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-emerald-500/50">
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="block text-[10px] opacity-40 uppercase">Opacidade</label>
+                                        <input type="range" id="bg-opacity" min="0" max="100" value="0" class="w-full accent-emerald-500 h-10">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card p-4 rounded-2xl space-y-4">
+                                <h3 class="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Estilo das Mensagens</h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-1.5">
+                                        <label class="block text-[10px] opacity-40 uppercase">Cor do Card</label>
+                                        <div class="relative group">
+                                            <input type="color" id="card-color" value="#1e293b" class="h-10 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-emerald-500/50">
+                                        </div>
+                                    </div>
+                                    <div class="space-y-1.5">
+                                        <label class="block text-[10px] opacity-40 uppercase">Opacidade</label>
+                                        <input type="range" id="card-opacity" min="0" max="100" value="85" class="w-full accent-emerald-500 h-10">
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between pt-2">
+                                    <label class="text-xs opacity-60">Mostrar Fotos de Perfil</label>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="show-avatars" checked class="sr-only peer">
+                                        <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="card p-4 rounded-2xl space-y-4">
+                                <h3 class="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Ajustes de Layout</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <div class="flex justify-between mb-1.5">
+                                            <label class="block text-[10px] opacity-40 uppercase">Espaçamento</label>
+                                            <span id="spacing-val" class="text-[10px] font-mono">10px</span>
+                                        </div>
+                                        <input type="range" id="message-spacing" min="0" max="50" value="10" class="w-full accent-emerald-500">
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <label class="text-[10px] opacity-60 uppercase">Ocultar Borda Lateral</label>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" id="hide-left-border" class="sr-only peer">
+                                            <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card p-4 rounded-2xl space-y-4">
+                                <h3 class="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Modo Lento (Segundos)</h3>
+                                <div class="flex items-center gap-4">
+                                    <input type="range" id="slow-mode" min="0" max="10" step="0.5" value="1" class="flex-1 accent-emerald-500">
+                                    <span id="slow-mode-val" class="text-xs font-mono w-8 text-center">1s</span>
+                                </div>
+                                <p class="text-[9px] opacity-30 leading-relaxed italic">Define o intervalo mínimo entre a exibição de cada mensagem.</p>
+                            </div>
+
+                            <div class="card p-4 rounded-2xl">
+                                <label class="block text-xs text-white/40 mb-2 uppercase">CSS Customizado</label>
+                                <textarea id="custom-css" placeholder="/* Seu código CSS aqui... */" class="w-full h-32 bg-[#0a0a0a] border border-white/10 rounded-xl p-3 text-[10px] font-mono focus:outline-none focus:border-emerald-500"></textarea>
+                            </div>
+
+                            <!-- URL Principal -->
+                            <div class="card p-4 rounded-2xl space-y-3">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <div class="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                    <h3 class="text-[10px] font-black uppercase text-emerald-500 tracking-widest">URL do OBS (Overlay Principal)</h3>
+                                </div>
+                                <p class="text-[9px] opacity-30 leading-relaxed">Use esta URL na cena do OBS como Browser Source.</p>
+                                <div class="flex gap-2">
+                                    <input type="text" id="obs-url" readonly value="http://localhost:3000/chat" class="flex-1 bg-[#0a0a0a] text-[10px] p-2.5 rounded-lg border border-white/5">
+                                    <button id="btn-copy" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 px-3 rounded-lg text-xs font-bold transition">Copiar</button>
+                                </div>
+                            </div>
+
+                            <!-- URL Monitor (Toggle) -->
+                            <div class="card p-4 rounded-2xl space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full bg-blue-500"></div>
+                                        <h3 class="text-[10px] font-black uppercase text-blue-400 tracking-widest">URL Monitor</h3>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="overlay2-enabled" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                    </label>
+                                </div>
+                                <p class="text-[9px] opacity-30 leading-relaxed">URL independente para acompanhar os chats no navegador ou como janela extra no OBS.</p>
+
+                                <!-- Painel expandível do Monitor -->
+                                <div id="overlay2-panel" class="hidden space-y-4 pt-2 border-t border-white/5">
+                                    <div class="flex gap-2">
+                                        <input type="text" id="monitor-url" readonly value="http://localhost:3000/monitor" class="flex-1 bg-[#0a0a0a] text-[10px] p-2.5 rounded-lg border border-white/5">
+                                        <button id="btn-copy-monitor" class="bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 px-3 rounded-lg text-xs font-bold transition">Copiar</button>
+                                    </div>
+
+                                    <!-- Visual do Monitor -->
+                                    <div class="space-y-3">
+                                        <div class="card p-3 rounded-xl bg-white/3">
+                                            <label class="block text-[9px] text-white/40 mb-1.5 uppercase">Estilo Visual</label>
+                                            <select id="m2-layout" class="w-full bg-[#0a0a0a] border border-white/10 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500">
+                                                <option value="modern">Moderno</option>
+                                                <option value="bubble">Bubble</option>
+                                                <option value="cyberpunk">Cyberpunk</option>
+                                                <option value="glass">Glassmorphism</option>
+                                                <option value="card">Card Float</option>
+                                                <option value="slim">Dark Slim</option>
+                                                <option value="retro">Retro</option>
+                                            </select>
+                                        </div>
+                                        <div class="card p-3 rounded-xl bg-white/3">
+                                            <label class="block text-[9px] text-white/40 mb-1.5 uppercase">Animação</label>
+                                            <select id="m2-animation" class="w-full bg-[#0a0a0a] border border-white/10 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500">
+                                                <option value="slide">Slide</option>
+                                                <option value="fade">Fade</option>
+                                                <option value="bounce">Bounce</option>
+                                            </select>
+                                        </div>
+                                        <div class="card p-3 rounded-xl bg-white/3 space-y-2">
+                                            <label class="block text-[9px] text-white/40 uppercase">Fundo do Monitor</label>
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-[9px] opacity-40 mb-1">Cor</label>
+                                                    <input type="color" id="m2-bg-color" value="#000000" class="h-9 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-blue-500/50">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[9px] opacity-40 mb-1">Opacidade</label>
+                                                    <input type="range" id="m2-bg-opacity" min="0" max="100" value="85" class="w-full accent-blue-500 mt-2">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card p-3 rounded-xl bg-white/3 space-y-2">
+                                            <label class="block text-[9px] text-white/40 uppercase">Cor dos Cards</label>
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-[9px] opacity-40 mb-1">Cor</label>
+                                                    <input type="color" id="m2-card-color" value="#1e293b" class="h-9 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-blue-500/50">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[9px] opacity-40 mb-1">Opacidade</label>
+                                                    <input type="range" id="m2-card-opacity" min="0" max="100" value="85" class="w-full accent-blue-500 mt-2">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card p-3 rounded-xl bg-white/3 space-y-2">
+                                            <label class="block text-[9px] text-white/40 uppercase">Ajustes de Layout</label>
+                                            <div class="space-y-3">
+                                                <div>
+                                                    <div class="flex justify-between mb-1">
+                                                        <label class="text-[9px] opacity-40">Espaçamento</label>
+                                                        <span id="m2-spacing-val" class="text-[9px] font-mono">10px</span>
+                                                    </div>
+                                                    <input type="range" id="m2-message-spacing" min="0" max="50" value="10" class="w-full accent-blue-500">
+                                                </div>
+                                                <div class="flex items-center justify-between">
+                                                    <label class="text-[9px] opacity-40">Ocultar Borda Lateral</label>
+                                                    <label class="relative inline-flex items-center cursor-pointer">
+                                                        <input type="checkbox" id="m2-hide-left-border" class="sr-only peer">
+                                                        <div class="w-8 h-4 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-500"></div>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="card p-3 rounded-xl bg-white/3">
+                                            <label class="block text-[9px] text-white/40 mb-1.5 uppercase">Modo Lento (s)</label>
+                                            <div class="flex items-center gap-3">
+                                                <input type="range" id="m2-slow-mode" min="0" max="10" step="0.5" value="1" class="flex-1 accent-blue-500">
+                                                <span id="m2-slow-mode-val" class="text-[9px] font-mono w-6 text-center">1s</span>
+                                            </div>
+                                        </div>
+                                        <div class="card p-3 rounded-xl bg-white/3 flex items-center justify-between">
+                                            <label class="text-[9px] opacity-60">Mostrar Fotos de Perfil</label>
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" id="m2-show-avatars" checked class="sr-only peer">
+                                                <div class="w-9 h-5 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card p-4 rounded-2xl space-y-4">
+                                <h3 class="text-[10px] font-black uppercase text-red-500 tracking-widest">Ações de Sistema</h3>
+                                <button id="btn-reset" class="w-full py-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-tighter rounded-xl transition">Resetar Tudo para o Padrão</button>
+                            </div>
+
+                            <footer class="pt-4 pb-8 px-2 flex flex-col items-center gap-2">
+                                <!-- Seletor de Idioma -->
+                                <div class="flex gap-2 mb-2 bg-[#0a0a0a] p-1 rounded-lg border border-white/5">
+                                    <button id="lang-pt" class="text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-md transition-all bg-emerald-500/20 text-emerald-500">PT-BR</button>
+                                    <button id="lang-en" class="text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-md transition-all text-white/30 hover:bg-white/5 hover:text-white">EN</button>
+                                </div>
+
+                                <button id="btn-donate" class="text-[9px] bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-black px-4 py-1.5 rounded-full font-black uppercase tracking-widest transition-all duration-300 border border-emerald-500/20" data-i18n="donateBtn">Apoie o Projeto (PIX)</button>
+                                <div class="opacity-30 hover:opacity-100 transition-all duration-300 flex flex-col items-center gap-1 cursor-default group">
+                                    <p class="text-[9px] font-black tracking-[0.2em] uppercase group-hover:text-emerald-400 transition-colors">Chat Unifier v1.0.0</p>
+                                    <p class="text-[8px] font-medium tracking-wider group-hover:text-white/80 transition-colors"><span data-i18n="developedBy">Desenvolvido por</span> <span class="text-emerald-500 font-bold group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.8)] transition-all">Endrigo</span></p>
+                                </div>
+                            </footer>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Preview Real-time -->
+                <section class="flex-1 flex flex-col gap-6 overflow-hidden">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-sm font-bold uppercase tracking-widest text-white/40">Preview em Tempo Real</h2>
+                        <span id="status-badge" class="text-[10px] bg-white/5 px-3 py-1 rounded-full text-white/40">DESCONECTADO</span>
+                    </div>
+                    <div id="preview-container" class="flex-1 flex flex-col card rounded-3xl p-6 min-h-[500px] overflow-y-auto layout-modern">
+                        <!-- Mensagens de preview aparecerão aqui -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <style>
+        /* Variáveis de Cor Dinâmica */
+        :root { --card-bg: rgba(30, 41, 59, 0.85); }
+        .preview-msg-fidelity { background: var(--card-bg) !important; border-radius: 12px; padding: 12px; display: flex; gap: 12px; }
+        
+        /* Reset Estético do Seletor de Cor */
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            padding: 0;
+            overflow: hidden;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+        input[type="color"]::-webkit-color-swatch {
+            border: none;
+            border-radius: 8px;
+        }
+
+        /* Layout Bubble */
+        .layout-bubble .preview-msg-fidelity { border-radius: 20px; border-bottom-left-radius: 4px; border: none; }
+        
+        /* Layout Cyberpunk */
+        .layout-cyberpunk .preview-msg-fidelity { border-radius: 2px; border: 2px solid #0ff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); background: #000 !important; }
+        .layout-cyberpunk .author-name { color: #f0f !important; text-shadow: 0 0 5px #f0f; }
+        .layout-cyberpunk .text { color: #0ff !important; }
+        
+        /* Layout Glass */
+        .layout-glass .preview-msg-fidelity { background: rgba(255, 255, 255, 0.1) !important; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        
+        /* Layout Retro */
+        .layout-retro .preview-msg-fidelity { border-radius: 0; border: 2px solid #333; font-family: monospace; background: #000 !important; }
+        .layout-retro .text { color: #0f0; }
+
+        /* Layout Card Float */
+        .layout-card .preview-msg-fidelity { background: #fff !important; color: #1e293b; border-radius: 16px; border-left: 6px solid #10b981; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .layout-card .text { color: #334155 !important; }
+        .layout-card .author-name { color: #1e293b !important; }
+
+        /* Estilo Slim */
+        .layout-slim .preview-msg-fidelity { padding: 4px 10px; border-radius: 4px; gap: 8px; flex-direction: row; align-items: center; }
+        .layout-slim .avatar { width: 22px; height: 22px; }
+        .layout-slim .text { font-size: 0.8rem; }
+
+        .avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+        .avatar-placeholder { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
+        .author-name { font-weight: 700; font-size: 0.9rem; }
+
+        /* Estilo para Emotes e Emojis */
+        .chat-emote {
+            height: 1.1em !important;
+            max-height: 24px !important;
+            width: auto !important;
+            vertical-align: middle !important;
+            margin: 0 3px !important;
+            display: inline-block !important;
+            transform: translateY(-1px);
+        }
+    </style>
+
+    <!-- Modal Adicionar -->
+    <div id="modal-add" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-[#111] border border-white/10 w-full max-w-md rounded-3xl p-8 shadow-2xl animate-in fade-in zoom-in duration-300">
+            <h2 class="text-xl font-black mb-6">Novo Canal</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[10px] uppercase font-black opacity-30 mb-1.5 ml-1">Plataforma</label>
+                    <select id="new-type" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500">
+                        <option value="twitch">Twitch</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="kick">Kick</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-black opacity-30 mb-1.5 ml-1">Nome/Apelido</label>
+                    <input type="text" id="new-name" placeholder="Ex: Nome do canal" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-black opacity-30 mb-1.5 ml-1">URL do Canal</label>
+                    <input type="text" id="new-url" placeholder="https://..." class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+            <div class="flex gap-3 mt-8">
+                <button id="modal-cancel" class="flex-1 px-6 py-3 rounded-xl text-sm font-bold bg-white/5 hover:bg-white/10 transition text-white/60">Cancelar</button>
+                <button id="modal-save" class="flex-1 emerald-btn px-6 py-3 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20">Salvar Canal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Doação (PIX) -->
+    <div id="modal-pix" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-[#161616] border border-white/10 w-96 rounded-3xl p-8 shadow-2xl animate-in zoom-in duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg font-black uppercase tracking-tighter italic text-emerald-500">Apoie o Projeto</h3>
+                <button id="modal-pix-close" class="text-white/20 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            
+            <div class="flex flex-col items-center text-center space-y-6">
+                <div class="bg-white p-4 rounded-2xl shadow-xl shadow-emerald-500/10">
+                    <img src="pix_qr.png" alt="QR Code PIX" class="w-48 h-48">
+                    <p class="text-[9px] text-gray-500 uppercase font-black mt-2">QR Code PIX</p>
+                </div>
+
+                <div class="space-y-2 w-full">
+                    <p class="text-[10px] text-white/40 uppercase font-bold tracking-widest">Chave PIX (E-mail)</p>
+                    <div class="flex gap-2">
+                        <input type="text" readonly value="endrigocosta@hotmail.com" id="pix-key" class="flex-1 bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-xs font-mono focus:outline-none">
+                        <button id="btn-copy-pix" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 px-4 rounded-xl text-xs font-bold transition">Copiar</button>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-white/5 w-full flex flex-col items-center gap-4">
+                    <p class="text-[10px] text-white/40 uppercase font-bold tracking-widest">Outras Formas</p>
+                    <a href="#" onclick="api.openExternal('https://www.buymeacoffee.com/endrigo')" class="hover:opacity-80 transition">
+                        <img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=☕&slug=endrigo&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" />
+                    </a>
+                    <button onclick="api.openExternal('https://buymeacoffee.com/endrigo')" class="text-[10px] text-blue-400 hover:underline">buymeacoffee.com/endrigo</button>
+                </div>
+                
+                <p class="text-[10px] text-white/30 leading-relaxed italic" data-i18n="modalPixDesc">Toda ajuda é bem-vinda para manter o projeto ativo e com novas atualizações!</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="ui-controller.js"></script>
+</body>
+</html>
