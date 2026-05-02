@@ -109,8 +109,10 @@ const i18n = {
     en: {
         "Pesquisar canais...": "Search channels...",
         "Canais do Contador": "Counter Channels",
-        "Iniciar Captura": "Start Capture",
-        "Parar Captura": "Stop Capture",
+        "Iniciar Chat": "Start Chat",
+        "Parar Chat": "Stop Chat",
+        "Iniciar Contador": "Start Counter",
+        "Parar Contador": "Stop Counter",
         "Canais Ativos": "Active Channels",
         "+ Adicionar": "+ Add",
         "Configurações de Overlay": "Overlay Settings",
