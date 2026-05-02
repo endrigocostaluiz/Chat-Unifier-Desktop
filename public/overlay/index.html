@@ -47,7 +47,7 @@
 
             // CSS Customizado
             if (data.customCSS !== undefined) {
-                customStyles.innerHTML = data.customCSS;
+                customStyles.innerHTML = (data.customCssEnabled !== false) ? data.customCSS : '';
             }
 
             // Fundo (com fallback seguro)
@@ -140,13 +140,20 @@
             container.appendChild(div);
             
             // Scroll automático (apenas se estiver no fundo ou não for monitor)
-            const isAtBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100;
-            if (!isMonitor || isAtBottom) {
-                window.scrollTo(0, document.body.scrollHeight);
-            }
+            requestAnimationFrame(() => {
+                const scrollTarget = document.documentElement || document.body;
+                const isAtBottom = (window.innerHeight + window.scrollY) >= scrollTarget.scrollHeight - 200;
+                
+                if (!isMonitor || isAtBottom) {
+                    window.scrollTo({
+                        top: scrollTarget.scrollHeight,
+                        behavior: 'instant'
+                    });
+                }
+            });
 
-            // Limitador de Mensagens
-            const finalMax = isMonitor ? 30 : maxMsgs;
+            // Limitador de Mensagens (Aumentado para monitor para não sumir rápido demais)
+            const finalMax = isMonitor ? 100 : maxMsgs;
             while (container.children.length > finalMax) {
                 const first = container.firstChild;
                 if (first._hideTimer) clearTimeout(first._hideTimer);
@@ -169,7 +176,8 @@
             const badges = {
                 twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
                 youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
-                kick: 'https://kick.com/favicon.ico'
+                kick: 'https://kick.com/favicon.ico',
+                tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
             };
             return badges[platform] || '';
         }

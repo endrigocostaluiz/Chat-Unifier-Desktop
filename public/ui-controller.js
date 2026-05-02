@@ -33,6 +33,7 @@ const elements = {
 
     // Settings Overlay 1
     customCss: document.getElementById('custom-css'),
+    customCssEnabled: document.getElementById('custom-css-enabled'),
     showAvatars: document.getElementById('show-avatars'),
     animationSelect: document.getElementById('select-animation'),
     cardColor: document.getElementById('card-color'),
@@ -95,12 +96,28 @@ const elements = {
     vKickEnabled: document.getElementById('v-kick-enabled'),
     vTtUrl: document.getElementById('v-tt-url'),
     vTtEnabled: document.getElementById('v-tt-enabled'),
+    vMonitorEnabled: document.getElementById('v-monitor-enabled'),
+    vMonitorPanel: document.getElementById('v-monitor-settings'),
+    vMonitorBg: document.getElementById('v-monitor-bg'),
+    vMonitorText: document.getElementById('v-monitor-text'),
+    vMonitorSize: document.getElementById('v-monitor-size'),
+    vMonitorSizeVal: document.getElementById('v-monitor-size-val'),
+    vMonitorShowTotal: document.getElementById('v-monitor-show-total'),
+    vMonitorUrl: document.getElementById('v-monitor-url'),
     tabTitle: document.getElementById('tab-title'),
     // Grupos de botões do header
     chatCtrlBtns: document.getElementById('chat-ctrl-btns'),
     viewerCtrlBtns: document.getElementById('viewer-ctrl-btns'),
     btnStartViewers: document.getElementById('btn-start-viewers'),
-    btnStopViewers: document.getElementById('btn-stop-viewers')
+    btnStopViewers: document.getElementById('btn-stop-viewers'),
+    // Update System
+    btnUpdate: document.getElementById('btn-update'),
+    modalUpdate: document.getElementById('modal-update'),
+    modalUpdateClose: document.getElementById('modal-update-close'),
+    btnUpdateNow: document.getElementById('btn-update-now'),
+    btnUpdateLater: document.getElementById('btn-update-later'),
+    updateVersionTag: document.getElementById('update-version-tag'),
+    updateChangelog: document.getElementById('update-changelog')
 };
 
 // Dicionário de Traduções
@@ -146,6 +163,12 @@ const i18n = {
         "Cores Originais": "Original Colors",
         "Opacidade do Fundo": "Background Opacity",
         "URL do Browser Source (OBS)": "Browser Source URL (OBS)",
+        "Monitor de Espectadores": "Viewer Monitor",
+        "Monitoramento em tela cheia com cores customizadas": "Full-screen monitoring with custom colors",
+        "Tamanho": "Size",
+        "Mostrar Total": "Show Total",
+        "URL do Monitor": "Monitor URL",
+        "Ideal para monitorar em tela cheia com cores personalizadas.": "Ideal for full-screen monitoring with custom colors.",
         "Padrão (Horizontal)": "Default (Horizontal)",
         "Lista Vertical": "Vertical List",
         "Grid 2x2": "Grid 2x2",
@@ -159,6 +182,8 @@ const i18n = {
         "Apoie o Projeto (PIX)": "Support the Project",
         "Desenvolvido por": "Developed by",
         "Copiar": "Copy",
+        "copy": "Copy",
+        "Copiado!": "Copied!",
         "Moderno (Avatares)": "Modern (Avatars)",
         "Moderno": "Modern",
         "Bubble (Balões)": "Bubble",
@@ -179,43 +204,86 @@ const i18n = {
         "Apoie o Projeto": "Support the Project",
         "Chave PIX (E-mail)": "Donation Email",
         "Outras Formas": "Other Ways",
-        "Toda ajuda é bem-vinda para manter o projeto ativo e com novas atualizações!": "Any help is welcome to keep the project active and with new updates!"
+        "Toda ajuda é bem-vinda para manter o projeto ativo e com novas atualizações!": "Any help is welcome to keep the project active and with new updates!",
+        "Verificar Atualizações": "Check for Updates",
+        "Atualização Disponível": "Update Available",
+        "Baixar e Atualizar": "Download and Update",
+        "Lembrar mais tarde": "Remind me later",
+        "Versão": "Version",
+        "Não foram encontradas atualizações.": "No updates found.",
+        "Você já está na versão mais recente!": "You are already on the latest version!"
     }
 };
 
 // Guarda o texto original em PT de cada elemento processado
 const originalTexts = new Map();
 
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    const bgColor = type === 'success' ? 'bg-emerald-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-500');
+    const icon = type === 'success' ? 
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' :
+        '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+
+    toast.className = `${bgColor} text-black px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 animate-in slide-in-from-right-10 fade-in duration-300 font-bold text-sm`;
+    toast.innerHTML = `
+        <div class="bg-black/20 p-1.5 rounded-lg">${icon}</div>
+        <span>${message}</span>
+    `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('animate-out', 'fade-out', 'slide-out-to-right-10');
+        setTimeout(() => toast.remove(), 500);
+    }, 4000);
+}
+
 function translateUI(lang) {
     if (!lang) lang = appConfig.lang || 'pt';
-    const dict = i18n[lang] || i18n.pt;
+    const dict = i18n[lang] || {};
     
     document.querySelectorAll('[data-i18n], [data-i18n-placeholder], h2, h3, label, button, option, p, span, input[placeholder]').forEach(el => {
         if (el.closest('.message-item') || el.id === 'status-badge' || el.classList.contains('font-mono')) return;
 
         // 1. Tradução de Texto
         let textKey = el.getAttribute('data-i18n');
-        if (!textKey) {
-            textKey = el.textContent.trim();
-            if (textKey && el.children.length === 0) {
-                el.setAttribute('data-i18n', textKey);
-            }
-        }
         
-        if (textKey && dict[textKey]) {
+        // Se não tem a chave, tenta descobrir o texto original (PT)
+        if (!textKey) {
             if (el.children.length === 0) {
-                el.textContent = dict[textKey];
+                textKey = el.textContent.trim();
+                if (textKey) el.setAttribute('data-i18n', textKey);
             } else {
+                // Para botões com ícones, busca o nó de texto
                 for (let node of el.childNodes) {
-                    if (node.nodeType === 3 && node.textContent.trim() === textKey) {
-                        node.textContent = dict[textKey];
+                    if (node.nodeType === 3 && node.textContent.trim()) {
+                        textKey = node.textContent.trim();
+                        el.setAttribute('data-i18n', textKey);
                         break;
                     }
                 }
             }
-        } else if (lang === 'pt' && textKey) {
-            // Se for PT e não achar no dict, volta pro original guardado no data-i18n
-            if (el.children.length === 0) el.textContent = textKey;
+        }
+
+        if (textKey) {
+            const translated = dict[textKey] || (lang === 'pt' ? textKey : null);
+            if (translated) {
+                if (el.children.length === 0) {
+                    el.textContent = translated;
+                } else {
+                    // Substitui apenas o conteúdo do nó de texto que contém a chave
+                    for (let node of el.childNodes) {
+                        if (node.nodeType === 3 && node.textContent.trim()) {
+                            node.textContent = node.textContent.replace(node.textContent.trim(), translated);
+                            break;
+                        }
+                    }
+                }
+            }
         }
 
         // 2. Tradução de Placeholders
@@ -365,6 +433,7 @@ async function init() {
         // Sincronizar UI - Overlay 1
         if (elements.layoutSelect) elements.layoutSelect.value = o1.layout || 'modern';
         if (elements.customCss) elements.customCss.value = o1.customCSS || '';
+        if (elements.customCssEnabled) elements.customCssEnabled.checked = o1.customCssEnabled !== false;
         if (elements.showAvatars) elements.showAvatars.checked = o1.showAvatars !== false;
         if (elements.animationSelect) elements.animationSelect.value = o1.animation || 'slide';
         if (elements.cardColor) elements.cardColor.value = o1.cardColor || '#1e293b';
@@ -437,6 +506,18 @@ async function init() {
         if (elements.vTtUrl) elements.vTtUrl.value = vc.tiktok?.url || '';
         if (elements.vTtEnabled) elements.vTtEnabled.checked = vc.tiktok?.enabled !== false;
 
+        // Monitor de Espectadores
+        const vm = v.monitor || { enabled: false, bgColor: '#0f172a', textColor: '#f8fafc' };
+        if (elements.vMonitorEnabled) elements.vMonitorEnabled.checked = vm.enabled === true;
+        if (elements.vMonitorPanel) elements.vMonitorPanel.classList.toggle('hidden', vm.enabled !== true);
+        if (elements.vMonitorBg) elements.vMonitorBg.value = vm.bgColor || '#0f172a';
+        if (elements.vMonitorText) elements.vMonitorText.value = vm.textColor || '#f8fafc';
+        if (elements.vMonitorSize) {
+            elements.vMonitorSize.value = vm.fontSize || 4;
+            if (elements.vMonitorSizeVal) elements.vMonitorSizeVal.innerText = `${elements.vMonitorSize.value}rem`;
+        }
+        if (elements.vMonitorShowTotal) elements.vMonitorShowTotal.checked = vm.showTotal !== false;
+
         updateObsUrl();
         updatePreviewLayout();
         updateViewersPreview();
@@ -482,7 +563,8 @@ function updatePreviewLayout() {
     // Aplicar CSS Customizado ao Preview
     const customStyles = document.getElementById('preview-custom-css');
     if (customStyles) {
-        customStyles.innerHTML = elements.customCss ? elements.customCss.value : '';
+        const isEnabled = elements.customCssEnabled ? elements.customCssEnabled.checked : true;
+        customStyles.innerHTML = (isEnabled && elements.customCss) ? elements.customCss.value : '';
     }
 }
 
@@ -653,7 +735,7 @@ if (elements.modalSave) {
         renderPlatforms(elements.searchChannels.value);
         
         if (type === 'tiktok' && !appConfig.hasLoggedTikTok) {
-            alert('Você adicionou o TikTok pela primeira vez!\n\nPara que o aplicativo consiga ler o chat, uma janela será aberta agora. Faça o seu login no TikTok e, depois de concluído, você pode fechar essa nova janela.');
+            showToast(appConfig.lang === 'en' ? 'Opening TikTok login window...' : 'Abrindo janela de login do TikTok...', 'info');
             api.openLoginWindow('tiktok');
             appConfig.hasLoggedTikTok = true;
             await api.saveConfig(appConfig);
@@ -698,6 +780,7 @@ const saveAndUpdate = async () => {
     appConfig.overlay1 = {
         layout: elements.layoutSelect ? elements.layoutSelect.value : 'modern',
         customCSS: elements.customCss ? elements.customCss.value : '',
+        customCssEnabled: elements.customCssEnabled ? elements.customCssEnabled.checked : true,
         showAvatars: elements.showAvatars ? elements.showAvatars.checked : true,
         animation: elements.animationSelect ? elements.animationSelect.value : 'slide',
         cardColor: elements.cardColor ? elements.cardColor.value : '#1e293b',
@@ -756,8 +839,16 @@ const saveAndUpdateViewers = async () => {
             twitch: { url: elements.vTwUrl?.value || '', enabled: elements.vTwEnabled?.checked === true },
             kick: { url: elements.vKickUrl?.value || '', enabled: elements.vKickEnabled?.checked === true },
             tiktok: { url: elements.vTtUrl?.value || '', enabled: elements.vTtEnabled?.checked === true }
+        },
+        monitor: {
+            enabled: elements.vMonitorEnabled ? elements.vMonitorEnabled.checked : false,
+            bgColor: elements.vMonitorBg ? elements.vMonitorBg.value : '#0f172a',
+            textColor: elements.vMonitorText ? elements.vMonitorText.value : '#f8fafc',
+            fontSize: elements.vMonitorSize ? parseFloat(elements.vMonitorSize.value) : 4,
+            showTotal: elements.vMonitorShowTotal ? elements.vMonitorShowTotal.checked : true
         }
     };
+    if (elements.vMonitorSizeVal) elements.vMonitorSizeVal.innerText = `${appConfig.viewersConfig.monitor.fontSize}rem`;
     if (elements.vBgOpacityVal) elements.vBgOpacityVal.innerText = `${appConfig.viewersConfig.bgOpacity}%`;
     if (elements.vIntervalVal) elements.vIntervalVal.innerText = `${appConfig.viewersConfig.interval}s`;
     if (elements.vSpacingVal) elements.vSpacingVal.innerText = `${appConfig.viewersConfig.spacing}px`;
@@ -769,6 +860,7 @@ const saveAndUpdateViewers = async () => {
 // Bind Events - Overlay 1
 if (elements.layoutSelect) elements.layoutSelect.onchange = saveAndUpdate;
 if (elements.customCss) elements.customCss.oninput = saveAndUpdate;
+if (elements.customCssEnabled) elements.customCssEnabled.onchange = saveAndUpdate;
 if (elements.showAvatars) elements.showAvatars.onchange = saveAndUpdate;
 if (elements.animationSelect) elements.animationSelect.onchange = saveAndUpdate;
 if (elements.cardColor) elements.cardColor.oninput = saveAndUpdate;
@@ -868,6 +960,45 @@ document.querySelectorAll('.sidebar-item').forEach(item => {
     };
 });
 
+// Lógica de Update
+if (elements.btnUpdate) {
+    elements.btnUpdate.onclick = async () => {
+        const icon = elements.btnUpdate.querySelector('svg');
+        if (icon) icon.classList.add('animate-spin');
+        await api.checkForUpdates();
+        setTimeout(() => {
+            if (icon) icon.classList.remove('animate-spin');
+        }, 2000);
+    };
+}
+
+api.onUpdateAvailable((info) => {
+    if (elements.modalUpdate) {
+        elements.updateVersionTag.innerText = `Versão v${info.version}`;
+        elements.updateChangelog.innerText = info.body || (appConfig.lang === 'en' ? 'New version available!' : 'Nova versão disponível!');
+        elements.modalUpdate.classList.remove('hidden');
+        
+        elements.btnUpdateNow.onclick = () => {
+            api.openExternal(info.url);
+            elements.modalUpdate.classList.add('hidden');
+        };
+        
+        elements.btnUpdateLater.onclick = () => {
+            if (!info.manual) {
+                api.ignoreVersion(info.version);
+            }
+            elements.modalUpdate.classList.add('hidden');
+        };
+        
+        elements.modalUpdateClose.onclick = () => elements.modalUpdate.classList.add('hidden');
+    }
+});
+
+api.onUpdateNotFound(() => {
+    showToast(appConfig.lang === 'en' ? "You are already on the latest version!" : "Você já está na versão mais recente!", 'info');
+});
+
+
 // Botões independentes do Contador de Views
 if (elements.btnStartViewers) {
     elements.btnStartViewers.onclick = () => {
@@ -899,6 +1030,18 @@ if (elements.vSpacing) elements.vSpacing.oninput = saveAndUpdateViewers;
 [elements.vYtUrl, elements.vShortsUrl, elements.vTwUrl, elements.vKickUrl, elements.vTtUrl].forEach(el => {
     if (el) el.oninput = saveAndUpdateViewers;
 });
+if (elements.vMonitorEnabled) {
+    elements.vMonitorEnabled.onchange = async () => {
+        const enabled = elements.vMonitorEnabled.checked;
+        elements.vMonitorPanel.classList.toggle('hidden', !enabled);
+        saveAndUpdateViewers();
+    };
+}
+if (elements.vMonitorBg) elements.vMonitorBg.oninput = saveAndUpdateViewers;
+if (elements.vMonitorText) elements.vMonitorText.oninput = saveAndUpdateViewers;
+if (elements.vMonitorSize) elements.vMonitorSize.oninput = saveAndUpdateViewers;
+if (elements.vMonitorShowTotal) elements.vMonitorShowTotal.onchange = saveAndUpdateViewers;
+
 [elements.vYtEnabled, elements.vShortsEnabled, elements.vTwEnabled, elements.vKickEnabled, elements.vTtEnabled].forEach(el => {
     if (el) el.onchange = saveAndUpdateViewers;
 });
@@ -943,10 +1086,24 @@ if (btnCopyPix) {
 
 window.copyToClipboard = (text) => {
     navigator.clipboard.writeText(text).then(() => {
-        alert('Copiado para a área de transferência!');
+        showToast(appConfig.lang === 'en' ? 'Copied to clipboard!' : 'Copiado para a área de transferência!');
     }).catch(err => {
         console.error('Erro ao copiar: ', err);
     });
+};
+
+window.copyLink = (text, btnElement) => {
+    navigator.clipboard.writeText(text).then(() => {
+        const dict = i18n[appConfig.lang || 'pt'] || {};
+        const originalHtml = btnElement.innerHTML;
+        btnElement.innerText = dict["Copiado!"] || "Copiado!";
+        btnElement.classList.replace('bg-emerald-500', 'bg-blue-500');
+        btnElement.classList.replace('bg-blue-500', 'bg-emerald-500'); // Garante que a cor mude se necessário
+        
+        setTimeout(() => {
+            btnElement.innerHTML = originalHtml;
+        }, 2000);
+    }).catch(err => console.error('Erro ao copiar:', err));
 };
 
 init();

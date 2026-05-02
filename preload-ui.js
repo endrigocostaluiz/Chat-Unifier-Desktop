@@ -14,5 +14,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   showScraper: (id) => ipcRenderer.send('show-scraper-window', id),
   startViewers: () => ipcRenderer.send('start-viewer-scrapers'),
   stopViewers: () => ipcRenderer.send('stop-viewer-scrapers'),
-  openLoginWindow: (platform) => ipcRenderer.send('open-login-window', platform)
+  openLoginWindow: (platform) => ipcRenderer.send('open-login-window', platform),
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (event, info) => callback(info)),
+  onUpdateNotFound: (callback) => ipcRenderer.on('update-not-found', () => callback()),
+  ignoreVersion: (version) => ipcRenderer.send('ignore-version', version)
 });

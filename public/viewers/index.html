@@ -34,9 +34,15 @@
 
         /* Layout Grid */
         .layout-grid {
-            display: grid;
+            display: grid !important;
             grid-template-columns: repeat(2, auto);
             gap: 16px 32px;
+            align-items: center;
+        }
+
+        .layout-grid .total-stat {
+            grid-column: span 2;
+            justify-content: center;
         }
 
         /* Layout Minimalista */
@@ -110,12 +116,17 @@
         let currentData = { counts: {}, total: 0 };
 
         socket.on('connect', () => {
+            console.log('Conectado ao servidor de viewers');
             socket.emit('join-room', 'viewers');
+            // Solicita dados imediatamente ao conectar/recarregar
+            socket.emit('request-viewers-update');
+            socket.emit('get-config');
         });
 
         socket.on('config-update', (config) => {
             if (config) {
-                currentConfig = config;
+                // Se receber o config completo, pega a parte de viewers, senão usa o que recebeu
+                currentConfig = config.viewersConfig || config;
                 render();
             }
         });
