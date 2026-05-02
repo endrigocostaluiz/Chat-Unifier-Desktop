@@ -21,6 +21,10 @@
         const isMonitor = window.location.pathname.includes('/monitor');
         const ROOM = isMonitor ? 'overlay2' : 'overlay1';
 
+        if (isMonitor) {
+            document.body.classList.add('is-monitor');
+        }
+
         // Entra na room correta
         socket.on('connect', () => {
             socket.emit('join-room', ROOM);
@@ -109,6 +113,7 @@
             const config = window.appConfig || {};
             const animationClass = config.animation || 'slide';
             const showAvatar = config.showAvatars !== false;
+            const maxMsgs = config.maxMessages || 50;
 
             const div = document.createElement('div');
             div.className = `message-item ${animationClass}-in ${data.platform}`;
@@ -133,8 +138,31 @@
             `;
 
             container.appendChild(div);
-            window.scrollTo(0, document.body.scrollHeight);
-            if (container.children.length > 50) container.removeChild(container.firstChild);
+            
+            // Scroll automático (apenas se estiver no fundo ou não for monitor)
+            const isAtBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 100;
+            if (!isMonitor || isAtBottom) {
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+
+            // Limitador de Mensagens
+            const finalMax = isMonitor ? 30 : maxMsgs;
+            while (container.children.length > finalMax) {
+                const first = container.firstChild;
+                if (first._hideTimer) clearTimeout(first._hideTimer);
+                container.removeChild(first);
+            }
+
+            // Auto-ocultar (apenas se configurado e não for o monitor)
+            if (config.hideMessages && !isMonitor) {
+                const timeout = (config.hideTimeout || 15) * 1000;
+                div._hideTimer = setTimeout(() => {
+                    div.classList.add('out-animation');
+                    setTimeout(() => {
+                        if (div.parentNode) div.remove();
+                    }, 600);
+                }, timeout);
+            }
         }
 
         function getBadge(platform) {

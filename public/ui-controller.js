@@ -44,6 +44,12 @@ const elements = {
     messageSpacing: document.getElementById('message-spacing'),
     spacingVal: document.getElementById('spacing-val'),
     hideLeftBorder: document.getElementById('hide-left-border'),
+    maxMessages: document.getElementById('max-messages'),
+    maxMessagesVal: document.getElementById('max-messages-val'),
+    hideMessages: document.getElementById('hide-messages'),
+    hideTimeout: document.getElementById('hide-timeout'),
+    hideTimeoutVal: document.getElementById('hide-timeout-val'),
+    hideTimeoutPanel: document.getElementById('hide-timeout-panel'),
 
     // Monitor (Overlay 2)
     overlay2Enabled: document.getElementById('overlay2-enabled'),
@@ -61,7 +67,40 @@ const elements = {
     m2ShowAvatars: document.getElementById('m2-show-avatars'),
     m2MessageSpacing: document.getElementById('m2-message-spacing'),
     m2SpacingVal: document.getElementById('m2-spacing-val'),
-    m2HideLeftBorder: document.getElementById('m2-hide-left-border')
+    m2HideLeftBorder: document.getElementById('m2-hide-left-border'),
+
+    // Viewer Counter
+    vBgColor: document.getElementById('v-bg-color'),
+    vBgOpacity: document.getElementById('v-bg-opacity'),
+    vBgOpacityVal: document.getElementById('v-bg-opacity-val'),
+    vFontColor: document.getElementById('v-font-color'),
+    vFontSize: document.getElementById('v-font-size'),
+    vShowTotal: document.getElementById('v-show-total'),
+    vObsUrl: document.getElementById('v-obs-url'),
+    vBtnCopy: document.getElementById('v-btn-copy'),
+    vPreview: document.getElementById('v-preview-container'),
+    vLayoutSelect: document.getElementById('v-layout-select'),
+    vIconStyle: document.getElementById('v-icon-style'),
+    vInterval: document.getElementById('v-interval'),
+    vIntervalVal: document.getElementById('v-interval-val'),
+    vSpacing: document.getElementById('v-spacing'),
+    vSpacingVal: document.getElementById('v-spacing-val'),
+    vYtUrl: document.getElementById('v-yt-url'),
+    vYtEnabled: document.getElementById('v-yt-enabled'),
+    vShortsUrl: document.getElementById('v-shorts-url'),
+    vShortsEnabled: document.getElementById('v-shorts-enabled'),
+    vTwUrl: document.getElementById('v-tw-url'),
+    vTwEnabled: document.getElementById('v-tw-enabled'),
+    vKickUrl: document.getElementById('v-kick-url'),
+    vKickEnabled: document.getElementById('v-kick-enabled'),
+    vTtUrl: document.getElementById('v-tt-url'),
+    vTtEnabled: document.getElementById('v-tt-enabled'),
+    tabTitle: document.getElementById('tab-title'),
+    // Grupos de botões do header
+    chatCtrlBtns: document.getElementById('chat-ctrl-btns'),
+    viewerCtrlBtns: document.getElementById('viewer-ctrl-btns'),
+    btnStartViewers: document.getElementById('btn-start-viewers'),
+    btnStopViewers: document.getElementById('btn-stop-viewers')
 };
 
 // Dicionário de Traduções
@@ -69,6 +108,7 @@ const i18n = {
     pt: {}, // HTML original já está em PT
     en: {
         "Pesquisar canais...": "Search channels...",
+        "Canais do Contador": "Counter Channels",
         "Iniciar Captura": "Start Capture",
         "Parar Captura": "Stop Capture",
         "Canais Ativos": "Active Channels",
@@ -96,6 +136,24 @@ const i18n = {
         "Ações de Sistema": "System Actions",
         "Resetar Tudo para o Padrão": "Reset All to Default",
         "Preview em Tempo Real": "Real-time Preview",
+        "Intervalo de Verificação": "Polling Interval",
+        "Estilo e Layout": "Style and Layout",
+        "Layout do Contador": "Counter Layout",
+        "Cor do Texto": "Text Color",
+        "Cor dos Ícones": "Icon Color",
+        "Cores Originais": "Original Colors",
+        "Opacidade do Fundo": "Background Opacity",
+        "URL do Browser Source (OBS)": "Browser Source URL (OBS)",
+        "Padrão (Horizontal)": "Default (Horizontal)",
+        "Lista Vertical": "Vertical List",
+        "Grid 2x2": "Grid 2x2",
+        "Minimalista (Apenas Números)": "Minimalist (Numbers Only)",
+        "URL da Live ou Canal": "Live or Channel URL",
+        "URL do Shorts": "Shorts URL",
+        "Nome do Canal": "Channel Name",
+        "Chat Unificado": "Unified Chat",
+        "Contador de Views": "Viewer Counter",
+        "Apoiar Projeto": "Support Project",
         "Apoie o Projeto (PIX)": "Support the Project",
         "Desenvolvido por": "Developed by",
         "Copiar": "Copy",
@@ -127,45 +185,66 @@ const i18n = {
 const originalTexts = new Map();
 
 function translateUI(lang) {
+    if (!lang) lang = appConfig.lang || 'pt';
     const dict = i18n[lang] || i18n.pt;
-    const elementsToTranslate = document.querySelectorAll('h2, h3, label, button, option, p, span, input[placeholder]');
     
-    elementsToTranslate.forEach(el => {
-        // Ignora elementos que não devem ser traduzidos (mensagens de chat, badges, etc)
+    document.querySelectorAll('[data-i18n], [data-i18n-placeholder], h2, h3, label, button, option, p, span, input[placeholder]').forEach(el => {
         if (el.closest('.message-item') || el.id === 'status-badge' || el.classList.contains('font-mono')) return;
 
-        // Armazena o original na primeira vez
-        if (!originalTexts.has(el)) {
-            if (el.tagName === 'INPUT' && el.placeholder) {
-                originalTexts.set(el, { type: 'placeholder', text: el.placeholder.trim() });
-            } else if (el.childNodes.length === 1 && el.childNodes[0].nodeType === 3) {
-                originalTexts.set(el, { type: 'text', text: el.textContent.trim() });
-            } else if (el.hasAttribute('data-i18n')) {
-                originalTexts.set(el, { type: 'text', text: el.textContent.trim() });
+        // 1. Tradução de Texto
+        let textKey = el.getAttribute('data-i18n');
+        if (!textKey) {
+            textKey = el.textContent.trim();
+            if (textKey && el.children.length === 0) {
+                el.setAttribute('data-i18n', textKey);
             }
         }
-
-        const original = originalTexts.get(el);
-        if (original) {
-            const translatedText = dict[original.text] || original.text;
-            if (original.type === 'placeholder') {
-                el.placeholder = translatedText;
+        
+        if (textKey && dict[textKey]) {
+            if (el.children.length === 0) {
+                el.textContent = dict[textKey];
             } else {
-                el.textContent = translatedText;
+                for (let node of el.childNodes) {
+                    if (node.nodeType === 3 && node.textContent.trim() === textKey) {
+                        node.textContent = dict[textKey];
+                        break;
+                    }
+                }
             }
+        } else if (lang === 'pt' && textKey) {
+            // Se for PT e não achar no dict, volta pro original guardado no data-i18n
+            if (el.children.length === 0) el.textContent = textKey;
+        }
+
+        // 2. Tradução de Placeholders
+        let placeholderKey = el.getAttribute('data-i18n-placeholder');
+        if (!placeholderKey && el.placeholder) {
+            placeholderKey = el.placeholder;
+            el.setAttribute('data-i18n-placeholder', placeholderKey);
+        }
+        if (placeholderKey && dict[placeholderKey]) {
+            el.placeholder = dict[placeholderKey];
+        } else if (lang === 'pt' && placeholderKey) {
+            el.placeholder = placeholderKey;
         }
     });
 
-    // Atualiza visual dos botões de idioma
+    // Atualiza visual dos botões de idioma na Sidebar
     const btnPt = document.getElementById('lang-pt');
     const btnEn = document.getElementById('lang-en');
     
-    if (lang === 'pt') {
-        btnPt.className = "text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-md transition-all bg-emerald-500/20 text-emerald-500";
-        btnEn.className = "text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-md transition-all text-white/30 hover:bg-white/5 hover:text-white";
-    } else {
-        btnEn.className = "text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-md transition-all bg-blue-500/20 text-blue-400";
-        btnPt.className = "text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-md transition-all text-white/30 hover:bg-white/5 hover:text-white";
+    if (btnPt && btnEn) {
+        if (lang === 'pt') {
+            btnPt.classList.add('bg-emerald-500', 'text-black');
+            btnPt.classList.remove('text-white/20', 'hover:bg-white/5', 'hover:text-white');
+            btnEn.classList.remove('bg-emerald-500', 'text-black');
+            btnEn.classList.add('text-white/20', 'hover:bg-white/5', 'hover:text-white');
+        } else {
+            btnEn.classList.add('bg-emerald-500', 'text-black');
+            btnEn.classList.remove('text-white/20', 'hover:bg-white/5', 'hover:text-white');
+            btnPt.classList.remove('bg-emerald-500', 'text-black');
+            btnPt.classList.add('text-white/20', 'hover:bg-white/5', 'hover:text-white');
+        }
     }
 }
 
@@ -196,6 +275,7 @@ function renderMessage(msg) {
     const config = appConfig.overlay1 || {};
     const animationClass = config.animation || 'slide';
     const showAvatar = config.showAvatars !== false;
+    const maxMsgs = config.maxMessages || 5;
     
     const div = document.createElement('div');
     div.className = `message-item ${animationClass}-in ${msg.platform} preview-msg-fidelity`;
@@ -228,9 +308,30 @@ function renderMessage(msg) {
     `;
     elements.preview.prepend(div);
     
-    if (elements.preview.children.length > 20) {
+    // Limitador de Mensagens no Preview
+    const currentMax = parseInt(config.maxMessages) || 5;
+    while (elements.preview.children.length > currentMax) {
         elements.preview.removeChild(elements.preview.lastChild);
     }
+
+    // Auto-ocultar no Preview
+    if (config.hideMessages) {
+        const timeout = (config.hideTimeout || 15) * 1000;
+        setTimeout(() => {
+            div.classList.add('out-animation');
+            setTimeout(() => {
+                if (div.parentNode) div.remove();
+            }, 600);
+        }, timeout);
+    }
+}
+
+function formatTime(seconds) {
+    if (seconds == 0) return '0s';
+    if (seconds < 60) return `${seconds}s`;
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return secs === 0 ? `${mins}min` : `${mins}min ${secs}s`;
 }
 
 // Inicialização
@@ -247,7 +348,8 @@ async function init() {
         }
 
         // Aplica o idioma salvo ou padrão
-        translateUI(appConfig.lang || 'pt');
+        appConfig.lang = savedConfig?.lang || 'pt';
+        translateUI(appConfig.lang);
 
         // Binda botões de idioma
         const btnPt = document.getElementById('lang-pt');
@@ -272,6 +374,12 @@ async function init() {
         if (elements.messageSpacing) elements.messageSpacing.value = o1.messageSpacing !== undefined ? o1.messageSpacing : 10;
         if (elements.spacingVal) elements.spacingVal.innerText = `${o1.messageSpacing !== undefined ? o1.messageSpacing : 10}px`;
         if (elements.hideLeftBorder) elements.hideLeftBorder.checked = o1.hideLeftBorder === true;
+        if (elements.maxMessages) elements.maxMessages.value = o1.maxMessages !== undefined ? o1.maxMessages : 5;
+        if (elements.maxMessagesVal) elements.maxMessagesVal.innerText = `${o1.maxMessages !== undefined ? o1.maxMessages : 5}`;
+        if (elements.hideMessages) elements.hideMessages.checked = o1.hideMessages === true;
+        if (elements.hideTimeout) elements.hideTimeout.value = o1.hideTimeout !== undefined ? o1.hideTimeout : 15;
+        if (elements.hideTimeoutVal) elements.hideTimeoutVal.innerText = formatTime(o1.hideTimeout !== undefined ? o1.hideTimeout : 15);
+        if (elements.hideTimeoutPanel) elements.hideTimeoutPanel.classList.toggle('hidden', !o1.hideMessages);
 
         // Sincronizar UI - Overlay 2
         const o2 = appConfig.overlay2 || {};
@@ -291,8 +399,45 @@ async function init() {
         if (elements.m2SpacingVal) elements.m2SpacingVal.innerText = `${o2.messageSpacing !== undefined ? o2.messageSpacing : 10}px`;
         if (elements.m2HideLeftBorder) elements.m2HideLeftBorder.checked = o2.hideLeftBorder === true;
 
+        // Sincronizar UI - Viewers
+        const v = appConfig.viewersConfig || {};
+        if (elements.vBgColor) elements.vBgColor.value = v.bgColor || '#000000';
+        if (elements.vBgOpacity) {
+            elements.vBgOpacity.value = v.bgOpacity !== undefined ? v.bgOpacity : 85;
+            if (elements.vBgOpacityVal) elements.vBgOpacityVal.innerText = `${elements.vBgOpacity.value}%`;
+        }
+        if (elements.vFontColor) elements.vFontColor.value = v.fontColor || '#ffffff';
+        if (elements.vFontSize) elements.vFontSize.value = v.fontSize || 18;
+        if (elements.vShowTotal) elements.vShowTotal.checked = v.showTotal !== false;
+        if (elements.vLayoutSelect) elements.vLayoutSelect.value = v.layout || 'default';
+        if (elements.vIconStyle) elements.vIconStyle.value = v.iconStyle || 'original';
+        
+        if (elements.vInterval) {
+            elements.vInterval.value = v.interval || 30;
+            if (elements.vIntervalVal) elements.vIntervalVal.innerText = `${elements.vInterval.value}s`;
+        }
+
+        if (elements.vSpacing) {
+            elements.vSpacing.value = v.spacing !== undefined ? v.spacing : 20;
+            if (elements.vSpacingVal) elements.vSpacingVal.innerText = `${elements.vSpacing.value}px`;
+        }
+
+        // Canais do Contador
+        const vc = v.channels || {};
+        if (elements.vYtUrl) elements.vYtUrl.value = vc.youtube?.url || '';
+        if (elements.vYtEnabled) elements.vYtEnabled.checked = vc.youtube?.enabled !== false;
+        if (elements.vShortsUrl) elements.vShortsUrl.value = vc.shorts?.url || '';
+        if (elements.vShortsEnabled) elements.vShortsEnabled.checked = vc.shorts?.enabled === true;
+        if (elements.vTwUrl) elements.vTwUrl.value = vc.twitch?.url || '';
+        if (elements.vTwEnabled) elements.vTwEnabled.checked = vc.twitch?.enabled !== false;
+        if (elements.vKickUrl) elements.vKickUrl.value = vc.kick?.url || '';
+        if (elements.vKickEnabled) elements.vKickEnabled.checked = vc.kick?.enabled !== false;
+        if (elements.vTtUrl) elements.vTtUrl.value = vc.tiktok?.url || '';
+        if (elements.vTtEnabled) elements.vTtEnabled.checked = vc.tiktok?.enabled !== false;
+
         updateObsUrl();
         updatePreviewLayout();
+        updateViewersPreview();
     } catch (err) {
         console.error("Erro na inicialização:", err);
     }
@@ -324,6 +469,97 @@ function updatePreviewLayout() {
     
     const hideBorder = elements.hideLeftBorder ? elements.hideLeftBorder.checked : false;
     elements.preview.classList.toggle('hide-borders-preview', hideBorder);
+
+    // Aplicar limite de mensagens imediatamente
+    const maxMsgs = elements.maxMessages ? parseInt(elements.maxMessages.value) : 5;
+    const currentMessages = Array.from(elements.preview.children);
+    if (currentMessages.length > maxMsgs) {
+        currentMessages.slice(maxMsgs).forEach(el => el.remove());
+    }
+
+    // Aplicar CSS Customizado ao Preview
+    const customStyles = document.getElementById('preview-custom-css');
+    if (customStyles) {
+        customStyles.innerHTML = elements.customCss ? elements.customCss.value : '';
+    }
+}
+
+function updateViewersPreview() {
+    try {
+        if (!elements.vPreview) return;
+        const vPreviewContent = document.getElementById('v-preview-content');
+        if (!vPreviewContent) return;
+
+        const v = appConfig.viewersConfig || {};
+        
+        const bgColor = (elements.vBgColor && elements.vBgColor.value) ? elements.vBgColor.value : '#000000';
+        const bgOpacity = (elements.vBgOpacity && elements.vBgOpacity.value) ? elements.vBgOpacity.value / 100 : 0.85;
+        const br = parseInt(bgColor.slice(1, 3), 16) || 0;
+        const bg = parseInt(bgColor.slice(3, 5), 16) || 0;
+        const bb = parseInt(bgColor.slice(5, 7), 16) || 0;
+        
+        const fontColor = (elements.vFontColor && elements.vFontColor.value) ? elements.vFontColor.value : '#ffffff';
+        const iconStyle = (elements.vIconStyle && elements.vIconStyle.value) ? elements.vIconStyle.value : 'original';
+        const layout = (elements.vLayoutSelect && elements.vLayoutSelect.value) ? elements.vLayoutSelect.value : 'default';
+        const showTotal = elements.vShowTotal ? elements.vShowTotal.checked : true;
+
+        const getIconStyle = (key) => {
+            let filter = '';
+            if (iconStyle === 'white') filter = 'filter: brightness(0) invert(1);';
+            else if (iconStyle === 'black') filter = 'filter: brightness(0);';
+            
+            let transform = (key === 'kick' || key === 'shorts') ? 'transform: scale(0.8);' : '';
+            if (filter || transform) return `style="${filter} ${transform}"`;
+            return '';
+        };
+
+        const spacing = elements.vSpacing ? elements.vSpacing.value : 20;
+        let containerClass = "flex items-center p-4 rounded-xl transition-all";
+        let containerStyle = `background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; gap: ${spacing}px;`;
+        
+        if (layout === 'vertical') {
+            containerClass = "flex flex-col p-6 rounded-2xl transition-all items-start";
+        } else if (layout === 'grid') {
+            containerClass = "grid grid-cols-2 p-6 rounded-2xl transition-all";
+        } else if (layout === 'minimalist') {
+            containerClass = "flex items-center p-2 rounded-lg transition-all";
+        }
+
+        const ch = v.channels || {};
+        const platforms = [
+            { key: 'youtube', icon: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png', count: '38K', enabled: ch.youtube?.enabled !== false },
+            { key: 'shorts', icon: 'https://cdn.simpleicons.org/youtubeshorts/FF0000', count: '8K', enabled: ch.shorts?.enabled !== false },
+            { key: 'twitch', icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png', count: '5.2K', enabled: ch.twitch?.enabled !== false },
+            { key: 'kick', icon: 'https://cdn.simpleicons.org/kick/53FC18', count: '1.4K', enabled: ch.kick?.enabled !== false },
+            { key: 'tiktok', icon: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png', count: '12K', enabled: ch.tiktok?.enabled !== false }
+        ];
+
+        const activePlatforms = platforms.filter(p => p.enabled);
+
+        let statsHtml = activePlatforms.map(p => `
+            <div class="flex items-center gap-2">
+                <img src="${p.icon}" class="w-6 h-6 object-contain" ${getIconStyle(p.key)}>
+                <span class="font-black text-lg" style="color: ${fontColor}">${p.count}</span>
+            </div>
+        `).join('');
+
+        vPreviewContent.innerHTML = `
+            <div class="w-full flex flex-col items-center gap-3">
+                <div class="${containerClass}" style="${containerStyle}">
+                    ${statsHtml}
+                    ${showTotal && layout !== 'minimalist' && activePlatforms.length > 1 ? `
+                    <div class="${layout === 'vertical' || layout === 'grid' ? 'pt-2 border-t w-full' : 'pl-4 border-l'} border-white/10 flex items-center gap-2">
+                        <span class="text-[9px] uppercase opacity-40 font-black tracking-widest">Total</span>
+                        <span class="font-black text-lg">56.6K</span>
+                    </div>
+                    ` : ''}
+                </div>
+                <span class="text-[9px] text-white/30 uppercase tracking-widest font-bold bg-black/50 px-3 py-1 rounded-full border border-white/5" data-i18n="* Números Fictícios para Preview">* Números Fictícios para Preview</span>
+            </div>
+        `;
+    } catch (err) {
+        console.error("Erro ao atualizar o preview de viewers:", err);
+    }
 }
 
 function renderPlatforms(filter = '') {
@@ -454,6 +690,9 @@ window.removePlatform = async (index) => {
 };
 
 const saveAndUpdate = async () => {
+    // Atualiza o preview IMEDIATAMENTE para feedback em tempo real
+    updatePreviewLayout();
+
     appConfig.overlay1 = {
         layout: elements.layoutSelect ? elements.layoutSelect.value : 'modern',
         customCSS: elements.customCss ? elements.customCss.value : '',
@@ -465,12 +704,18 @@ const saveAndUpdate = async () => {
         bgColor: elements.bgColor ? elements.bgColor.value : '#000000',
         bgOpacity: elements.bgOpacity ? elements.bgOpacity.value : 0,
         messageSpacing: elements.messageSpacing ? parseInt(elements.messageSpacing.value) : 10,
-        hideLeftBorder: elements.hideLeftBorder ? elements.hideLeftBorder.checked : false
+        hideLeftBorder: elements.hideLeftBorder ? elements.hideLeftBorder.checked : false,
+        maxMessages: elements.maxMessages ? parseInt(elements.maxMessages.value) : 5,
+        hideMessages: elements.hideMessages ? elements.hideMessages.checked : false,
+        hideTimeout: elements.hideTimeout ? parseInt(elements.hideTimeout.value) : 15
     };
+    if (elements.maxMessagesVal) elements.maxMessagesVal.innerText = `${appConfig.overlay1.maxMessages}`;
+    if (elements.hideTimeoutVal) elements.hideTimeoutVal.innerText = formatTime(appConfig.overlay1.hideTimeout);
+    if (elements.hideTimeoutPanel) elements.hideTimeoutPanel.classList.toggle('hidden', !appConfig.overlay1.hideMessages);
     if (elements.slowModeVal) elements.slowModeVal.innerText = `${appConfig.overlay1.slowMode}s`;
     if (elements.spacingVal) elements.spacingVal.innerText = `${appConfig.overlay1.messageSpacing}px`;
+    
     await api.saveConfig(appConfig);
-    updatePreviewLayout();
 };
 
 const saveAndUpdateMonitor = async () => {
@@ -492,6 +737,33 @@ const saveAndUpdateMonitor = async () => {
     await api.saveConfig(appConfig);
 };
 
+const saveAndUpdateViewers = async () => {
+    appConfig.viewersConfig = {
+        bgColor: elements.vBgColor ? elements.vBgColor.value : '#000000',
+        bgOpacity: elements.vBgOpacity ? parseInt(elements.vBgOpacity.value) : 85,
+        fontColor: elements.vFontColor ? elements.vFontColor.value : '#ffffff',
+        fontSize: elements.vFontSize ? parseInt(elements.vFontSize.value) : 18,
+        showTotal: elements.vShowTotal ? elements.vShowTotal.checked : true,
+        layout: elements.vLayoutSelect ? elements.vLayoutSelect.value : 'default',
+        iconStyle: elements.vIconStyle ? elements.vIconStyle.value : 'original',
+        interval: elements.vInterval ? parseInt(elements.vInterval.value) : 30,
+        spacing: elements.vSpacing ? parseInt(elements.vSpacing.value) : 20,
+        channels: {
+            youtube: { url: elements.vYtUrl?.value || '', enabled: elements.vYtEnabled?.checked === true },
+            shorts: { url: elements.vShortsUrl?.value || '', enabled: elements.vShortsEnabled?.checked === true },
+            twitch: { url: elements.vTwUrl?.value || '', enabled: elements.vTwEnabled?.checked === true },
+            kick: { url: elements.vKickUrl?.value || '', enabled: elements.vKickEnabled?.checked === true },
+            tiktok: { url: elements.vTtUrl?.value || '', enabled: elements.vTtEnabled?.checked === true }
+        }
+    };
+    if (elements.vBgOpacityVal) elements.vBgOpacityVal.innerText = `${appConfig.viewersConfig.bgOpacity}%`;
+    if (elements.vIntervalVal) elements.vIntervalVal.innerText = `${appConfig.viewersConfig.interval}s`;
+    if (elements.vSpacingVal) elements.vSpacingVal.innerText = `${appConfig.viewersConfig.spacing}px`;
+    
+    updateViewersPreview();
+    await api.saveConfig(appConfig);
+};
+
 // Bind Events - Overlay 1
 if (elements.layoutSelect) elements.layoutSelect.onchange = saveAndUpdate;
 if (elements.customCss) elements.customCss.oninput = saveAndUpdate;
@@ -504,6 +776,9 @@ if (elements.bgColor) elements.bgColor.oninput = saveAndUpdate;
 if (elements.bgOpacity) elements.bgOpacity.oninput = saveAndUpdate;
 if (elements.messageSpacing) elements.messageSpacing.oninput = saveAndUpdate;
 if (elements.hideLeftBorder) elements.hideLeftBorder.onchange = saveAndUpdate;
+if (elements.maxMessages) elements.maxMessages.oninput = saveAndUpdate;
+if (elements.hideMessages) elements.hideMessages.onchange = saveAndUpdate;
+if (elements.hideTimeout) elements.hideTimeout.oninput = saveAndUpdate;
 
 // Bind Events - Monitor (Overlay 2)
 if (elements.overlay2Enabled) {
@@ -547,8 +822,90 @@ if (elements.btnReset) {
         if (!confirm("Resetar todos os estilos para o padrão?")) return;
         appConfig.overlay1 = { layout: 'modern', animation: 'slide', showAvatars: true, cardColor: '#1e293b', cardOpacity: 85, bgColor: '#000000', bgOpacity: 0, slowMode: 1, customCSS: '' };
         appConfig.overlay2 = { layout: 'modern', animation: 'slide', showAvatars: true, cardColor: '#1e293b', cardOpacity: 85, bgColor: '#000000', bgOpacity: 85, slowMode: 1, customCSS: '' };
+        appConfig.viewersConfig = { fontColor: '#ffffff', fontSize: 18, showTotal: true, showIcons: true, bgColor: '#000000', bgOpacity: 85, spacing: 20 };
         await api.saveConfig(appConfig);
         await init();
+    };
+}
+
+// Lógica de Abas
+document.querySelectorAll('.sidebar-item').forEach(item => {
+    item.onclick = () => {
+        const tab = item.getAttribute('data-tab');
+        
+        // UI Sidebar
+        document.querySelectorAll('.sidebar-item').forEach(i => {
+            i.classList.remove('active', 'opacity-100');
+            i.classList.add('opacity-40', 'hover:bg-white/5');
+        });
+        item.classList.add('active', 'opacity-100');
+        item.classList.remove('opacity-40', 'hover:bg-white/5');
+
+        // UI Content
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+
+        // Troca os botões do header conforme a aba ativa
+        if (elements.chatCtrlBtns && elements.viewerCtrlBtns) {
+            if (tab === 'viewers') {
+                elements.chatCtrlBtns.classList.add('hidden');
+                elements.viewerCtrlBtns.classList.remove('hidden');
+            } else {
+                elements.chatCtrlBtns.classList.remove('hidden');
+                elements.viewerCtrlBtns.classList.add('hidden');
+            }
+        }
+
+        // Title
+        if (elements.tabTitle) {
+            const tabName = item.querySelector('div').innerText;
+            elements.tabTitle.setAttribute('data-i18n', tabName);
+            elements.tabTitle.innerText = tabName;
+            translateUI(appConfig.lang);
+        }
+    };
+});
+
+// Botões independentes do Contador de Views
+if (elements.btnStartViewers) {
+    elements.btnStartViewers.onclick = () => {
+        api.startViewers();
+        elements.btnStartViewers.classList.add('hidden');
+        elements.btnStopViewers.classList.remove('hidden');
+    };
+}
+if (elements.btnStopViewers) {
+    elements.btnStopViewers.onclick = () => {
+        api.stopViewers();
+        elements.btnStopViewers.classList.add('hidden');
+        elements.btnStartViewers.classList.remove('hidden');
+    };
+}
+
+// Bind Events - Viewers
+if (elements.vBgColor) elements.vBgColor.oninput = saveAndUpdateViewers;
+if (elements.vBgOpacity) elements.vBgOpacity.oninput = saveAndUpdateViewers;
+if (elements.vFontColor) elements.vFontColor.oninput = saveAndUpdateViewers;
+if (elements.vFontSize) elements.vFontSize.oninput = saveAndUpdateViewers;
+if (elements.vShowTotal) elements.vShowTotal.onchange = saveAndUpdateViewers;
+if (elements.vLayoutSelect) elements.vLayoutSelect.onchange = saveAndUpdateViewers;
+if (elements.vIconStyle) elements.vIconStyle.onchange = saveAndUpdateViewers;
+if (elements.vInterval) elements.vInterval.oninput = saveAndUpdateViewers;
+if (elements.vSpacing) elements.vSpacing.oninput = saveAndUpdateViewers;
+
+// Canais do Contador - Events
+[elements.vYtUrl, elements.vShortsUrl, elements.vTwUrl, elements.vKickUrl, elements.vTtUrl].forEach(el => {
+    if (el) el.oninput = saveAndUpdateViewers;
+});
+[elements.vYtEnabled, elements.vShortsEnabled, elements.vTwEnabled, elements.vKickEnabled, elements.vTtEnabled].forEach(el => {
+    if (el) el.onchange = saveAndUpdateViewers;
+});
+if (elements.vBtnCopy) {
+    elements.vBtnCopy.onclick = () => {
+        api.copyText(elements.vObsUrl.value);
+        const orig = elements.vBtnCopy.innerHTML;
+        elements.vBtnCopy.innerText = 'Copiado!';
+        setTimeout(() => elements.vBtnCopy.innerHTML = orig, 2000);
     };
 }
 
@@ -580,5 +937,14 @@ if (btnCopyPix) {
         setTimeout(() => btnCopyPix.innerText = orig, 2000);
     };
 }
+
+
+window.copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Copiado para a área de transferência!');
+    }).catch(err => {
+        console.error('Erro ao copiar: ', err);
+    });
+};
 
 init();

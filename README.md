@@ -1,6 +1,10 @@
-# 🌌 Chat Unifier Desktop
+# 🌌 Chat Unifier Desktop - Multichat & Multistream 🚀
 
 [Português](#português) | [English](#english)
+
+---
+
+O **Chat Unifier** é o mais completo **Unificador de Chat** e ferramenta **Multichat** 100% gratuita para streamers. Desenvolvido para facilitar a vida de quem faz **Multistream**, ele unifica as mensagens do **YouTube (Lives e Shorts), TikTok, Twitch e Kick** em um único feed elegante e profissional, sem burocracia de chaves de API.
 
 ---
 
@@ -8,26 +12,29 @@
 
 ## 🇧🇷 Português
 
-O **Chat Unifier** é uma ferramenta multichat  **100% gratuita** e poderosa para streamers. Ele unifica as mensagens do **YouTube (incluindo Shorts), Twitch e Kick** em um único feed elegante, sem a necessidade de chaves de API.
+O **Chat Unifier** é a solução definitiva para o seu **unificador de chat**. Ideal para quem busca praticidade e um visual premium para suas transmissões ao vivo.
 
-### ✨ Principais Recursos
-- **Unificação Total:** Suporte para YouTube (Lives e Shorts), TikTok, Twitch e Kick.
-- **100% Gratuito:** Todas as funcionalidades estão liberadas sem custos.
-- **Sistema de Overlay Duplo:** 
-    - **URL de Live:** Otimizada para o OBS com foco em estética premium.
-    - **URL de Monitoramento:** Uma segunda URL independente com visual diferente para você acompanhar o chat em outro monitor ou OBS.
-- **Scraping Local Inteligente:** Funciona via captura de DOM em janelas ocultas.
-- **Temas Customizáveis:** Moderno, Cyberpunk, Glassmorphism, Retro e mais.
-- **Modo Lento (Fila):** Controle o fluxo de mensagens para evitar poluição visual.
+### ✨ Principais Recursos (v1.2.0)
+- **Unificador de Chat Total:** Suporte nativo para YouTube (Lives e Shorts), TikTok, Twitch e Kick.
+- **Controle de Exibição:** Novo limitador de quantidade de mensagens e tempo de exibição (Auto-hide).
+- **Estabilidade TikTok:** Sistema inteligente que remove popups automaticamente para evitar que o chat trave.
+- **100% Gratuito:** Sem assinaturas ou recursos bloqueados.
+- **Overlay Duplo Profissional:** 
+    - **URL de Live:** Otimizada para o OBS com temas premium (Cyberpunk, Glassmorphism, Retro).
+    - **URL de Monitoramento:** Acompanhe o chat em uma janela separada ou em outro monitor.
+- **Scraping Local Seguro:** Captura mensagens localmente, garantindo máxima privacidade e agilidade.
 
 ### 🚀 Como Começar
-1. Baixe a versão mais recente em [Releases](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases).
+1. Baixe a versão estável v1.2.0 em [Releases](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases).
 2. Adicione os links dos seus canais.
 3. Clique em **"Iniciar Captura"**.
-4. Use a **URL de Live** no OBS e a **URL Monitor** para acompanhar as mensagens.
+4. Configure os limites de mensagens e use as URLs geradas no seu **OBS Studio** ou Streamlabs.
+
+**Keywords:** Multichat, Multistream, Unificador de Chat, Chat para Live, Twitch, YouTube Shorts, TikTok Live, Kick Chat.
 
 </div>
-<img width="1178" height="697" alt="br" src="https://github.com/user-attachments/assets/23b2040c-9400-473f-8abf-be63609826d7" />
+
+<img width="1178" height="697" alt="Chat Unifier Interface" src="https://github.com/user-attachments/assets/23b2040c-9400-473f-8abf-be63609826d7" />
 
 ---
 
@@ -35,26 +42,29 @@ O **Chat Unifier** é uma ferramenta multichat  **100% gratuita** e poderosa par
 
 ## 🇺🇸 English
 
-**Chat Unifier** is a **100% free** and powerful tool multichat for streamers. It unifies messages from **YouTube (including Shorts), TikTok, Twitch, and Kick** into a single, elegant feed, without the need for API keys.
+**Chat Unifier** is the ultimate **Multichat** and **Chat Unifier** tool for streamers. Designed for **Multistreaming**, it combines messages from **YouTube (Lives & Shorts), TikTok, Twitch, and Kick** into a single, elegant feed, with no API keys required.
 
-### ✨ Key Features
-- **Total Unification:** Support for YouTube (Lives and Shorts), Twitch, and Kick.
-- **100% Free:** All features are available at no cost.
-- **Dual Overlay System:**
-    - **Live URL:** Optimized for OBS with a focus on premium aesthetics.
-    - **Monitor URL:** A second independent URL with a different look for you to track the chat on another monitor.
-- **Smart Local Scraping:** Works via DOM capture in hidden windows.
-- **Customizable Themes:** Modern, Cyberpunk, Glassmorphism, Retro, and more.
-- **Slow Mode (Queue):** Control the message flow to prevent visual clutter.
+### ✨ Key Features (v1.2.0)
+- **Total Chat Unifier:** Native support for YouTube (Lives & Shorts), TikTok, Twitch, and Kick.
+- **Display Controls:** New message limit and auto-hide timeout features.
+- **TikTok Resilience:** Intelligent system that automatically clears popups to prevent chat stalls.
+- **100% Free:** No subscriptions or hidden fees.
+- **Dual Professional Overlay:**
+    - **Live URL:** Optimized for OBS with premium themes (Cyberpunk, Glassmorphism, Retro).
+    - **Monitor URL:** Track your chat in a separate window or on another monitor.
+- **Secure Local Scraping:** Captures messages locally, ensuring privacy and speed.
 
 ### 🚀 How to Get Started
-1. Download the latest version from [Releases](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases).
+1. Download the stable v1.2.0 from [Releases](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases).
 2. Add your channel links.
 3. Click **"Start Capture"**.
-4. Use the **Live URL** in OBS and the **Monitor URL** to track messages.
+4. Configure message limits and use the generated URLs in **OBS Studio** or Streamlabs.
+
+**Keywords:** Multichat, Multistream, Chat Unifier, Live Stream Chat, Twitch, YouTube Shorts, TikTok Live, Kick Chat.
 
 </div>
-<img width="1178" height="697" alt="en" src="https://github.com/user-attachments/assets/46ee9a7e-73f6-4fc7-9c34-bb411f0c514b" />
+
+<img width="1178" height="697" alt="Chat Unifier English Interface" src="https://github.com/user-attachments/assets/46ee9a7e-73f6-4fc7-9c34-bb411f0c514b" />
 
 ---
 

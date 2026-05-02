@@ -24,16 +24,48 @@ const defaultOverlay = (id) => ({
   slowMode: 1,
   messageSpacing: 10,
   hideLeftBorder: false,
+  maxMessages: 5,
+  hideMessages: false,
+  hideTimeout: 15,
   customCSS: ''
 });
+
+const defaultViewersConfig = () => ({
+  fontColor: '#ffffff',
+  fontSize: 18,
+  showTotal: true,
+  showIcons: true,
+  bgColor: '#000000',
+  bgOpacity: 85,
+  layout: 'default',
+  iconColor: '#ffffff',
+  iconOriginal: true,
+  interval: 30,
+  channels: {
+    youtube: { url: '', enabled: true },
+    shorts: { url: '', enabled: false },
+    twitch: { url: '', enabled: true },
+    kick: { url: '', enabled: true },
+    tiktok: { url: '', enabled: true }
+  }
+});
+
 
 let config = {
   platforms: [],
   port: 3000,
   overlay1: defaultOverlay('overlay1'),   // URL principal /chat
   overlay2: defaultOverlay('overlay2'),   // URL monitor /monitor
-  overlay2Enabled: false
+  overlay2Enabled: false,
+  viewersConfig: defaultViewersConfig(),
+  viewersEnabled: true
 };
+
+let viewerCounts = {}; // { platformType: count }
+let viewerScrapers = {}; // { platformKey: BrowserWindow }
+
+const globalProcessedIds = new Set();
+
 
 // Servidor Express e Socket.io
 const serverApp = express();
@@ -42,13 +74,9 @@ const io = new Server(server, { cors: { origin: "*" } });
 
 serverApp.use(express.static(path.join(__dirname, 'public/overlay')));
 
-serverApp.get('/chat', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/overlay/index.html'));
-});
-
-serverApp.get('/monitor', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/overlay/index.html'));
-});
+serverApp.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/overlay/index.html')));
+serverApp.get('/monitor', (req, res) => res.sendFile(path.join(__dirname, 'public/overlay/index.html')));
+serverApp.get('/viewers', (req, res) => res.sendFile(path.join(__dirname, 'public/viewers/index.html')));
 
 io.on('connection', (socket) => {
   // O cliente informa qual overlay é ao se conectar
@@ -56,6 +84,15 @@ io.on('connection', (socket) => {
     socket.join(room);
     if (room === 'overlay1') socket.emit('config-update', config.overlay1);
     if (room === 'overlay2') socket.emit('config-update', config.overlay2);
+    if (room === 'viewers') {
+      socket.emit('config-update', config.viewersConfig);
+      let total = 0;
+      Object.values(viewerCounts).forEach(c => {
+        const n = parseInt(String(c).replace(/[^0-9]/g, '')) || 0;
+        total += n;
+      });
+      socket.emit('viewers-update', { counts: viewerCounts, total });
+    }
   });
 });
 
@@ -103,12 +140,147 @@ async function loadConfig() {
         overlay2: { ...defaultOverlay('overlay2'), ...(saved.overlay2 || {}) },
         port: 3000
       };
-    } else {
-      fs.writeJsonSync(CONFIG_PATH, config);
     }
   } catch (err) {
     console.error("Erro ao carregar config:", err);
   }
+}
+
+function updateViewerScrapers() {
+  if (!config.viewersConfig || !config.viewersConfig.channels) return;
+  const vc = config.viewersConfig.channels;
+  
+  Object.entries(vc).forEach(([key, chan]) => {
+    const currentInterval = config.viewersConfig.interval || 30;
+    
+    if (chan.enabled && chan.url) {
+      // Reinicia apenas se a URL mudou
+      if (viewerScrapers[key] && viewerScrapers[key]._url !== chan.url) {
+        viewerScrapers[key].destroy();
+        delete viewerScrapers[key];
+      } else if (viewerScrapers[key] && viewerScrapers[key]._interval !== currentInterval) {
+        // Se a URL é a mesma, mas o intervalo mudou, apenas atualiza a variável na página
+        viewerScrapers[key]._interval = currentInterval;
+        viewerScrapers[key].webContents.executeJavaScript(`window._viewerInterval = ${currentInterval};`).catch(() => {});
+      }
+      
+      if (!viewerScrapers[key]) {
+        console.log(`[Viewers] Iniciando scraper para ${key}: ${chan.url} (Intervalo: ${currentInterval}s)`);
+        startViewerScraper(key, chan.url);
+      }
+    } else {
+      if (viewerScrapers[key]) {
+        console.log(`[Viewers] Parando scraper para ${key}`);
+        viewerScrapers[key].destroy();
+        delete viewerScrapers[key];
+      }
+    }
+  });
+  
+  // Atualiza imediatamente a UI (para refletir botões ativados/desativados na mesma hora)
+  broadcastViewerCounts();
+}
+
+function startViewerScraper(key, url) {
+  const win = new BrowserWindow({
+    show: true,
+    x: -10000,
+    y: -10000,
+    width: 800,
+    height: 800,
+    skipTaskbar: true,
+    frame: false,
+    focusable: false,
+    transparent: true,
+    webPreferences: {
+      preload: path.join(__dirname, 'scraper.js'),
+      contextIsolation: true,
+      nodeIntegration: false,
+      webSecurity: false,
+      backgroundThrottling: false
+    }
+  });
+
+  win.webContents.setAudioMuted(true);
+  win._url = url;
+  win._interval = config.viewersConfig.interval || 30;
+  
+  let targetUrl = url;
+  if (key === 'twitch' && !targetUrl.includes('twitch.tv')) {
+    targetUrl = `https://www.twitch.tv/${targetUrl}`;
+  } else if (key === 'shorts') {
+    if (!targetUrl.includes('youtube.com/shorts/')) {
+        const vid = targetUrl.match(/[?&]v=([^&#]+)/) || targetUrl.match(/v\/([^&#]+)/);
+        if (vid) targetUrl = `https://www.youtube.com/shorts/${vid[1]}`;
+    }
+  } else if (key === 'tiktok') {
+    if (!targetUrl.includes('tiktok.com')) {
+      targetUrl = `https://www.tiktok.com/${targetUrl.startsWith('@') ? targetUrl : '@' + targetUrl}/live`;
+    } else if (!targetUrl.endsWith('/live')) {
+      targetUrl = targetUrl.endsWith('/') ? targetUrl + 'live' : targetUrl + '/live';
+    }
+  } else if (key === 'kick' && !targetUrl.includes('kick.com')) {
+    targetUrl = `https://kick.com/${targetUrl}`;
+  }
+
+  // Adiciona a chave na URL para que o scraper saiba quem ele é sem depender de injeção assíncrona
+  const separator = targetUrl.includes('?') ? '&' : '?';
+  const urlWithKey = targetUrl + `${separator}unifier_platform=${key}&unifier_mode=viewer`;
+
+  win.loadURL(urlWithKey);
+  
+  win.webContents.on('console-message', (event, level, message, line, sourceId) => {
+    console.log(`[Scraper ${key}] ${message}`);
+  });
+  
+  win.webContents.on('did-finish-load', () => {
+    win.webContents.executeJavaScript(`window._platformKey = "${key}"; window._viewerInterval = ${win._interval};`).catch(e => console.log(`[Scraper ${key}] Erro ao injetar vars:`, e));
+
+  });
+
+  viewerScrapers[key] = win;
+}
+
+function broadcastViewerCounts() {
+    function parseViewerCount(str) {
+      if (!str) return 0;
+      let s = String(str).toUpperCase().trim();
+      
+      // Se tiver K ou M, trata como decimal (ponto ou vírgula vira ponto)
+      if (s.includes('K') || s.includes('M')) {
+          let multiplier = s.endsWith('K') ? 1000 : (s.endsWith('M') ? 1000000 : 1);
+          let numPart = s.replace(/[KM]/g, '').replace(',', '.');
+          return Math.floor((parseFloat(numPart) || 0) * multiplier);
+      }
+      
+      // Se não tiver K/M, trata pontos/vírgulas como separadores de milhar
+      // Ex: 1.100 -> 1100
+      const cleaned = s.replace(/[.,]/g, '').replace(/[^0-9]/g, '');
+      return parseInt(cleaned) || 0;
+    }
+
+    const counts = {};
+    let total = 0;
+    const vChannels = (config.viewersConfig && config.viewersConfig.channels) || {};
+    const isActive = Object.keys(viewerScrapers).length > 0;
+
+    Object.entries(viewerCounts).forEach(([key, count]) => {
+      // Normaliza chaves de Shorts para mostrar ícone certo
+      const displayKey = (key === 'youtube-shorts' || key === 'shorts') ? 'shorts' : key;
+      
+      // Verifica se o canal está habilitado no config
+      if (vChannels[displayKey]?.enabled) {
+        const numericCount = parseViewerCount(count);
+        counts[displayKey] = numericCount;
+        total += numericCount;
+      }
+    });
+
+    io.to('viewers').emit('viewers-update', { 
+      counts, 
+      total,
+      active: isActive
+    });
 }
 
 function createMainWindow() {
@@ -309,15 +481,7 @@ function startScraper(platform) {
     win.webContents.on('did-finish-load', switchToLiveChat);
   }
 
-  win.webContents.on('ipc-message', (event, channel, ...args) => {
-    if (channel === 'new-message') {
-      const msg = { ...args[0], platform: platform.type, color: platform.color };
-      // Envia para AMBOS os overlays
-      io.to('overlay1').emit('chat-message', msg);
-      io.to('overlay2').emit('chat-message', msg);
-      if (mainWindow) mainWindow.webContents.send('preview-message', msg);
-    }
-  });
+  // O tratamento de mensagens agora é global via ipcMain.on('new-message')
 }
 
 // API IPC
@@ -331,6 +495,7 @@ ipcMain.handle('save-config', (e, newConfig) => {
     // Envia config certa para cada room
     io.to('overlay1').emit('config-update', config.overlay1);
     io.to('overlay2').emit('config-update', config.overlay2);
+    io.to('viewers').emit('config-update', config.viewersConfig);
     return true;
   } catch (err) {
     console.error("Erro ao salvar:", err);
@@ -350,11 +515,75 @@ ipcMain.on('stop-all-scrapers', () => {
   Object.keys(scrapers).forEach(id => { scrapers[id].destroy(); delete scrapers[id]; });
 });
 
+// Controle INDEPENDENTE do contador de viewers
+ipcMain.on('start-viewer-scrapers', () => {
+  updateViewerScrapers();
+});
+ipcMain.on('stop-viewer-scrapers', () => {
+  Object.keys(viewerScrapers).forEach(key => {
+    viewerScrapers[key].destroy();
+    delete viewerScrapers[key];
+  });
+  viewerCounts = {};
+  broadcastViewerCounts();
+});
+
+ipcMain.on('viewer-count', (event, data) => {
+  const key = data.key || data.platform;
+  viewerCounts[key] = data.count;
+  console.log(`[IPC] Viewer Count recebido de ${key}: ${data.count}`);
+  broadcastViewerCounts();
+});
+
+
 ipcMain.on('copy-to-clipboard', (e, text) => { clipboard.writeText(text); });
 ipcMain.on('open-external', (e, url) => { require('electron').shell.openExternal(url); });
 
+// Listener Global para Mensagens (captura de qualquer janela, inclusive viewer scrapers)
+ipcMain.on('new-message', (event, msg) => {
+  if (msg.rawId) {
+    if (globalProcessedIds.has(msg.rawId)) return;
+    globalProcessedIds.add(msg.rawId);
+    const timeout = msg.isFallback ? 60 * 1000 : 30 * 60 * 1000;
+    setTimeout(() => globalProcessedIds.delete(msg.rawId), timeout);
+  }
+  
+  const platform = config.platforms.find(p => p.type === msg.platform) || { color: '#666' };
+  const finalMsg = {
+    ...msg,
+    color: platform.color,
+    timestamp: Date.now()
+  };
+  
+  // Remove campos internos antes de enviar
+  delete finalMsg.rawId;
+  delete finalMsg.isFallback;
+  
+  // Envia para overlays e preview
+  io.to('overlay1').emit('chat-message', finalMsg);
+  io.to('overlay2').emit('chat-message', finalMsg);
+  if (mainWindow) mainWindow.webContents.send('preview-message', finalMsg);
+});
+
+// Detecção de login do TikTok
+ipcMain.on('tiktok-login-required', (event) => {
+    // Abre a janela de login se já não houver uma aberta
+    const windows = BrowserWindow.getAllWindows();
+    const hasLoginWin = windows.some(w => w.getTitle().includes('Login TikTok'));
+    if (!hasLoginWin) {
+        console.log('[TikTok] Login necessário detectado. Abrindo janela...');
+        const win = new BrowserWindow({
+            width: 1000,
+            height: 800,
+            title: "Login TikTok - Chat Unifier",
+            autoHideMenuBar: true
+        });
+        win.loadURL('https://www.tiktok.com/login');
+    }
+});
+
 ipcMain.on('show-scraper-window', (e, id) => {
-  if (scrapers[id]) {
+  if (scrapers[id] && !scrapers[id].isDestroyed()) {
     scrapers[id].setPosition(100, 100);
     scrapers[id].show();
     scrapers[id].setSkipTaskbar(false);
@@ -395,6 +624,8 @@ if (!gotTheLock) {
     });
     createMainWindow();
     createTray();
+    // Scrapers de viewers são iniciados manualmente pelo usuário pelo botão "Iniciar Contador"
+    // updateViewerScrapers() removido do auto-start
   });
 
   app.on('window-all-closed', () => { 

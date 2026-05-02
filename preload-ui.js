@@ -12,5 +12,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   copyText: (text) => ipcRenderer.send('copy-to-clipboard', text),
   openExternal: (url) => ipcRenderer.send('open-external', url),
   showScraper: (id) => ipcRenderer.send('show-scraper-window', id),
+  startViewers: () => ipcRenderer.send('start-viewer-scrapers'),
+  stopViewers: () => ipcRenderer.send('stop-viewer-scrapers'),
   openLoginWindow: (platform) => ipcRenderer.send('open-login-window', platform)
 });

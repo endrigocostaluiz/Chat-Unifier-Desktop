@@ -51,35 +51,110 @@
         .slide-in { animation: previewSlideIn 0.3s ease-out; }
         .fade-in { animation: previewFadeIn 0.5s ease-out; }
         .bounce-in { animation: previewBounceIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .out-animation { animation: previewFadeOut 0.5s ease-in forwards !important; }
+
+        .label {
+            text-transform: uppercase;
+            opacity: 0.5;
+            letter-spacing: 0.1em;
+            font-weight: 800;
+        }
         @keyframes previewSlideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
         @keyframes previewFadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes previewBounceIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        @keyframes previewFadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+
+        /* Sidebar Fixes */
+        .sidebar-item.active { background: none !important; opacity: 1 !important; cursor: default; }
+        .sidebar-item.active svg { color: #10b981; }
     </style>
+    <style id="preview-custom-css"></style>
 </head>
 <body class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-20 border-r border-white/5 flex flex-col items-center py-8 bg-[#0a0a0a] z-20 transition-all duration-300">
+        <div class="mb-12 group relative">
+            <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 ring-4 ring-emerald-500/10">
+                <span class="text-black font-black text-sm">CU</span>
+            </div>
+            <div class="absolute left-16 top-3 bg-emerald-500 text-black text-[10px] font-black px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+                CHAT UNIFIER
+            </div>
+        </div>
+        
+        <nav class="flex-1 space-y-6">
+            <div class="sidebar-item active group relative flex items-center justify-center w-10 h-10 rounded-xl cursor-pointer transition-all" data-tab="chat">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-square"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                <div class="absolute left-14 bg-[#161616] border border-white/10 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
+                    Chat Unificado
+                </div>
+            </div>
+            <div class="sidebar-item hidden group relative flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/5 cursor-pointer transition-all opacity-40 hover:opacity-100" data-tab="viewers">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                <div class="absolute left-14 bg-[#161616] border border-white/10 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
+                    Contador de Views
+                </div>
+            </div>
+        </nav>
+
+        <div class="pt-6 border-t border-white/5 flex flex-col items-center gap-4">
+            <!-- Seletor de Idioma -->
+            <div class="flex flex-col gap-1.5 bg-white/5 p-1 rounded-xl border border-white/5">
+                <button id="lang-pt" class="w-8 h-8 flex items-center justify-center text-[10px] font-black rounded-lg transition-all bg-emerald-500 text-black">PT</button>
+                <button id="lang-en" class="w-8 h-8 flex items-center justify-center text-[10px] font-black rounded-lg transition-all text-white/20 hover:text-white hover:bg-white/5">EN</button>
+            </div>
+
+            <button id="btn-donate" class="group relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 hover:bg-emerald-500 transition text-white/60 hover:text-black shadow-lg hover:shadow-emerald-500/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-coffee"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" x2="6" y1="2" y2="4"/><line x1="10" x2="10" y1="2" y2="4"/><line x1="14" x2="14" y1="2" y2="4"/></svg>
+                <div class="absolute left-14 bg-[#161616] border border-white/10 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl" data-i18n="Apoiar Projeto">
+                    Apoiar Projeto
+                </div>
+            </button>
+            <span class="text-[9px] font-black text-white/10 mt-2">v1.2.0</span>
+        </div>
+    </aside>
+
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden">
+    <main class="flex-1 flex flex-col overflow-hidden bg-[#0a0a0a]">
         <!-- Top Bar -->
         <header class="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0a]/50 backdrop-blur-md z-10">
             <div class="flex items-center gap-4">
-                <div class="w-8 h-8 bg-emerald-500 rounded-lg flex items-center justify-center">
-                    <span class="text-black font-black text-xs">CU</span>
-                </div>
-                <h1 class="text-lg font-bold tracking-tight">Chat Unifier</h1>
+                <h2 id="tab-title" class="text-lg font-bold tracking-tight">Chat Unificado</h2>
             </div>
             
             <div class="flex items-center gap-4 relative">
                 <input type="text" id="search-channels" placeholder="Pesquisar canais..." class="w-96 bg-[#161616] border border-white/5 rounded-xl py-2 px-10 text-sm focus:outline-none focus:border-emerald-500/50">
                 <svg class="absolute left-3 top-2.5 text-white/20" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
             </div>
-            <div class="flex items-center gap-4">
-                <button id="btn-start" class="emerald-btn px-6 py-2 rounded-xl text-sm transition shadow-lg shadow-emerald-500/10">Iniciar Captura</button>
-                <button id="btn-stop" class="hidden bg-red-500/10 text-red-500 border border-red-500/20 px-6 py-2 rounded-xl text-sm font-bold transition">Parar Captura</button>
+            <div class="flex items-center gap-3">
+                <!-- Botões do Chat (aparecem na aba de chat) -->
+                <div id="chat-ctrl-btns" class="flex items-center gap-3">
+                    <button id="btn-start" class="emerald-btn px-5 py-2 rounded-xl text-sm transition shadow-lg shadow-emerald-500/10 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Iniciar Chat
+                    </button>
+                    <button id="btn-stop" class="hidden bg-red-500/10 text-red-500 border border-red-500/20 px-5 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+                        Parar Chat
+                    </button>
+                </div>
+                <!-- Botões do Contador (aparecem na aba de viewers) -->
+                <div id="viewer-ctrl-btns" class="hidden flex items-center gap-3">
+                    <button id="btn-start-viewers" class="emerald-btn px-5 py-2 rounded-xl text-sm transition shadow-lg shadow-emerald-500/10 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                        Iniciar Contador
+                    </button>
+                    <button id="btn-stop-viewers" class="hidden bg-red-500/10 text-red-500 border border-red-500/20 px-5 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+                        Parar Contador
+                    </button>
+                </div>
             </div>
         </header>
 
         <div class="flex-1 overflow-y-auto p-8">
-            <div class="flex gap-8 animate-in fade-in slide-in-from-left-4 duration-500">
+            <!-- ABA: Chat Unificado -->
+            <div id="tab-chat" class="tab-content flex gap-8 animate-in fade-in slide-in-from-left-4 duration-500">
                 <!-- Seção de Canais -->
                 <section class="w-[350px] flex-none space-y-6">
                     <div class="flex justify-between items-center">
@@ -164,7 +239,34 @@
                                         </div>
                                         <input type="range" id="message-spacing" min="0" max="50" value="10" class="w-full accent-emerald-500">
                                     </div>
-                                    <div class="flex items-center justify-between">
+
+                                    <div class="pt-2 border-t border-white/5 space-y-4">
+                                        <div>
+                                            <div class="flex justify-between mb-1.5">
+                                                <label class="block text-[10px] opacity-40 uppercase">Máximo de Mensagens</label>
+                                                <span id="max-messages-val" class="text-[10px] font-mono">5</span>
+                                            </div>
+                                            <input type="range" id="max-messages" min="1" max="50" value="5" class="w-full accent-emerald-500">
+                                        </div>
+                                        
+                                        <div class="flex items-center justify-between">
+                                            <label class="text-[10px] opacity-60 uppercase">Auto-ocultar Mensagens</label>
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" id="hide-messages" class="sr-only peer">
+                                                <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                            </label>
+                                        </div>
+
+                                        <div id="hide-timeout-panel" class="hidden">
+                                            <div class="flex justify-between mb-1.5">
+                                                <label class="block text-[10px] opacity-40 uppercase">Tempo de Exibição</label>
+                                                <span id="hide-timeout-val" class="text-[10px] font-mono">15s</span>
+                                            </div>
+                                            <input type="range" id="hide-timeout" min="0" max="300" value="15" class="w-full accent-emerald-500">
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center justify-between pt-2 border-t border-white/5">
                                         <label class="text-[10px] opacity-60 uppercase">Ocultar Borda Lateral</label>
                                         <label class="relative inline-flex items-center cursor-pointer">
                                             <input type="checkbox" id="hide-left-border" class="sr-only peer">
@@ -313,15 +415,8 @@
                             </div>
 
                             <footer class="pt-4 pb-8 px-2 flex flex-col items-center gap-2">
-                                <!-- Seletor de Idioma -->
-                                <div class="flex gap-2 mb-2 bg-[#0a0a0a] p-1 rounded-lg border border-white/5">
-                                    <button id="lang-pt" class="text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-md transition-all bg-emerald-500/20 text-emerald-500">PT-BR</button>
-                                    <button id="lang-en" class="text-[9px] font-black tracking-widest uppercase px-3 py-1 rounded-md transition-all text-white/30 hover:bg-white/5 hover:text-white">EN</button>
-                                </div>
-
-                                <button id="btn-donate" class="text-[9px] bg-emerald-500/10 hover:bg-emerald-500 text-emerald-500 hover:text-black px-4 py-1.5 rounded-full font-black uppercase tracking-widest transition-all duration-300 border border-emerald-500/20" data-i18n="donateBtn">Apoie o Projeto (PIX)</button>
                                 <div class="opacity-30 hover:opacity-100 transition-all duration-300 flex flex-col items-center gap-1 cursor-default group">
-                                    <p class="text-[9px] font-black tracking-[0.2em] uppercase group-hover:text-emerald-400 transition-colors">Chat Unifier v1.1.0</p>
+                                    <p class="text-[9px] font-black tracking-[0.2em] uppercase group-hover:text-emerald-400 transition-colors">Chat Unifier v1.2.0</p>
                                     <p class="text-[8px] font-medium tracking-wider group-hover:text-white/80 transition-colors"><span data-i18n="developedBy">Desenvolvido por</span> <span class="text-emerald-500 font-bold group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.8)] transition-all">Endrigo</span></p>
                                 </div>
                             </footer>
@@ -339,6 +434,194 @@
                         <!-- Mensagens de preview aparecerão aqui -->
                     </div>
                 </section>
+            </div>
+
+            <!-- ABA: Contador de Views -->
+            <div id="tab-viewers" class="tab-content hidden animate-in fade-in slide-in-from-left-4 duration-500">
+                <div class="flex gap-8 items-start">
+                    <!-- Coluna 1: Canais e Configurações de Captura (Fixo em 368px) -->
+                    <section class="w-[368px] flex-none space-y-6">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-sm font-bold uppercase tracking-widest text-white/40" data-i18n="Canais do Contador">Canais do Contador</h2>
+                            <span class="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-1 rounded font-black">LIVE</span>
+                        </div>
+
+                        <div class="space-y-3">
+                            <!-- YouTube -->
+                            <div class="card p-3 rounded-2xl flex items-center gap-4 border border-white/5 bg-white/[0.02]">
+                                <div class="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center flex-none">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" class="w-5 h-5">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <label class="block text-[10px] font-black text-white/20 uppercase mb-1">YouTube Live</label>
+                                    <input type="text" id="v-yt-url" placeholder="URL da Live ou Canal" class="w-full bg-transparent text-sm focus:outline-none placeholder:text-white/10">
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="v-yt-enabled" checked class="sr-only peer">
+                                    <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+
+                            <!-- YouTube Shorts -->
+                            <div class="card p-3 rounded-2xl flex items-center gap-4 border border-white/5 bg-white/[0.02]">
+                                <div class="w-10 h-10 rounded-xl bg-red-600/10 flex items-center justify-center flex-none">
+                                    <img src="https://cdn.simpleicons.org/youtubeshorts/FF0000" class="w-5 h-5">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <label class="block text-[10px] font-black text-white/20 uppercase mb-1">YouTube Shorts</label>
+                                    <input type="text" id="v-shorts-url" placeholder="URL do Shorts" class="w-full bg-transparent text-sm focus:outline-none placeholder:text-white/10">
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="v-shorts-enabled" class="sr-only peer">
+                                    <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+
+                            <!-- Twitch -->
+                            <div class="card p-3 rounded-2xl flex items-center gap-4 border border-white/5 bg-white/[0.02]">
+                                <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center flex-none">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968819.png" class="w-5 h-5">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <label class="block text-[10px] font-black text-white/20 uppercase mb-1">Twitch</label>
+                                    <input type="text" id="v-tw-url" placeholder="Nome do Canal" class="w-full bg-transparent text-sm focus:outline-none placeholder:text-white/10">
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="v-tw-enabled" checked class="sr-only peer">
+                                    <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+
+                            <!-- Kick -->
+                            <div class="card p-3 rounded-2xl flex items-center gap-4 border border-white/5 bg-white/[0.02]">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-none">
+                                    <img src="https://cdn.simpleicons.org/kick/53FC18" class="w-5 h-5">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <label class="block text-[10px] font-black text-white/20 uppercase mb-1">Kick</label>
+                                    <input type="text" id="v-kick-url" placeholder="Nome do Canal" class="w-full bg-transparent text-sm focus:outline-none placeholder:text-white/10">
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="v-kick-enabled" checked class="sr-only peer">
+                                    <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+
+                            <!-- TikTok -->
+                            <div class="card p-3 rounded-2xl flex items-center gap-4 border border-white/5 bg-white/[0.02]">
+                                <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center flex-none">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/3046/3046121.png" class="w-5 h-5">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <label class="block text-[10px] font-black text-white/20 uppercase mb-1">TikTok</label>
+                                    <input type="text" id="v-tt-url" placeholder="@usuario" class="w-full bg-transparent text-sm focus:outline-none placeholder:text-white/10">
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="v-tt-enabled" checked class="sr-only peer">
+                                    <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="card p-6 rounded-3xl border border-white/5 bg-white/[0.02] space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-xs font-black uppercase text-white/60 tracking-widest" data-i18n="Intervalo de Verificação">Intervalo de Verificação</h3>
+                                <span id="v-interval-val" class="text-xs font-black text-emerald-500">30s</span>
+                            </div>
+                            <input type="range" id="v-interval" min="10" max="300" step="10" value="30" class="w-full accent-emerald-500 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                            <p class="text-[10px] text-white/20 leading-relaxed italic">
+                                * Tempo entre cada atualização dos números. Intervalos menores consomem mais CPU.
+                            </p>
+                        </div>
+
+                        <div class="card p-6 rounded-3xl border border-white/5 bg-white/[0.02] space-y-4">
+                            <label class="block text-xs text-white/40 mb-2 uppercase font-black tracking-wider">URL do Browser Source (OBS)</label>
+                            <div class="flex gap-2">
+                                <div class="flex-1 bg-black/40 rounded-xl px-4 py-3 border border-white/5 font-mono text-xs text-emerald-500/80 break-all select-all">
+                                    http://localhost:3000/viewers
+                                </div>
+                                <button onclick="copyToClipboard('http://localhost:3000/viewers')" class="bg-emerald-500 hover:bg-emerald-600 text-black font-bold px-4 rounded-xl transition-all flex items-center gap-2 text-xs">
+                                    <span data-i18n="copy">Copiar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Coluna 2: Preview e Estilos -->
+                    <section class="flex-1 space-y-6">
+                        <div class="space-y-4">
+                            <h2 class="text-sm font-bold uppercase tracking-widest text-white/40">Preview em Tempo Real</h2>
+                            <div id="v-preview-container" class="h-[200px] card rounded-3xl overflow-hidden flex items-center justify-center bg-[#0a0a0a] border border-white/5 relative">
+                                <div id="v-preview-content" class="relative z-10 w-full flex justify-center"></div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <h2 class="text-sm font-bold uppercase tracking-widest text-white/40">Estilo e Layout</h2>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="card p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                                    <label class="block text-[10px] text-white/40 mb-2 uppercase font-black" data-i18n="Layout do Contador">Layout do Contador</label>
+                                    <select id="v-layout-select" class="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500">
+                                        <option value="default">Padrão (Horizontal)</option>
+                                        <option value="vertical">Lista Vertical</option>
+                                        <option value="grid">Grid 2x2</option>
+                                        <option value="minimalist">Minimalista</option>
+                                    </select>
+                                </div>
+
+                                <div class="card p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                                    <label class="block text-[10px] text-white/40 mb-2 uppercase font-black" data-i18n="Espaçamento">Espaçamento</label>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-[10px] text-white/20 uppercase">Gap</span>
+                                        <span id="v-spacing-val" class="text-[10px] font-bold text-emerald-500">20px</span>
+                                    </div>
+                                    <input type="range" id="v-spacing" min="0" max="100" value="20" class="w-full accent-emerald-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                            </div>
+
+                            <div class="card p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                                <label class="block text-[10px] text-white/40 mb-2 uppercase font-black" data-i18n="Estilo dos Ícones">Estilo dos Ícones</label>
+                                <select id="v-icon-style" class="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500">
+                                    <option value="original">Cores Originais</option>
+                                    <option value="white">Branco</option>
+                                    <option value="black">Preto</option>
+                                </select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="card p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                                    <label class="block text-[10px] text-white/40 mb-2 uppercase font-black" data-i18n="Cor do Fundo">Cor do Fundo</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" id="v-bg-color" value="#000000" class="w-full h-10 rounded-lg bg-transparent border-none cursor-pointer">
+                                    </div>
+                                </div>
+                                <div class="card p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                                    <label class="block text-[10px] text-white/40 mb-2 uppercase font-black" data-i18n="Cor do Texto">Cor do Texto</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" id="v-font-color" value="#ffffff" class="w-full h-10 rounded-lg bg-transparent border-none cursor-pointer">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="card p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-4">
+                                <div class="flex justify-between">
+                                    <label class="text-[10px] text-white/40 uppercase font-black" data-i18n="Opacidade do Fundo">Opacidade do Fundo</label>
+                                    <span id="v-bg-opacity-val" class="text-xs font-bold text-emerald-500">85%</span>
+                                </div>
+                                <input type="range" id="v-bg-opacity" min="0" max="100" value="85" class="w-full accent-emerald-500 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <div class="card p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+                                <label class="text-[10px] text-white/40 uppercase font-black" data-i18n="Mostrar Total">Mostrar Total</label>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="v-show-total" checked class="sr-only peer">
+                                    <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </section>
+                </div>
             </div>
         </div>
     </main>
