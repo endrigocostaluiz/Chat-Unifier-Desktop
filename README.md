@@ -14,7 +14,7 @@ O **Chat Unifier** é o mais completo **Unificador de Chat** e ferramenta **Mult
 
 O **Chat Unifier** é a solução definitiva para o seu **unificador de chat**. Ideal para quem busca praticidade e um visual premium para suas transmissões ao vivo.
 
-### ✨ Principais Recursos (v1.2.0)
+### ✨ Principais Recursos (v1.2.1)
 - **Unificador de Chat Total:** Suporte nativo para YouTube (Lives e Shorts), TikTok, Twitch e Kick.
 - **Controle de Exibição:** Novo limitador de quantidade de mensagens e tempo de exibição (Auto-hide).
 - **Estabilidade TikTok:** Sistema inteligente que remove popups automaticamente para evitar que o chat trave.
@@ -25,7 +25,7 @@ O **Chat Unifier** é a solução definitiva para o seu **unificador de chat**. 
 - **Scraping Local Seguro:** Captura mensagens localmente, garantindo máxima privacidade e agilidade.
 
 ### 🚀 Como Começar
-1. Baixe a versão estável v1.2.0 em [Releases](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases).
+1. Baixe a versão estável v1.2.1 em [Releases](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases).
 2. Adicione os links dos seus canais.
 3. Clique em **"Iniciar Captura"**.
 4. Configure os limites de mensagens e use as URLs geradas no seu **OBS Studio** ou Streamlabs.
@@ -45,7 +45,7 @@ O **Chat Unifier** é a solução definitiva para o seu **unificador de chat**. 
 
 **Chat Unifier** is the ultimate **Multichat** and **Chat Unifier** tool for streamers. Designed for **Multistreaming**, it combines messages from **YouTube (Lives & Shorts), TikTok, Twitch, and Kick** into a single, elegant feed, with no API keys required.
 
-### ✨ Key Features (v1.2.0)
+### ✨ Key Features (v1.2.1)
 - **Total Chat Unifier:** Native support for YouTube (Lives & Shorts), TikTok, Twitch, and Kick.
 - **Display Controls:** New message limit and auto-hide timeout features.
 - **TikTok Resilience:** Intelligent system that automatically clears popups to prevent chat stalls.
@@ -56,7 +56,7 @@ O **Chat Unifier** é a solução definitiva para o seu **unificador de chat**. 
 - **Secure Local Scraping:** Captures messages locally, ensuring privacy and speed.
 
 ### 🚀 How to Get Started
-1. Download the stable v1.2.0 from [Releases](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases).
+1. Download the stable v1.2.1 from [Releases](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases).
 2. Add your channel links.
 3. Click **"Start Capture"**.
 4. Configure message limits and use the generated URLs in **OBS Studio** or Streamlabs.
