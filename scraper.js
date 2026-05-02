@@ -170,16 +170,29 @@ function initChatObserver() {
 initChatObserver();
 
 // ─── MONITOR DE ESPECTADORES ───────────────────────────
+// ─── MONITOR DE ESPECTADORES ───────────────────────────
 const fetchViewers = async () => {
   let count = '0';
   let platform = '';
   try {
+    if (window.location.href.includes('tiktok.com')) {
+        console.log("[Scraper tiktok] Iniciando ciclo de atualização...");
+    }
     const urlParams = new URLSearchParams(window.location.search);
     const unifierKey = urlParams.get('unifier_platform');
+    
+    // Função auxiliar para extrair apenas o número e sufixos K/M
+    const extractCount = (text) => {
+        if (!text) return null;
+        // Regex para capturar padrões como "1.2K", "500", "1,5M", "10.000"
+        const match = text.match(/(\d+[.,]?\d*[KkMm]?)/);
+        return match ? match[1] : null;
+    };
+
     if (window.location.href.includes('twitch.tv')) {
       platform = 'twitch';
       const m = window.location.pathname.match(/\/popout\/([^/]+)\/chat/) || window.location.pathname.match(/^\/([^/]+)/);
-      if (m && m[1] && !['directory', 'search', 'p', 'settings'].includes(m[1].toLowerCase())) {
+      if (m && m[1] && !['directory', 'search', 'p', 'settings', 'moderator'].includes(m[1].toLowerCase())) {
         try {
           const res = await fetch('https://gql.twitch.tv/gql', {
             method: 'POST',
@@ -190,15 +203,20 @@ const fetchViewers = async () => {
           if (json?.data?.user?.stream) count = String(json.data.user.stream.viewersCount);
         } catch(e) {}
       }
-      if (!count || count === '0') {
+      // Fallback apenas se o GQL falhar e não for popout (onde o DOM não tem o contador)
+      if ((!count || count === '0') && !window.location.href.includes('/popout/')) {
         const viewerEl = document.querySelector('p[data-a-target*="count"], strong[data-a-target="viewer-count"], .channel-viewers-count');
-        if (viewerEl) count = viewerEl.innerText.replace(/[^0-9KkMm.,]/g, '');
+        if (viewerEl) count = extractCount(viewerEl.innerText);
       }
     } else if (window.location.href.includes('youtube.com')) {
-      platform = 'youtube';
+      // Se a URL contém /shorts/ ou a chave é 'shorts', define como shorts
+      const isShortsPage = window.location.href.includes('/shorts/');
+      platform = (isShortsPage || unifierKey === 'shorts') ? 'shorts' : 'youtube';
+      
       let v = urlParams.get('v');
       if (!v) { const pathMatch = window.location.pathname.match(/\/(live|shorts)\/([^/]+)/); if (pathMatch) v = pathMatch[2]; }
-      if (v) {
+      
+      if (v && !isShortsPage) {
         try {
           const res = await fetch('https://www.youtube.com/youtubei/v1/updated_metadata?prettyPrint=false', {
             method: 'POST',
@@ -210,23 +228,22 @@ const fetchViewers = async () => {
           actions.forEach(a => {
             const renderer = a.updateViewershipAction?.viewCount?.videoViewCountRenderer;
             if (renderer?.originalViewCount) count = renderer.originalViewCount;
-            else if (renderer?.viewCount?.simpleText) count = renderer.viewCount.simpleText.replace(/[^0-9]/g, '');
+            else if (renderer?.viewCount?.simpleText) count = extractCount(renderer.viewCount.simpleText);
           });
         } catch(e) {}
       }
+      
       if (!count || count === '0') {
-        const el = document.querySelector('.viewers-count, #view-count, span[dir="auto"], .ytd-video-view-count-renderer, yt-formatted-string.ytd-video-view-count-renderer');
-        if (el) {
-           const parts = el.innerText.split(' ');
-           count = parts[0].replace(/[^0-9KkMm.,]/g, '');
-        }
+        const el = document.querySelector('.viewers-count, #view-count, span[dir="auto"], .ytd-video-view-count-renderer, yt-formatted-string.ytd-video-view-count-renderer, [aria-label*="viewers"], [aria-label*="espectadores"]');
+        if (el) count = extractCount(el.innerText || el.getAttribute('aria-label'));
       }
     } else if (window.location.href.includes('kick.com')) {
       platform = 'kick';
       const m = window.location.pathname.match(/^\/([^/]+)/);
       if (m && m[1] && !['categories', 'video', 'search'].includes(m[1].toLowerCase())) {
         const el = document.querySelector('[class*="viewer-count"], [data-testid="viewer-count"], .viewers-count, [class*="viewerCount"], [class*="channel-viewer-count"]');
-        if (el) count = el.innerText.replace(/[^0-9KkMm.,]/g, '');
+        if (el) count = extractCount(el.innerText);
+        
         if (!count || count === '0') {
           try {
             const res = await fetch(`https://kick.com/api/v2/channels/${m[1].split('?')[0]}`);
@@ -236,39 +253,88 @@ const fetchViewers = async () => {
       }
     } else if (window.location.href.includes('tiktok.com')) {
       platform = 'tiktok';
-      // Procura por múltiplos seletores de contador de forma mais específica
-      const sels = [
-        '[data-e2e="live-viewer-count"]',
-        'div[class*="ViewerCount"] span',
-        'span[class*="Count-"]',
-        '.live-viewer-count',
-        'div[class*="ChatLine"] span[class*="Count"]'
-      ];
-      for (const s of sels) {
-        const el = document.querySelector(s);
-        if (el && el.innerText && el.offsetParent !== null) {
-           const txt = el.innerText.replace(/[^0-9KkMm.,]/g, '');
-           if (txt && txt !== '0') { count = txt; break; }
-        }
+      
+      const jaRecarregou = sessionStorage.getItem('_tt_reloaded') === '1';
+      
+      if (!jaRecarregou) {
+        // PASSO 1: Recarrega a página para garantir dados frescos do servidor
+        console.log('[Scraper tiktok] Recarregando para dados atualizados...');
+        sessionStorage.setItem('_tt_reloaded', '1');
+        location.reload();
+        await new Promise(r => setTimeout(r, 999999)); // Aguarda o reload acontecer
       }
       
-      if (!count || count === '0') {
-        const spans = document.querySelectorAll('span, div');
-        for (const s of spans) {
-          const txt = s.innerText || '';
-          if ((txt.includes('espectadores') || txt.includes('viewers')) && s.children.length === 0) {
-             const val = txt.replace(/[^0-9KkMm.,]/g, '');
-             if (val) { count = val; break; }
+      // PASSO 2: Página fresca carregada — captura o contador
+      sessionStorage.removeItem('_tt_reloaded'); // Reseta para o próximo ciclo recarregar
+      console.log('[Scraper tiktok] Página fresca. Capturando viewers...');
+      
+      count = await new Promise((resolve) => {
+        let attempts = 0;
+        const poll = setInterval(() => {
+          attempts++;
+          try {
+            let el = document.querySelector('[data-e2e="live-people-count"]');
+            if (!el) el = document.querySelector('.P4-Regular.text-UIText3');
+
+            let found = null;
+            if (el) {
+              const spans = el.querySelectorAll('span.inline-flex, span[class*="w-"]');
+              if (spans.length > 0) {
+                const digits = Array.from(spans).map(s => s.innerText.trim()).filter(t => /^\d+$/.test(t)).join('');
+                if (digits) found = digits;
+              }
+              if (!found) {
+                const val = (el.innerText || '').trim().toUpperCase().replace(/[^\d.KM]/g, '');
+                if (val.includes('K')) found = String(Math.floor(parseFloat(val) * 1000));
+                else if (val.includes('M')) found = String(Math.floor(parseFloat(val) * 1000000));
+                else found = val.replace(/\D/g, '');
+              }
+            }
+
+            if (found && found !== '0' && found.length > 0) {
+              console.log(`[Scraper tiktok] ✓ Viewers: ${found} (tentativa ${attempts})`);
+              clearInterval(poll);
+              resolve(found);
+            }
+          } catch(e) { /* silencioso */ }
+
+          if (attempts >= 20) {
+            console.log('[Scraper tiktok] Timeout. Próximo ciclo tentará novamente...');
+            clearInterval(poll);
+            resolve(null);
           }
-        }
-      }
+        }, 1000);
+      });
     }
-    if (platform) {
-      const key = unifierKey || window._platformKey || platform;
+
+    const key = unifierKey || window._platformKey || platform;
+    // Força a plataforma a ser igual à chave para respeitar o ícone do campo de cadastro
+    platform = key;
+    
+    // Proteção Anti-Flicker: Se o valor for 0 mas já tivemos um valor alto antes, ignora o 0 por 3 ciclos
+    if ((!count || count === '0')) {
+        window._zeroCountAttempts = (window._zeroCountAttempts || 0) + 1;
+        if (window._zeroCountAttempts < 3 && window._lastValidCount) {
+            count = window._lastValidCount;
+        }
+    } else {
+        window._zeroCountAttempts = 0;
+        window._lastValidCount = count;
+    }
+
+    if (platform && count && count !== '0') {
       ipcRenderer.send('viewer-count', { platform, key, count });
     }
-  } catch(e) {}
+  } catch(e) {
+    console.error(`[Scraper ${window._platformKey || 'unknown'}] Erro na captura:`, e);
+  }
 };
 
 const runLoop = () => { fetchViewers(); setTimeout(runLoop, (window._viewerInterval || 30) * 1000); };
-setTimeout(runLoop, 5000);
+// Tenta iniciar no milésimo zero assim que o corpo da página estiver disponível
+const checkBody = setInterval(() => {
+    if (document.body) {
+        clearInterval(checkBody);
+        setTimeout(runLoop, 500);
+    }
+}, 100);

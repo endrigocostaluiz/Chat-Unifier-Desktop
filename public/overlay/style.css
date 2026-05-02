@@ -63,6 +63,7 @@ body.is-monitor::-webkit-scrollbar-thumb:hover {
 .message-item.twitch { border-left-color: #9146ff; }
 .message-item.youtube { border-left-color: #ff0000; }
 .message-item.kick { border-left-color: #53fc18; }
+.message-item.tiktok { border-left-color: #ff0050; }
 
 /* Ocultar bordas se solicitado */
 body.hide-borders .message-item {

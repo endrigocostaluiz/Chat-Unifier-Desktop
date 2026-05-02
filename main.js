@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, session, clipboard, Tray, Menu } = require(
 const path = require('path');
 const fs = require('fs-extra');
 const http = require('http');
+const https = require('https');
 const express = require('express');
 const { Server } = require('socket.io');
 
@@ -58,11 +59,14 @@ let config = {
   overlay2: defaultOverlay('overlay2'),   // URL monitor /monitor
   overlay2Enabled: false,
   viewersConfig: defaultViewersConfig(),
-  viewersEnabled: true
+  viewersEnabled: true,
+  lastIgnoredVersion: ''
 };
 
 let viewerCounts = {}; // { platformType: count }
+const scraperRegistry = new Map(); // webContents.id -> key (ex: 'shorts', 'youtube')
 let viewerScrapers = {}; // { platformKey: BrowserWindow }
+let viewerCounterStarted = false; // Flag mestre do contador
 
 const globalProcessedIds = new Set();
 
@@ -77,6 +81,7 @@ serverApp.use(express.static(path.join(__dirname, 'public/overlay')));
 serverApp.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/overlay/index.html')));
 serverApp.get('/monitor', (req, res) => res.sendFile(path.join(__dirname, 'public/overlay/index.html')));
 serverApp.get('/viewers', (req, res) => res.sendFile(path.join(__dirname, 'public/viewers/index.html')));
+serverApp.get('/viewers-monitor', (req, res) => res.sendFile(path.join(__dirname, 'public/viewers-monitor/index.html')));
 
 io.on('connection', (socket) => {
   // O cliente informa qual overlay é ao se conectar
@@ -86,13 +91,13 @@ io.on('connection', (socket) => {
     if (room === 'overlay2') socket.emit('config-update', config.overlay2);
     if (room === 'viewers') {
       socket.emit('config-update', config.viewersConfig);
-      let total = 0;
-      Object.values(viewerCounts).forEach(c => {
-        const n = parseInt(String(c).replace(/[^0-9]/g, '')) || 0;
-        total += n;
-      });
-      socket.emit('viewers-update', { counts: viewerCounts, total });
+      broadcastViewerCounts();
     }
+  });
+
+  socket.on('request-viewers-update', () => broadcastViewerCounts());
+  socket.on('get-config', () => {
+    socket.emit('config-update', config.viewersConfig);
   });
 });
 
@@ -128,6 +133,57 @@ function createTray() {
   tray.on('double-click', restoreApp);
 }
 
+async function checkNewVersion(manual = false) {
+  const options = {
+    hostname: 'api.github.com',
+    path: '/repos/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest',
+    headers: {
+      'User-Agent': 'Chat-Unifier-App'
+    }
+  };
+
+  https.get(options, (res) => {
+    if (res.statusCode !== 200) {
+      console.error(`[Update] Erro na API do GitHub: ${res.statusCode}`);
+      return;
+    }
+
+    let data = '';
+    res.on('data', (chunk) => data += chunk);
+    res.on('end', () => {
+      try {
+        const release = JSON.parse(data);
+        if (!release || !release.tag_name) return;
+
+        const remoteVersion = release.tag_name.replace('v', '');
+        const currentVersion = app.getVersion();
+        
+        console.log(`[Update] Versão Atual: ${currentVersion} | Remota: ${remoteVersion}`);
+
+        if (remoteVersion !== currentVersion) {
+          // Se for manual, sempre mostra. Se for auto, verifica se não foi ignorada.
+          if (manual || config.lastIgnoredVersion !== remoteVersion) {
+            if (mainWindow) {
+              mainWindow.webContents.send('update-available', {
+                version: remoteVersion,
+                url: release.html_url,
+                body: release.body,
+                manual
+              });
+            }
+          }
+        } else if (manual) {
+           if (mainWindow) mainWindow.webContents.send('update-not-found');
+        }
+      } catch (e) {
+        console.error("[Update] Erro ao processar JSON:", e);
+      }
+    });
+  }).on('error', (err) => {
+    console.error("[Update] Erro na requisição:", err);
+  });
+}
+
 async function loadConfig() {
   try {
     if (fs.existsSync(CONFIG_PATH)) {
@@ -153,7 +209,7 @@ function updateViewerScrapers() {
   Object.entries(vc).forEach(([key, chan]) => {
     const currentInterval = config.viewersConfig.interval || 30;
     
-    if (chan.enabled && chan.url) {
+    if (chan.enabled && chan.url && viewerCounterStarted) {
       // Reinicia apenas se a URL mudou
       if (viewerScrapers[key] && viewerScrapers[key]._url !== chan.url) {
         viewerScrapers[key].destroy();
@@ -166,6 +222,7 @@ function updateViewerScrapers() {
       
       if (!viewerScrapers[key]) {
         console.log(`[Viewers] Iniciando scraper para ${key}: ${chan.url} (Intervalo: ${currentInterval}s)`);
+        viewerCounts[key] = "..."; // Valor temporário para o ícone aparecer na hora
         startViewerScraper(key, chan.url);
       }
     } else {
@@ -201,7 +258,28 @@ function startViewerScraper(key, url) {
     }
   });
 
+  if (key === 'tiktok') {
+    win.webContents.session.webRequest.onBeforeRequest(
+      { urls: [
+          '*://*.tiktok.com/*.mp4*', 
+          '*://*.tiktokv.com/*.mp4*', 
+          '*://*.tiktok.com/*.m3u8*',
+          '*://*.tiktok.com/*wasm*',
+          '*://*.tiktok.com/*worker*',
+          '*://*.tiktok.com/*xgplayer*',
+          '*://*.tiktok.com/*emscripten*',
+          '*://*.byteoversea.com/*',
+          '*://*.pstatp.com/*'
+        ] 
+      },
+      (details, callback) => callback({ cancel: true })
+    );
+  }
+
   win.webContents.setAudioMuted(true);
+  if (key === 'tiktok') {
+    win.webContents.setUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1");
+  }
   win._url = url;
   win._interval = config.viewersConfig.interval || 30;
   
@@ -214,12 +292,18 @@ function startViewerScraper(key, url) {
         if (vid) targetUrl = `https://www.youtube.com/shorts/${vid[1]}`;
     }
   } else if (key === 'tiktok') {
-    if (!targetUrl.includes('tiktok.com')) {
-      targetUrl = `https://www.tiktok.com/${targetUrl.startsWith('@') ? targetUrl : '@' + targetUrl}/live`;
-    } else if (!targetUrl.endsWith('/live')) {
-      targetUrl = targetUrl.endsWith('/') ? targetUrl + 'live' : targetUrl + '/live';
+    let cleanUrl = targetUrl.split('?')[0].replace(/\/$/, '');
+    if (!cleanUrl.includes('tiktok.com')) {
+      targetUrl = `https://www.tiktok.com/@${cleanUrl.replace('@', '')}/live`;
+    } else {
+      // Garante que é www e não m.
+      targetUrl = cleanUrl.replace('m.tiktok.com', 'www.tiktok.com');
+      if (!targetUrl.endsWith('/live')) {
+        targetUrl += '/live';
+      }
     }
-  } else if (key === 'kick' && !targetUrl.includes('kick.com')) {
+  }
+  else if (key === 'kick' && !targetUrl.includes('kick.com')) {
     targetUrl = `https://kick.com/${targetUrl}`;
   }
 
@@ -233,15 +317,24 @@ function startViewerScraper(key, url) {
     console.log(`[Scraper ${key}] ${message}`);
   });
   
-  win.webContents.on('did-finish-load', () => {
+  win.webContents.on('dom-ready', () => {
     win.webContents.executeJavaScript(`window._platformKey = "${key}"; window._viewerInterval = ${win._interval};`).catch(e => console.log(`[Scraper ${key}] Erro ao injetar vars:`, e));
-
   });
 
+  scraperRegistry.set(win.webContents.id, key);
   viewerScrapers[key] = win;
+
+  const webContentsId = win.webContents.id;
+  win.on('closed', () => {
+    scraperRegistry.delete(webContentsId);
+    delete viewerScrapers[key];
+    delete viewerCounts[key];
+    broadcastViewerCounts();
+  });
 }
 
 function broadcastViewerCounts() {
+    if (!io) return;
     function parseViewerCount(str) {
       if (!str) return 0;
       let s = String(str).toUpperCase().trim();
@@ -265,14 +358,13 @@ function broadcastViewerCounts() {
     const isActive = Object.keys(viewerScrapers).length > 0;
 
     Object.entries(viewerCounts).forEach(([key, count]) => {
-      // Normaliza chaves de Shorts para mostrar ícone certo
-      const displayKey = (key === 'youtube-shorts' || key === 'shorts') ? 'shorts' : key;
-      
-      // Verifica se o canal está habilitado no config
-      if (vChannels[displayKey]?.enabled) {
+      // Verifica se o canal está habilitado no config usando a chave original (youtube ou shorts)
+      if (vChannels[key]?.enabled) {
         const numericCount = parseViewerCount(count);
-        counts[displayKey] = numericCount;
-        total += numericCount;
+        if (numericCount > 0 || count === "...") {
+            counts[key] = count === "..." ? "..." : numericCount;
+            total += numericCount;
+        }
       }
     });
 
@@ -496,10 +588,26 @@ ipcMain.handle('save-config', (e, newConfig) => {
     io.to('overlay1').emit('config-update', config.overlay1);
     io.to('overlay2').emit('config-update', config.overlay2);
     io.to('viewers').emit('config-update', config.viewersConfig);
+    // Aplica mudanças nos scrapers de viewers em tempo real
+    updateViewerScrapers();
     return true;
   } catch (err) {
     console.error("Erro ao salvar:", err);
     return false;
+  }
+});
+
+ipcMain.handle('check-for-updates', () => {
+  checkNewVersion(true);
+  return true;
+});
+
+ipcMain.on('ignore-version', (e, version) => {
+  config.lastIgnoredVersion = version;
+  try {
+    fs.writeJsonSync(CONFIG_PATH, config);
+  } catch (err) {
+    console.error("Erro ao salvar versão ignorada:", err);
   }
 });
 
@@ -517,22 +625,38 @@ ipcMain.on('stop-all-scrapers', () => {
 
 // Controle INDEPENDENTE do contador de viewers
 ipcMain.on('start-viewer-scrapers', () => {
+  viewerCounterStarted = true;
   updateViewerScrapers();
 });
 ipcMain.on('stop-viewer-scrapers', () => {
+  viewerCounterStarted = false;
   Object.keys(viewerScrapers).forEach(key => {
-    viewerScrapers[key].destroy();
+    const win = viewerScrapers[key];
+    if (win && !win.isDestroyed()) {
+      win.destroy();
+    }
     delete viewerScrapers[key];
   });
+  scraperRegistry.clear();
   viewerCounts = {};
   broadcastViewerCounts();
 });
 
 ipcMain.on('viewer-count', (event, data) => {
-  const key = data.key || data.platform;
-  viewerCounts[key] = data.count;
-  console.log(`[IPC] Viewer Count recebido de ${key}: ${data.count}`);
-  broadcastViewerCounts();
+  // Tenta pegar a chave pelo ID da janela que enviou, senão usa a data enviada
+  const senderId = event.sender.id;
+  const key = scraperRegistry.get(senderId) || data.key || data.platform;
+  
+  if (key) {
+    viewerCounts[key] = data.count;
+    console.log(`[IPC] Viewer Count recebido de ${key}: ${data.count}`);
+    broadcastViewerCounts();
+  }
+});
+
+// Responde a pedidos imediatos de atualização (quando o overlay faz F5)
+ipcMain.on('request-viewers-update', () => {
+    broadcastViewerCounts();
 });
 
 
@@ -624,8 +748,9 @@ if (!gotTheLock) {
     });
     createMainWindow();
     createTray();
-    // Scrapers de viewers são iniciados manualmente pelo usuário pelo botão "Iniciar Contador"
-    // updateViewerScrapers() removido do auto-start
+    
+    // Verifica atualizações ao iniciar (aguarda 5s para não sobrecarregar o boot)
+    setTimeout(() => checkNewVersion(false), 5000);
   });
 
   app.on('window-all-closed', () => { 

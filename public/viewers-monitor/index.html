@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viewers Monitor - Chat Unifier</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --font-size: 4rem;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            height: 100vh;
+            display: flex;
+            align-items: flex-start; /* Alinhado ao Topo */
+            justify-content: center;
+            transition: all 0.3s ease;
+            overflow: hidden;
+            padding-top: calc(var(--font-size) * 0.5); /* Padding dinâmico */
+        }
+
+        #monitor-container {
+            display: flex;
+            align-items: center;
+            gap: calc(var(--font-size) * 0.8);
+            padding: calc(var(--font-size) * 0.4) calc(var(--font-size) * 0.8);
+            border-radius: calc(var(--font-size) * 0.4);
+            background: rgba(255,255,255,0.02);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .platforms-grid {
+            display: flex;
+            gap: calc(var(--font-size) * 0.6);
+            align-items: center;
+        }
+
+        .platform-item {
+            display: flex;
+            align-items: center;
+            gap: calc(var(--font-size) * 0.25);
+            font-size: var(--font-size);
+            font-weight: 900;
+        }
+
+        .platform-icon {
+            width: calc(var(--font-size) * 0.7);
+            height: calc(var(--font-size) * 0.7);
+            object-fit: contain;
+        }
+
+        #total-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            padding-left: calc(var(--font-size) * 0.8);
+            border-left: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .total-label {
+            font-size: calc(var(--font-size) * 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: 800;
+            opacity: 0.4;
+            margin-bottom: -0.2em;
+        }
+
+        .total-value {
+            font-size: calc(var(--font-size) * 0.8);
+            font-weight: 900;
+            letter-spacing: -0.05em;
+            color: var(--text-color);
+        }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 1024px) {
+            #monitor-container { transform: scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Status removido a pedido do usuário -->
+
+    <div id="monitor-container">
+        <div class="platforms-grid" id="platforms-grid">
+            <!-- JS Preenche -->
+        </div>
+        
+        <div id="total-container">
+            <span class="total-label">Live Total</span>
+            <span class="total-value" id="total-viewers">0</span>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        const totalDisplay = document.getElementById('total-viewers');
+        const totalContainer = document.getElementById('total-container');
+        const grid = document.getElementById('platforms-grid');
+
+        const icons = {
+            twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
+            youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
+            shorts: 'https://cdn.simpleicons.org/youtubeshorts/FF0000',
+            kick: 'https://cdn.simpleicons.org/kick/53FC18',
+            tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
+        };
+
+        socket.on('connect', () => {
+            socket.emit('join-room', 'viewers');
+            socket.emit('request-viewers-update');
+            socket.emit('get-config');
+        });
+
+        socket.on('config-update', (config) => {
+            if (config && config.monitor) {
+                const monitor = config.monitor;
+                document.body.style.setProperty('--bg-color', monitor.bgColor || '#0f172a');
+                document.body.style.setProperty('--text-color', monitor.textColor || '#f8fafc');
+                document.body.style.setProperty('--font-size', (monitor.fontSize || 4) + 'rem');
+                
+                if (monitor.showTotal === false) {
+                    totalContainer.classList.add('hidden');
+                } else {
+                    totalContainer.classList.remove('hidden');
+                }
+            }
+        });
+
+        socket.on('viewers-update', (data) => {
+            if (!data || !data.active) {
+                totalDisplay.innerText = "OFF";
+                grid.innerHTML = "";
+                return;
+            }
+
+            totalDisplay.innerText = data.total.toLocaleString('pt-BR');
+            
+            let html = '';
+            for (const [platform, count] of Object.entries(data.counts)) {
+                if (!count && count !== 0) continue;
+                html += `
+                    <div class="platform-item">
+                        <img src="${icons[platform]}" class="platform-icon">
+                        <span>${count.toLocaleString('pt-BR')}</span>
+                    </div>
+                `;
+            }
+            grid.innerHTML = html;
+        });
+    </script>
+</body>
+</html>
