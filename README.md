@@ -22,6 +22,8 @@ O **Chat Unifier** é a solução definitiva para o seu **unificador de chat**. 
 - **Overlay Duplo Profissional:** 
     - **URL de Live:** Otimizada para o OBS com temas premium (Cyberpunk, Glassmorphism, Retro).
     - **URL de Monitoramento:** Acompanhe o chat em uma janela separada ou em outro monitor.
+- **Monitor de Espectadores:** Acompanhe o público simultâneo de todas as plataformas em tempo real no painel.
+- **Contador de Viewers para Stream:** Novo overlay horizontal customizável para exibir o total de espectadores no OBS.
 - **Scraping Local Seguro:** Captura mensagens localmente, garantindo máxima privacidade e agilidade.
 
 ### 🚀 Como Começar
@@ -53,6 +55,8 @@ O **Chat Unifier** é a solução definitiva para o seu **unificador de chat**. 
 - **Dual Professional Overlay:**
     - **Live URL:** Optimized for OBS with premium themes (Cyberpunk, Glassmorphism, Retro).
     - **Monitor URL:** Track your chat in a separate window or on another monitor.
+- **Viewer Monitor:** Track real-time concurrent viewers across all platforms simultaneously from your dashboard.
+- **Stream Viewer Counter:** New customizable horizontal overlay to display your audience count in OBS.
 - **Secure Local Scraping:** Captures messages locally, ensuring privacy and speed.
 
 ### 🚀 How to Get Started
