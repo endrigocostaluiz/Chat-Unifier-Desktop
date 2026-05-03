@@ -174,11 +174,22 @@
                 container.classList.add(`layout-${layout}`);
             }
 
-            // Filtro de Ícones
+            // Lógica de Ícones
             const iconStyle = currentConfig.iconStyle || 'original';
-            let iconFilter = '';
-            if (iconStyle === 'white') iconFilter = 'filter: brightness(0) invert(1);';
-            else if (iconStyle === 'black') iconFilter = 'filter: brightness(0);';
+            const getIconUrl = (platform, style) => {
+                if (style === 'original') {
+                    return icons[platform];
+                }
+                const color = style === 'white' ? 'FFFFFF' : '000000';
+                const slugs = {
+                    youtube: 'youtube',
+                    shorts: 'youtubeshorts',
+                    twitch: 'twitch',
+                    kick: 'kick',
+                    tiktok: 'tiktok'
+                };
+                return `https://cdn.simpleicons.org/${slugs[platform]}/${color}`;
+            };
 
             let html = '';
             
@@ -190,7 +201,7 @@
                 // Pula se estiver desativado nas configurações atuais
                 if (channels[platform] && channels[platform].enabled === false) continue;
                 
-                // Ajuste de escala para ícones SimpleIcons (que não tem margem nativa) não ficarem gigantes comparados aos da Flaticon
+                // Ajuste de escala para ícones SimpleIcons
                 let extraStyle = '';
                 if (platform === 'kick' || platform === 'shorts') {
                     extraStyle = 'transform: scale(0.8);';
@@ -198,7 +209,7 @@
                 
                 html += `
                     <div class="platform-stat">
-                        <img src="${icons[platform]}" class="icon" style="width: ${currentConfig.fontSize}px; height: ${currentConfig.fontSize}px; ${iconFilter} ${extraStyle}">
+                        <img src="${getIconUrl(platform, iconStyle)}" class="icon" style="width: ${currentConfig.fontSize}px; height: ${currentConfig.fontSize}px; ${extraStyle}">
                         <span class="count" style="font-size: ${currentConfig.fontSize}px;">${formatCount(count)}</span>
                     </div>
                 `;

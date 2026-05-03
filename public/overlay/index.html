@@ -132,6 +132,7 @@
                     <div class="author-row">
                         <img src="${badgeUrl}" class="platform-badge">
                         <span class="author-name" style="color: ${data.color || '#fff'}">${data.author}</span>
+                        ${config.showChannelName ? `<span class="channel-name" style="color: ${config.channelNameColor || 'rgba(255,255,255,0.5)'}">(${data.channelName || data.platform})</span>` : ''}
                     </div>
                     <div class="text">${data.message}</div>
                 </div>

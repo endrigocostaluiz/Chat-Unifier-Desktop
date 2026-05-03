@@ -8,6 +8,8 @@ let appConfig = {
     lang: 'pt'
 };
 
+let editingPlatformIndex = -1;
+
 const elements = {
     platformList: document.getElementById('platform-list'),
     preview: document.getElementById('preview-container'),
@@ -35,6 +37,8 @@ const elements = {
     customCss: document.getElementById('custom-css'),
     customCssEnabled: document.getElementById('custom-css-enabled'),
     showAvatars: document.getElementById('show-avatars'),
+    showChannelName: document.getElementById('show-channel-name'),
+    channelNameColor: document.getElementById('channel-name-color'),
     animationSelect: document.getElementById('select-animation'),
     cardColor: document.getElementById('card-color'),
     cardOpacity: document.getElementById('card-opacity'),
@@ -66,6 +70,8 @@ const elements = {
     m2SlowMode: document.getElementById('m2-slow-mode'),
     m2SlowModeVal: document.getElementById('m2-slow-mode-val'),
     m2ShowAvatars: document.getElementById('m2-show-avatars'),
+    m2ShowChannelName: document.getElementById('m2-show-channel-name'),
+    m2ChannelNameColor: document.getElementById('m2-channel-name-color'),
     m2MessageSpacing: document.getElementById('m2-message-spacing'),
     m2SpacingVal: document.getElementById('m2-spacing-val'),
     m2HideLeftBorder: document.getElementById('m2-hide-left-border'),
@@ -141,13 +147,16 @@ const i18n = {
         "Estilo das Mensagens": "Message Style",
         "Cor do Card": "Color",
         "Mostrar Fotos de Perfil": "Show Profile Pictures",
+        "Mostrar Nome do Canal": "Show Channel Name",
         "Ajustes de Layout": "Layout Adjustments",
         "Espaçamento": "Spacing",
         "Ocultar Borda Lateral": "Hide Side Border",
-        "Modo Lento (Segundos)": "Slow Mode (Seconds)",
+        "Modo Lento": "Slow Mode",
         "Modo Lento (s)": "Slow Mode (s)",
         "Define o intervalo mínimo entre a exibição de cada mensagem.": "Sets the minimum interval between messages.",
         "CSS Customizado": "Custom CSS",
+        "Habilitar CSS": "Enable CSS",
+        "Habilitar Monitor Independente": "Enable Independent Monitor",
         "URL do OBS (Overlay Principal)": "OBS URL (Main Overlay)",
         "Use esta URL na cena do OBS como Browser Source.": "Use this URL in OBS as a Browser Source.",
         "URL Monitor": "Monitor URL",
@@ -372,6 +381,7 @@ function renderMessage(msg) {
             <div class="author-row">
                 <img src="${badgeUrl}" class="platform-badge" style="width:12px; height:12px;">
                 <span class="author-name" style="color: ${msg.color || '#fff'}">${msg.author}</span>
+                ${config.showChannelName ? `<span class="channel-name" style="font-size: 0.7rem; opacity: 0.7; margin-left: 4px; color: ${config.channelNameColor || '#fff'};">(${msg.channelName || msg.platform})</span>` : ''}
             </div>
             <div class="text" style="font-size: 0.85rem; opacity: 0.9;">${msg.message}</div>
         </div>
@@ -435,6 +445,8 @@ async function init() {
         if (elements.customCss) elements.customCss.value = o1.customCSS || '';
         if (elements.customCssEnabled) elements.customCssEnabled.checked = o1.customCssEnabled !== false;
         if (elements.showAvatars) elements.showAvatars.checked = o1.showAvatars !== false;
+        if (elements.showChannelName) elements.showChannelName.checked = o1.showChannelName === true;
+        if (elements.channelNameColor) elements.channelNameColor.value = o1.channelNameColor || '#ffffff';
         if (elements.animationSelect) elements.animationSelect.value = o1.animation || 'slide';
         if (elements.cardColor) elements.cardColor.value = o1.cardColor || '#1e293b';
         if (elements.cardOpacity) elements.cardOpacity.value = o1.cardOpacity !== undefined ? o1.cardOpacity : 85;
@@ -466,6 +478,8 @@ async function init() {
         if (elements.m2SlowMode) elements.m2SlowMode.value = o2.slowMode !== undefined ? o2.slowMode : 1;
         if (elements.m2SlowModeVal) elements.m2SlowModeVal.innerText = `${o2.slowMode !== undefined ? o2.slowMode : 1}s`;
         if (elements.m2ShowAvatars) elements.m2ShowAvatars.checked = o2.showAvatars !== false;
+        if (elements.m2ShowChannelName) elements.m2ShowChannelName.checked = o2.showChannelName === true;
+        if (elements.m2ChannelNameColor) elements.m2ChannelNameColor.value = o2.channelNameColor || '#ffffff';
         if (elements.m2MessageSpacing) elements.m2MessageSpacing.value = o2.messageSpacing !== undefined ? o2.messageSpacing : 10;
         if (elements.m2SpacingVal) elements.m2SpacingVal.innerText = `${o2.messageSpacing !== undefined ? o2.messageSpacing : 10}px`;
         if (elements.m2HideLeftBorder) elements.m2HideLeftBorder.checked = o2.hideLeftBorder === true;
@@ -587,13 +601,32 @@ function updateViewersPreview() {
         const layout = (elements.vLayoutSelect && elements.vLayoutSelect.value) ? elements.vLayoutSelect.value : 'default';
         const showTotal = elements.vShowTotal ? elements.vShowTotal.checked : true;
 
-        const getIconStyle = (key) => {
-            let filter = '';
-            if (iconStyle === 'white') filter = 'filter: brightness(0) invert(1);';
-            else if (iconStyle === 'black') filter = 'filter: brightness(0);';
+        const getIconUrl = (key, style) => {
+            if (style === 'original') {
+                const originals = {
+                    twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
+                    youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
+                    shorts: 'https://cdn.simpleicons.org/youtubeshorts/FF0000',
+                    kick: 'https://cdn.simpleicons.org/kick/53FC18',
+                    tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
+                };
+                return originals[key];
+            }
             
+            const color = style === 'white' ? 'FFFFFF' : '000000';
+            const slugs = {
+                youtube: 'youtube',
+                shorts: 'youtubeshorts',
+                twitch: 'twitch',
+                kick: 'kick',
+                tiktok: 'tiktok'
+            };
+            return `https://cdn.simpleicons.org/${slugs[key]}/${color}`;
+        };
+
+        const getIconStyle = (key) => {
             let transform = (key === 'kick' || key === 'shorts') ? 'transform: scale(0.8);' : '';
-            if (filter || transform) return `style="${filter} ${transform}"`;
+            if (transform) return `style="${transform}"`;
             return '';
         };
 
@@ -622,7 +655,7 @@ function updateViewersPreview() {
 
         let statsHtml = activePlatforms.map(p => `
             <div class="flex items-center gap-2">
-                <img src="${p.icon}" class="w-6 h-6 object-contain" ${getIconStyle(p.key)}>
+                <img src="${getIconUrl(p.key, iconStyle)}" class="w-6 h-6 object-contain" ${getIconStyle(p.key)}>
                 <span class="font-black text-lg" style="color: ${fontColor}">${p.count}</span>
             </div>
         `).join('');
@@ -669,6 +702,9 @@ function renderPlatforms(filter = '') {
             <div class="flex items-center gap-3">
                 <button onclick="showScraper('${p.id}')" title="Debug: Mostrar Janela" class="opacity-0 group-hover:opacity-100 text-white/20 hover:text-blue-400 transition p-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+                <button onclick="editPlatform(${index})" title="Editar Canal" class="opacity-0 group-hover:opacity-100 text-white/20 hover:text-emerald-400 transition p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 </button>
                 <label class="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" ${p.enabled ? 'checked' : ''} onchange="togglePlatform(${index})" class="sr-only peer">
@@ -718,7 +754,16 @@ if (elements.btnStop) {
     };
 }
 
-if (elements.btnAdd) elements.btnAdd.onclick = () => elements.modalAdd.classList.remove('hidden');
+if (elements.btnAdd) {
+    elements.btnAdd.onclick = () => {
+        editingPlatformIndex = -1;
+        elements.newUrl.value = '';
+        elements.newName.value = '';
+        elements.modalAdd.querySelector('h2').innerText = appConfig.lang === 'en' ? 'New Channel' : 'Novo Canal';
+        elements.modalSave.innerText = appConfig.lang === 'en' ? 'Save Channel' : 'Salvar Canal';
+        elements.modalAdd.classList.remove('hidden');
+    };
+}
 if (elements.modalCancel) elements.modalCancel.onclick = () => elements.modalAdd.classList.add('hidden');
 
 if (elements.modalSave) {
@@ -729,19 +774,43 @@ if (elements.modalSave) {
         if (!url) return;
         if (!name) name = type.charAt(0).toUpperCase() + type.slice(1);
 
-        const platform = { id: Date.now().toString(), type, name, url, enabled: true, color: getPlatformColor(type) };
-        appConfig.platforms.push(platform);
-        await api.saveConfig(appConfig);
-        renderPlatforms(elements.searchChannels.value);
-        
-        if (type === 'tiktok' && !appConfig.hasLoggedTikTok) {
-            showToast(appConfig.lang === 'en' ? 'Opening TikTok login window...' : 'Abrindo janela de login do TikTok...', 'info');
-            api.openLoginWindow('tiktok');
-            appConfig.hasLoggedTikTok = true;
+        if (editingPlatformIndex === -1) {
+            // Adicionar Novo
+            const platform = { id: Date.now().toString(), type, name, url, enabled: true, color: getPlatformColor(type) };
+            appConfig.platforms.push(platform);
             await api.saveConfig(appConfig);
+            
+            if (type === 'tiktok' && !appConfig.hasLoggedTikTok) {
+                showToast(appConfig.lang === 'en' ? 'Opening TikTok login window...' : 'Abrindo janela de login do TikTok...', 'info');
+                api.openLoginWindow('tiktok');
+                appConfig.hasLoggedTikTok = true;
+                await api.saveConfig(appConfig);
+            }
+
+            if (elements.statusBadge.innerText === 'CONECTADO') api.startSingle(platform);
+        } else {
+            // Editar Existente
+            const platform = appConfig.platforms[editingPlatformIndex];
+            const oldId = platform.id;
+            const wasEnabled = platform.enabled;
+
+            platform.type = type;
+            platform.name = name;
+            platform.url = url;
+            platform.color = getPlatformColor(type);
+
+            await api.saveConfig(appConfig);
+
+            // Se o chat estiver conectado, reinicia o scraper
+            if (elements.statusBadge.innerText === 'CONECTADO' && wasEnabled) {
+                api.stopSingle(oldId);
+                api.startSingle(platform);
+            }
+            
+            editingPlatformIndex = -1;
         }
 
-        if (elements.statusBadge.innerText === 'CONECTADO') api.startSingle(platform);
+        renderPlatforms(elements.searchChannels.value);
         elements.modalAdd.classList.add('hidden');
         elements.newUrl.value = '';
         elements.newName.value = '';
@@ -759,6 +828,20 @@ window.togglePlatform = async (index) => {
     }
     renderPlatforms(elements.searchChannels.value);
     saveAndUpdate();
+};
+
+window.editPlatform = (index) => {
+    editingPlatformIndex = index;
+    const p = appConfig.platforms[index];
+    
+    elements.newType.value = p.type;
+    elements.newName.value = p.name || '';
+    elements.newUrl.value = p.url || '';
+    
+    elements.modalAdd.querySelector('h2').innerText = appConfig.lang === 'en' ? 'Edit Channel' : 'Editar Canal';
+    elements.modalSave.innerText = appConfig.lang === 'en' ? 'Update Channel' : 'Atualizar Canal';
+    
+    elements.modalAdd.classList.remove('hidden');
 };
 
 window.showScraper = (id) => {
@@ -782,6 +865,8 @@ const saveAndUpdate = async () => {
         customCSS: elements.customCss ? elements.customCss.value : '',
         customCssEnabled: elements.customCssEnabled ? elements.customCssEnabled.checked : true,
         showAvatars: elements.showAvatars ? elements.showAvatars.checked : true,
+        showChannelName: elements.showChannelName ? elements.showChannelName.checked : false,
+        channelNameColor: elements.channelNameColor ? elements.channelNameColor.value : '#ffffff',
         animation: elements.animationSelect ? elements.animationSelect.value : 'slide',
         cardColor: elements.cardColor ? elements.cardColor.value : '#1e293b',
         cardOpacity: elements.cardOpacity ? elements.cardOpacity.value : 85,
@@ -813,6 +898,8 @@ const saveAndUpdateMonitor = async () => {
         cardOpacity: elements.m2CardOpacity ? elements.m2CardOpacity.value : 85,
         slowMode: elements.m2SlowMode ? parseFloat(elements.m2SlowMode.value) : 1,
         showAvatars: elements.m2ShowAvatars ? elements.m2ShowAvatars.checked : true,
+        showChannelName: elements.m2ShowChannelName ? elements.m2ShowChannelName.checked : false,
+        channelNameColor: elements.m2ChannelNameColor ? elements.m2ChannelNameColor.value : '#ffffff',
         messageSpacing: elements.m2MessageSpacing ? parseInt(elements.m2MessageSpacing.value) : 10,
         hideLeftBorder: elements.m2HideLeftBorder ? elements.m2HideLeftBorder.checked : false,
         customCSS: ''
@@ -862,6 +949,8 @@ if (elements.layoutSelect) elements.layoutSelect.onchange = saveAndUpdate;
 if (elements.customCss) elements.customCss.oninput = saveAndUpdate;
 if (elements.customCssEnabled) elements.customCssEnabled.onchange = saveAndUpdate;
 if (elements.showAvatars) elements.showAvatars.onchange = saveAndUpdate;
+if (elements.showChannelName) elements.showChannelName.onchange = saveAndUpdate;
+if (elements.channelNameColor) elements.channelNameColor.oninput = saveAndUpdate;
 if (elements.animationSelect) elements.animationSelect.onchange = saveAndUpdate;
 if (elements.cardColor) elements.cardColor.oninput = saveAndUpdate;
 if (elements.cardOpacity) elements.cardOpacity.oninput = saveAndUpdate;
@@ -890,6 +979,8 @@ if (elements.m2CardColor) elements.m2CardColor.oninput = saveAndUpdateMonitor;
 if (elements.m2CardOpacity) elements.m2CardOpacity.oninput = saveAndUpdateMonitor;
 if (elements.m2SlowMode) elements.m2SlowMode.oninput = saveAndUpdateMonitor;
 if (elements.m2ShowAvatars) elements.m2ShowAvatars.onchange = saveAndUpdateMonitor;
+if (elements.m2ShowChannelName) elements.m2ShowChannelName.onchange = saveAndUpdateMonitor;
+if (elements.m2ChannelNameColor) elements.m2ChannelNameColor.oninput = saveAndUpdateMonitor;
 if (elements.m2MessageSpacing) elements.m2MessageSpacing.oninput = saveAndUpdateMonitor;
 if (elements.m2HideLeftBorder) elements.m2HideLeftBorder.onchange = saveAndUpdateMonitor;
 
@@ -1097,13 +1188,21 @@ window.copyLink = (text, btnElement) => {
         const dict = i18n[appConfig.lang || 'pt'] || {};
         const originalHtml = btnElement.innerHTML;
         btnElement.innerText = dict["Copiado!"] || "Copiado!";
-        btnElement.classList.replace('bg-emerald-500', 'bg-blue-500');
-        btnElement.classList.replace('bg-blue-500', 'bg-emerald-500'); // Garante que a cor mude se necessário
-        
-        setTimeout(() => {
-            btnElement.innerHTML = originalHtml;
-        }, 2000);
     }).catch(err => console.error('Erro ao copiar:', err));
 };
 
 init();
+
+// Lógica de Painéis Expansíveis (Collapsible)
+document.addEventListener('click', (e) => {
+    const header = e.target.closest('.collapsible-header');
+    if (!header) return;
+    
+    const parent = header.parentElement;
+    const content = parent.querySelector('.collapsible-content');
+    
+    parent.classList.toggle('active');
+    if (content) {
+        content.classList.toggle('hidden');
+    }
+});

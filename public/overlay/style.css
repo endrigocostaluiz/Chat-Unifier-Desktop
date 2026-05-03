@@ -111,6 +111,12 @@ body.hide-borders .message-item {
     font-size: 0.9rem;
 }
 
+.channel-name {
+    font-size: 0.75rem;
+    font-weight: 400;
+    margin-left: 4px;
+}
+
 .text {
     color: #e2e8f0;
     font-size: 0.95rem;

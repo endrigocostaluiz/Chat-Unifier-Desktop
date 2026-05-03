@@ -28,6 +28,8 @@ const defaultOverlay = (id) => ({
   maxMessages: 5,
   hideMessages: false,
   hideTimeout: 15,
+  showChannelName: false,
+  channelNameColor: '#ffffff',
   customCSS: ''
 });
 
@@ -67,6 +69,7 @@ let viewerCounts = {}; // { platformType: count }
 const scraperRegistry = new Map(); // webContents.id -> key (ex: 'shorts', 'youtube')
 let viewerScrapers = {}; // { platformKey: BrowserWindow }
 let viewerCounterStarted = false; // Flag mestre do contador
+const chatScraperRegistry = new Map(); // webContents.id -> platformId
 
 const globalProcessedIds = new Set();
 
@@ -519,6 +522,13 @@ function startScraper(platform) {
     }
   }
 
+  const wcId = win.webContents.id;
+  chatScraperRegistry.set(wcId, platform.id);
+
+  win.on('closed', () => {
+    chatScraperRegistry.delete(wcId);
+  });
+
   win.loadURL(url);
   scrapers[platform.id] = win;
 
@@ -672,10 +682,14 @@ ipcMain.on('new-message', (event, msg) => {
     setTimeout(() => globalProcessedIds.delete(msg.rawId), timeout);
   }
   
-  const platform = config.platforms.find(p => p.type === msg.platform) || { color: '#666' };
+  const senderId = event.sender.id;
+  const platformId = chatScraperRegistry.get(senderId);
+  const platform = config.platforms.find(p => p.id === platformId) || config.platforms.find(p => p.type === msg.platform) || { color: '#666', name: '' };
+  
   const finalMsg = {
     ...msg,
-    color: platform.color,
+    color: platform.color || msg.color || '#fff',
+    channelName: platform.name || '',
     timestamp: Date.now()
   };
   
