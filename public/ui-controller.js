@@ -636,7 +636,7 @@ function updateViewersPreview() {
 
         const spacing = elements.vSpacing ? elements.vSpacing.value : 20;
         let containerClass = "flex items-center p-4 rounded-xl transition-all";
-        let containerStyle = `background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; gap: ${spacing}px;`;
+        let containerStyle = `background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; gap: ${layout === 'stacked' ? Math.floor(spacing / 2) : spacing}px;`;
         
         if (layout === 'vertical') {
             containerClass = "flex flex-col p-6 rounded-2xl transition-all items-start";
@@ -644,6 +644,8 @@ function updateViewersPreview() {
             containerClass = "grid grid-cols-2 p-6 rounded-2xl transition-all";
         } else if (layout === 'minimalist') {
             containerClass = "flex items-center p-2 rounded-lg transition-all";
+        } else if (layout === 'stacked') {
+            containerClass = "flex items-center p-3 rounded-2xl transition-all gap-3";
         }
 
         const ch = v.channels || {};
@@ -657,20 +659,30 @@ function updateViewersPreview() {
 
         const activePlatforms = platforms.filter(p => p.enabled);
 
-        let statsHtml = activePlatforms.map(p => `
-            <div class="flex items-center gap-2">
-                <img src="${getIconUrl(p.key, iconStyle)}" class="w-6 h-6 object-contain" ${getIconStyle(p.key)}>
-                <span class="font-black text-lg" style="color: ${fontColor}">${p.count}</span>
-            </div>
-        `).join('');
+        let statsHtml = '';
+        if (layout === 'stacked') {
+            const iconsHtml = activePlatforms.map((p, idx) => `
+                <div class="relative" style="margin-left: ${idx === 0 ? '0' : '-16px'}; z-index: ${10 - idx};">
+                    <img src="${getIconUrl(p.key, iconStyle)}" class="w-7 h-7 object-contain" ${getIconStyle(p.key)}>
+                </div>
+            `).join('');
+            statsHtml = `<div class="flex items-center">${iconsHtml}</div>`;
+        } else {
+            statsHtml = activePlatforms.map(p => `
+                <div class="flex items-center gap-1">
+                    <img src="${getIconUrl(p.key, iconStyle)}" class="w-6 h-6 object-contain" ${getIconStyle(p.key)}>
+                    <span class="font-black text-lg" style="color: ${fontColor}">${p.count}</span>
+                </div>
+            `).join('');
+        }
 
         vPreviewContent.innerHTML = `
             <div class="w-full flex flex-col items-center gap-3">
                 <div class="${containerClass}" style="${containerStyle}">
                     ${statsHtml}
-                    ${showTotal && layout !== 'minimalist' && activePlatforms.length > 1 ? `
-                    <div class="${layout === 'vertical' || layout === 'grid' ? 'pt-2 border-t w-full' : 'pl-4 border-l'} border-white/10 flex items-center gap-2">
-                        <span class="text-[9px] uppercase opacity-40 font-black tracking-widest">Total</span>
+                    ${showTotal && (layout === 'stacked' || (layout !== 'minimalist' && activePlatforms.length > 1)) ? `
+                    <div class="${(layout === 'vertical' || layout === 'grid') ? 'pt-2 border-t w-full' : (layout === 'stacked' ? 'pl-2' : 'pl-4 border-l')} border-white/10 flex items-center gap-2">
+                        ${layout !== 'stacked' ? `<span class="text-[9px] uppercase opacity-40 font-black tracking-widest">Total</span>` : ''}
                         <span class="font-black text-lg">56.6K</span>
                     </div>
                     ` : ''}

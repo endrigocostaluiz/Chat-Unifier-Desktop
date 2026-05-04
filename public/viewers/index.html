@@ -53,11 +53,37 @@
         .layout-minimalist .icon {
             display: none !important;
         }
+        
+        /* Layout Pilhado */
+        .layout-stacked {
+            padding: 8px 16px !important;
+        }
+        .layout-stacked .platform-stat {
+            gap: 0 !important;
+            margin-left: -16px;
+            position: relative;
+        }
+        .layout-stacked .platform-stat:first-child {
+            margin-left: 0;
+        }
+        .layout-stacked .platform-stat .count {
+            display: none !important;
+        }
+        .layout-stacked .icon {
+            padding: 0;
+        }
+        .layout-stacked .total-stat {
+            border-left: none !important;
+            padding-left: 4px !important;
+        }
+        .layout-stacked .total-stat .label {
+            display: none !important;
+        }
 
         .platform-stat {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 4px;
         }
 
         .icon {
@@ -177,7 +203,7 @@
             const layout = currentConfig.layout || 'default';
             const spacing = currentConfig.spacing !== undefined ? currentConfig.spacing : 20;
             container.className = ''; // Limpa classes
-            container.style.gap = `${spacing}px`;
+            container.style.gap = layout === 'stacked' ? `${Math.floor(spacing / 2)}px` : `${spacing}px`;
             if (layout !== 'default') {
                 container.classList.add(`layout-${layout}`);
             }
@@ -224,7 +250,7 @@
             }
 
             // Renderiza Total
-            if (currentData.total > 0 && currentConfig.showTotal && layout !== 'minimalist') {
+            if (currentData.total > 0 && currentConfig.showTotal && (layout === 'stacked' || layout !== 'minimalist')) {
                 html += `
                     <div class="total-stat" style="border-color: ${currentConfig.fontColor}33;">
                         <span class="label" style="font-size: ${Math.max(10, currentConfig.fontSize * 0.55)}px;">Total</span>
