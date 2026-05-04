@@ -1180,7 +1180,7 @@ api.onPreviewMessage((msg) => {
 });
 
 // Modal Doação (PIX)
-const btnDonate = document.getElementById('btn-donate');
+const btnDonate = document.getElementById('btn-coffee');
 const modalPix = document.getElementById('modal-pix');
 const modalPixClose = document.getElementById('modal-pix-close');
 const btnCopyPix = document.getElementById('btn-copy-pix');
