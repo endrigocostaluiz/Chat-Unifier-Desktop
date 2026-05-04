@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session, clipboard, Tray, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, session, clipboard, Tray, Menu, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs-extra');
 const http = require('http');
@@ -10,6 +10,7 @@ const { Server } = require('socket.io');
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');
 app.commandLine.appendSwitch('disable-renderer-backgrounding', 'true');
 app.commandLine.appendSwitch('disable-background-timer-throttling', 'true');
+app.setAppUserModelId('com.driftweb.chatunifier');
 
 // Configurações e Persistência
 const CONFIG_PATH = path.join(app.getPath('userData'), 'driftweb-stream-chat.json');
@@ -62,7 +63,8 @@ let config = {
   overlay2Enabled: false,
   viewersConfig: defaultViewersConfig(),
   viewersEnabled: true,
-  lastIgnoredVersion: ''
+  lastIgnoredVersion: '',
+  trayNotificationEnabled: true
 };
 
 let viewerCounts = {}; // { platformType: count }
@@ -400,6 +402,14 @@ function createMainWindow() {
     if (!app.isQuiting) {
       event.preventDefault();
       mainWindow.hide();
+      
+      if (tray && config.trayNotificationEnabled) {
+        new Notification({
+          title: 'Chat Unifier',
+          body: 'O aplicativo continua rodando na bandeja do sistema.',
+          icon: path.join(__dirname, 'public/icon.png')
+        }).show();
+      }
     }
     return false;
   });
@@ -408,6 +418,14 @@ function createMainWindow() {
   mainWindow.on('minimize', (event) => {
     event.preventDefault();
     mainWindow.hide();
+
+    if (tray && config.trayNotificationEnabled) {
+      new Notification({
+        title: 'Chat Unifier',
+        body: 'O aplicativo foi minimizado para a barra de ícones.',
+        icon: path.join(__dirname, 'public/icon.png')
+      }).show();
+    }
   });
 }
 

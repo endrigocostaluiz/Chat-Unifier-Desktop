@@ -1147,6 +1147,9 @@ if (elements.vBtnCopy) {
 
 // Preview Listener
 api.onPreviewMessage((msg) => {
+    // Otimização: se a janela estiver minimizada/escondida, não processa o preview
+    if (document.hidden) return;
+
     const slowMode = (appConfig.overlay1 || {}).slowMode || 0;
     if (slowMode > 0) {
         messageQueue.push(msg);
