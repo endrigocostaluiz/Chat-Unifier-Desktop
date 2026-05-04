@@ -51,7 +51,9 @@ const defaultViewersConfig = () => ({
     twitch: { url: '', enabled: true },
     kick: { url: '', enabled: true },
     tiktok: { url: '', enabled: true }
-  }
+  },
+  customCSS: '',
+  customCssEnabled: true
 });
 
 

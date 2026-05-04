@@ -97,10 +97,12 @@
     <div id="viewers-container">
         <!-- JS Preenche -->
     </div>
+    <style id="custom-styles-container"></style>
 
     <script>
         const socket = io();
         const container = document.getElementById('viewers-container');
+        const customStyles = document.getElementById('custom-styles-container');
         
         const icons = {
             twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
@@ -127,6 +129,12 @@
             if (config) {
                 // Se receber o config completo, pega a parte de viewers, senão usa o que recebeu
                 currentConfig = config.viewersConfig || config;
+                
+                // Aplicar CSS Customizado
+                if (customStyles) {
+                    customStyles.innerHTML = (currentConfig.customCssEnabled !== false) ? (currentConfig.customCSS || '') : '';
+                }
+
                 render();
             }
         });

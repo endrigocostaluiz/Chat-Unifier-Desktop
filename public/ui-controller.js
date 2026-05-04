@@ -110,6 +110,8 @@ const elements = {
     vMonitorSizeVal: document.getElementById('v-monitor-size-val'),
     vMonitorShowTotal: document.getElementById('v-monitor-show-total'),
     vMonitorUrl: document.getElementById('v-monitor-url'),
+    vCustomCss: document.getElementById('v-custom-css'),
+    vCustomCssEnabled: document.getElementById('v-custom-css-enabled'),
     tabTitle: document.getElementById('tab-title'),
     // Grupos de botões do header
     chatCtrlBtns: document.getElementById('chat-ctrl-btns'),
@@ -531,6 +533,8 @@ async function init() {
             if (elements.vMonitorSizeVal) elements.vMonitorSizeVal.innerText = `${elements.vMonitorSize.value}rem`;
         }
         if (elements.vMonitorShowTotal) elements.vMonitorShowTotal.checked = vm.showTotal !== false;
+        if (elements.vCustomCss) elements.vCustomCss.value = v.customCSS || '';
+        if (elements.vCustomCssEnabled) elements.vCustomCssEnabled.checked = v.customCssEnabled !== false;
 
         updateObsUrl();
         updatePreviewLayout();
@@ -933,7 +937,9 @@ const saveAndUpdateViewers = async () => {
             textColor: elements.vMonitorText ? elements.vMonitorText.value : '#f8fafc',
             fontSize: elements.vMonitorSize ? parseFloat(elements.vMonitorSize.value) : 4,
             showTotal: elements.vMonitorShowTotal ? elements.vMonitorShowTotal.checked : true
-        }
+        },
+        customCSS: elements.vCustomCss ? elements.vCustomCss.value : '',
+        customCssEnabled: elements.vCustomCssEnabled ? elements.vCustomCssEnabled.checked : true
     };
     if (elements.vMonitorSizeVal) elements.vMonitorSizeVal.innerText = `${appConfig.viewersConfig.monitor.fontSize}rem`;
     if (elements.vBgOpacityVal) elements.vBgOpacityVal.innerText = `${appConfig.viewersConfig.bgOpacity}%`;
@@ -1132,6 +1138,8 @@ if (elements.vMonitorBg) elements.vMonitorBg.oninput = saveAndUpdateViewers;
 if (elements.vMonitorText) elements.vMonitorText.oninput = saveAndUpdateViewers;
 if (elements.vMonitorSize) elements.vMonitorSize.oninput = saveAndUpdateViewers;
 if (elements.vMonitorShowTotal) elements.vMonitorShowTotal.onchange = saveAndUpdateViewers;
+if (elements.vCustomCss) elements.vCustomCss.oninput = saveAndUpdateViewers;
+if (elements.vCustomCssEnabled) elements.vCustomCssEnabled.onchange = saveAndUpdateViewers;
 
 [elements.vYtEnabled, elements.vShortsEnabled, elements.vTwEnabled, elements.vKickEnabled, elements.vTtEnabled].forEach(el => {
     if (el) el.onchange = saveAndUpdateViewers;

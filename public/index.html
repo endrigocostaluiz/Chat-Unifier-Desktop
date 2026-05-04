@@ -616,56 +616,81 @@
                         </div>
 
                         <!-- Módulo Monitor de Espectadores -->
-                        <div class="card p-6 rounded-3xl border border-white/5 bg-white/[0.02] space-y-6">
-                            <div class="flex items-center justify-between">
+                        <div class="card p-6 rounded-3xl border border-white/5 bg-white/[0.02] space-y-6 collapsible">
+                            <div class="collapsible-header flex items-center justify-between cursor-pointer">
                                 <div>
                                     <h3 class="text-xs font-black uppercase text-white/60 tracking-widest" data-i18n="URL Monitor">URL MONITOR</h3>
                                     <p class="text-[10px] text-white/20 italic" data-i18n="Monitoramento em tela cheia com cores customizadas">Monitoramento em tela cheia com cores customizadas</p>
                                 </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="v-monitor-enabled" class="sr-only peer">
-                                    <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
-                                </label>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="chevron opacity-40"><path d="m6 9 6 6 6-6"/></svg>
                             </div>
 
-                            <div id="v-monitor-settings" class="hidden space-y-6 pt-4 border-t border-white/5 animate-in fade-in duration-300">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="space-y-2">
-                                        <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Cor do Fundo">Cor do Fundo</label>
-                                        <input type="color" id="v-monitor-bg" value="#0f172a" class="w-full h-10 rounded-xl bg-transparent border-none cursor-pointer">
-                                    </div>
-                                    <div class="space-y-2">
-                                        <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Cor do Texto">Cor do Texto</label>
-                                        <input type="color" id="v-monitor-text" value="#f8fafc" class="w-full h-10 rounded-xl bg-transparent border-none cursor-pointer">
-                                    </div>
+                            <div class="collapsible-content hidden space-y-6 pt-4 border-t border-white/5">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-[9px] opacity-30 leading-relaxed" data-i18n="Habilitar Monitor Independente">Habilitar Monitor Independente</p>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="v-monitor-enabled" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500"></div>
+                                    </label>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="space-y-2">
-                                        <div class="flex justify-between">
-                                            <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Tamanho">Tamanho</label>
-                                            <span id="v-monitor-size-val" class="text-[10px] text-blue-400 font-bold">4rem</span>
+                                <div id="v-monitor-settings" class="hidden space-y-6 animate-in fade-in duration-300">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="space-y-2">
+                                            <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Cor do Fundo">Cor do Fundo</label>
+                                            <input type="color" id="v-monitor-bg" value="#0f172a" class="w-full h-10 rounded-xl bg-transparent border-none cursor-pointer">
                                         </div>
-                                        <input type="range" id="v-monitor-size" min="1" max="15" step="0.5" value="4" class="w-full accent-blue-500 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                                        <div class="space-y-2">
+                                            <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Cor do Texto">Cor do Texto</label>
+                                            <input type="color" id="v-monitor-text" value="#f8fafc" class="w-full h-10 rounded-xl bg-transparent border-none cursor-pointer">
+                                        </div>
                                     </div>
-                                    <div class="flex items-center justify-between pt-4">
-                                        <label class="text-[10px] text-white/40 uppercase font-black" data-i18n="Mostrar Total">Mostrar Total</label>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" id="v-monitor-show-total" checked class="sr-only peer">
-                                            <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
-                                        </label>
-                                    </div>
-                                </div>
 
-                                <div class="space-y-3">
-                                    <label class="block text-xs text-white/40 uppercase font-black tracking-wider" data-i18n="URL do Monitor">URL do Monitor</label>
-                                    <div class="flex gap-2">
-                                        <input type="text" readonly value="http://localhost:3000/viewers-monitor" id="v-monitor-url" class="flex-1 bg-black/40 rounded-xl px-4 py-3 border border-white/5 font-mono text-xs text-blue-400/80 break-all select-all focus:outline-none">
-                                        <button onclick="copyLink('http://localhost:3000/viewers-monitor', this)" class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 rounded-xl transition-all flex items-center gap-2 text-xs">
-                                            <span data-i18n="Copiar">Copiar</span>
-                                        </button>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="space-y-2">
+                                            <div class="flex justify-between">
+                                                <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Tamanho">Tamanho</label>
+                                                <span id="v-monitor-size-val" class="text-[10px] text-blue-400 font-bold">4rem</span>
+                                            </div>
+                                            <input type="range" id="v-monitor-size" min="1" max="15" step="0.5" value="4" class="w-full accent-blue-500 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                                        </div>
+                                        <div class="flex items-center justify-between pt-4">
+                                            <label class="text-[10px] text-white/40 uppercase font-black" data-i18n="Mostrar Total">Mostrar Total</label>
+                                            <label class="relative inline-flex items-center cursor-pointer">
+                                                <input type="checkbox" id="v-monitor-show-total" checked class="sr-only peer">
+                                                <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <label class="block text-xs text-white/40 uppercase font-black tracking-wider" data-i18n="URL do Monitor">URL do Monitor</label>
+                                        <div class="flex gap-2">
+                                            <input type="text" readonly value="http://localhost:3000/viewers-monitor" id="v-monitor-url" class="flex-1 bg-black/40 rounded-xl px-4 py-3 border border-white/5 font-mono text-xs text-blue-400/80 break-all select-all focus:outline-none">
+                                            <button onclick="copyLink('http://localhost:3000/viewers-monitor', this)" class="bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 rounded-xl transition-all flex items-center gap-2 text-xs">
+                                                <span data-i18n="Copiar">Copiar</span>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+
+                        <!-- CSS Customizado (Viewers) -->
+                        <div class="card p-6 rounded-3xl border border-white/5 bg-white/[0.02] space-y-6 collapsible">
+                            <div class="collapsible-header flex items-center justify-between cursor-pointer">
+                                <h3 class="text-xs font-black uppercase text-white/60 tracking-widest" data-i18n="CSS Customizado">CSS Customizado</h3>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="chevron opacity-40"><path d="m6 9 6 6 6-6"/></svg>
+                            </div>
+                            <div class="collapsible-content hidden space-y-4 pt-4 border-t border-white/5">
+                                <div class="flex items-center justify-between">
+                                    <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Habilitar CSS">Habilitar CSS</label>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="v-custom-css-enabled" checked class="sr-only peer">
+                                        <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                    </label>
+                                </div>
+                                <textarea id="v-custom-css" placeholder="/* Seu código CSS aqui... */" class="w-full h-32 bg-black/40 border border-white/10 rounded-xl p-3 text-[10px] font-mono focus:outline-none focus:border-emerald-500"></textarea>
                             </div>
                         </div>
                     </section>
