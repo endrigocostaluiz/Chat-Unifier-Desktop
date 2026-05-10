@@ -32,7 +32,7 @@ const processedIds = new Set();
 function isNewMessage(id, isFallback = false) {
   if (!id || processedIds.has(id)) return false;
   processedIds.add(id);
-  const timeout = isFallback ? 60 * 1000 : 30 * 60 * 1000;
+  const timeout = isFallback ? 3 * 1000 : 30 * 60 * 1000;
   setTimeout(() => processedIds.delete(id), timeout);
   return true;
 }
@@ -130,8 +130,16 @@ function processNode(node) {
     }
     return;
   }
-  if (node.hasAttribute?.('data-chat-entry') || node.hasAttribute?.('data-index')) { processKickEntry(node); return; }
+  // Só redireciona para Kick se estiver numa página do Kick (evita capturar TikTok pelo data-index)
+  if (window.location.href.includes('kick.com') && (node.hasAttribute?.('data-chat-entry') || node.hasAttribute?.('data-index'))) {
+    processKickEntry(node);
+    return;
+  }
 
+  processTikTokNode(node);
+}
+
+function processTikTokNode(node) {
   const tiktokMsg = node.getAttribute?.('data-e2e') === 'chat-message' ? node : 
                   node.closest?.('[data-e2e="chat-message"]') ||
                   node.closest?.('div[class*="ChatMessage"]') ||
@@ -139,14 +147,60 @@ function processNode(node) {
                   node.closest?.('div[class*="ChatLine"]');
 
   if (tiktokMsg) {
-    const authorEl = tiktokMsg.querySelector('[data-e2e="message-owner-name"], [data-e2e="chat-message-user-name"], span[class*="Username"], span[class*="Nickname"]');
-    const msgEl = tiktokMsg.querySelector('.w-full.break-words.align-middle, [data-e2e="chat-message-text"], span[class*="MessageText"], span[class*="ChatContent"]');
-    const author = authorEl?.innerText?.replace(':', '').trim();
-    const message = parseMessageContent(msgEl);
-    if (author && message) {
-      const rawId = `tiktok-${author}-${message.substring(0, 40)}`;
-      if (isNewMessage(rawId, true)) ipcRenderer.send('new-message', { author, message, avatar: tiktokMsg.querySelector('img')?.src || null, timestamp: Date.now(), platform: 'tiktok', rawId, isFallback: true });
+    sendTikTokMessage(tiktokMsg);
+  }
+}
+
+function sendTikTokMessage(tiktokMsg) {
+  // Busca o nome do autor
+  const authorEl = tiktokMsg.querySelector('[data-e2e="message-owner-name"]');
+  if (!authorEl) return;
+  
+  const author = authorEl.innerText?.replace(':', '').trim();
+  if (!author) return;
+  
+  // Ignorar mensagens de "entrou" (enter-message) ANTES de buscar o texto
+  if (tiktokMsg.getAttribute?.('data-e2e') === 'enter-message') return;
+  // Verifica também se é um container pai de enter-message
+  if (tiktokMsg.querySelector('[data-e2e="enter-message"]')) return;
+  
+  // Busca o texto da mensagem - tenta múltiplos seletores
+  let msgEl = tiktokMsg.querySelector('.w-full.break-words.align-middle');
+  if (!msgEl) msgEl = tiktokMsg.querySelector('[data-e2e="chat-message-text"]');
+  if (!msgEl) msgEl = tiktokMsg.querySelector('div[class*="MessageText"]');
+  if (!msgEl) msgEl = tiktokMsg.querySelector('span[class*="Comment"]');
+  
+  // Fallback: busca divs com texto que não seja o nome do autor
+  if (!msgEl) {
+    const allDivs = tiktokMsg.querySelectorAll('div.break-words, div.w-full');
+    for (const d of allDivs) {
+      const txt = d.innerText?.trim();
+      if (txt && txt !== author && !d.querySelector('[data-e2e="message-owner-name"]')) {
+        msgEl = d;
+        break;
+      }
     }
+  }
+  
+  const message = parseMessageContent(msgEl);
+  if (!message) {
+    console.log(`[TikTok Debug] Autor "${author}" encontrado mas sem texto de mensagem`);
+    return;
+  }
+  
+  // Ignora se a mensagem é "entrou" / "joined" / contém "entrou"
+  const msgLower = message.trim().toLowerCase();
+  if (msgLower === 'entrou' || msgLower === 'joined' || msgLower.endsWith(' entrou') || msgLower.endsWith(' joined')) return;
+  
+  const parentIndex = tiktokMsg.closest?.('[data-index]');
+  const dataIndex = parentIndex?.getAttribute?.('data-index') || '';
+  const rawId = dataIndex ? `tiktok-idx-${dataIndex}-${author}` : `tiktok-${author}-${message.substring(0, 40)}`;
+  const isFallbackId = !dataIndex;
+  if (isNewMessage(rawId, isFallbackId)) {
+    console.log(`[TikTok Chat] Mensagem capturada: ${author}: ${message.substring(0, 50)}`);
+    ipcRenderer.send('new-message', { author, message, avatar: tiktokMsg.querySelector('img')?.src || null, timestamp: Date.now(), platform: 'tiktok', rawId, isFallback: isFallbackId });
+  } else {
+    console.log(`[TikTok Debug] Duplicada ignorada: ${author}: ${message.substring(0, 30)}`);
   }
 }
 
@@ -168,6 +222,65 @@ function initChatObserver() {
     observer.observe(document.body, { childList: true, subtree: true });
 }
 initChatObserver();
+
+// ─── POLLING FALLBACK PARA TIKTOK (lista virtualizada) ───────
+// O TikTok usa scroll virtual que pode reciclar nós sem disparar addedNodes
+if (window.location.href.includes('tiktok.com')) {
+  const tiktokProcessedIndexes = new Set();
+  
+  setInterval(() => {
+    // Verifica se estamos em modo viewer (não processar chat)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('unifier_mode') === 'viewer') return;
+    
+    // Busca TODOS os containers com data-index que tenham message-owner-name dentro
+    const allIndexed = document.querySelectorAll('[data-index]');
+    const allChatMsgs = document.querySelectorAll('[data-e2e="chat-message"]');
+    const allNames = document.querySelectorAll('[data-e2e="message-owner-name"]');
+    
+    // Log de diagnóstico a cada 10 ciclos (~15 segundos)
+    if (!window._ttPollCount) window._ttPollCount = 0;
+    window._ttPollCount++;
+    if (window._ttPollCount % 10 === 1) {
+      console.log(`[TikTok Poll Debug] URL: ${window.location.href.substring(0, 80)}`);
+      console.log(`[TikTok Poll Debug] data-index: ${allIndexed.length}, chat-message: ${allChatMsgs.length}, owner-name: ${allNames.length}, processed: ${tiktokProcessedIndexes.size}`);
+      if (allNames.length > 0) {
+        const lastName = allNames[allNames.length - 1];
+        console.log(`[TikTok Poll Debug] Último nome encontrado: "${lastName.innerText}" no data-index="${lastName.closest('[data-index]')?.getAttribute('data-index')}"`);
+      }
+    }
+    
+    let found = 0;
+    allIndexed.forEach(container => {
+      const idx = container.getAttribute('data-index');
+      if (!idx || tiktokProcessedIndexes.has(idx)) return;
+      
+      // Verifica se tem um nome de autor (indica que é mensagem)
+      const nameEl = container.querySelector('[data-e2e="message-owner-name"]');
+      if (!nameEl) return;
+      
+      // Busca o container da mensagem (pode ser chat-message, enter-message, etc)
+      const msgContainer = container.querySelector('[data-e2e="chat-message"]') || container.querySelector('.P4-Regular.text-UIText1');
+      if (!msgContainer) return;
+      
+      tiktokProcessedIndexes.add(idx);
+      found++;
+      sendTikTokMessage(msgContainer);
+    });
+    
+    if (found > 0) {
+      console.log(`[TikTok Poll] ${found} mensagens novas processadas`);
+    }
+    
+    // Limpa indexes antigos para evitar vazamento de memória (mantém os últimos 200)
+    if (tiktokProcessedIndexes.size > 200) {
+      const arr = Array.from(tiktokProcessedIndexes);
+      arr.slice(0, arr.length - 100).forEach(k => tiktokProcessedIndexes.delete(k));
+    }
+  }, 1500);
+  
+  console.log('[TikTok] Polling fallback ativado para lista virtualizada');
+}
 
 // ─── MONITOR DE ESPECTADORES ───────────────────────────
 // ─── MONITOR DE ESPECTADORES ───────────────────────────

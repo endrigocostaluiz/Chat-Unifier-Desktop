@@ -11,6 +11,7 @@ app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');
 app.commandLine.appendSwitch('disable-renderer-backgrounding', 'true');
 app.commandLine.appendSwitch('disable-background-timer-throttling', 'true');
 app.setAppUserModelId('com.driftweb.chatunifier');
+app.isQuiting = false;
 
 // Configurações e Persistência
 const CONFIG_PATH = path.join(app.getPath('userData'), 'driftweb-stream-chat.json');
@@ -112,21 +113,28 @@ let mainWindow;
 let tray;
 let scrapers = {};
 
+let lastRestoreTime = 0;
+function restoreMainWindow() {
+  const now = Date.now();
+  if (now - lastRestoreTime < 500) return; // Debounce de 500ms
+  lastRestoreTime = now;
+
+  if (!mainWindow || app.isQuiting) return;
+
+  // No Windows, a ordem restore -> show -> focus é mais estável
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  if (!mainWindow.isVisible()) mainWindow.show();
+  
+  mainWindow.focus();
+}
+
 function createTray() {
-  const iconPath = path.join(__dirname, 'public/icon.png'); // Novo ícone gerado
+  const iconPath = path.join(__dirname, 'public/icon.png');
   
   tray = new Tray(iconPath);
   
-  const restoreApp = () => {
-    if (mainWindow) {
-      mainWindow.show();
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
-  };
-
   const contextMenu = Menu.buildFromTemplate([
-    { label: 'Abrir Painel', click: restoreApp },
+    { label: 'Abrir Painel', click: restoreMainWindow },
     { label: 'Sair Completamente', click: () => {
         app.isQuiting = true;
         app.quit();
@@ -137,7 +145,8 @@ function createTray() {
   tray.setToolTip('Chat Unifier');
   tray.setContextMenu(contextMenu);
 
-  tray.on('double-click', restoreApp);
+  // No Windows, o clique duplo é o padrão para restaurar da bandeja
+  tray.on('double-click', restoreMainWindow);
 }
 
 async function checkNewVersion(manual = false) {
@@ -271,12 +280,7 @@ function startViewerScraper(key, url) {
           '*://*.tiktok.com/*.mp4*', 
           '*://*.tiktokv.com/*.mp4*', 
           '*://*.tiktok.com/*.m3u8*',
-          '*://*.tiktok.com/*wasm*',
-          '*://*.tiktok.com/*worker*',
-          '*://*.tiktok.com/*xgplayer*',
-          '*://*.tiktok.com/*emscripten*',
-          '*://*.byteoversea.com/*',
-          '*://*.pstatp.com/*'
+          '*://*.tiktok.com/*xgplayer*'
         ] 
       },
       (details, callback) => callback({ cancel: true })
@@ -403,7 +407,7 @@ function createMainWindow() {
   mainWindow.on('close', (event) => {
     if (!app.isQuiting) {
       event.preventDefault();
-      mainWindow.hide();
+      if (mainWindow.isVisible()) mainWindow.hide();
       
       if (tray && config.trayNotificationEnabled) {
         new Notification({
@@ -419,7 +423,7 @@ function createMainWindow() {
   // Ao minimizar, também pode esconder (opcional, mas comum para tray)
   mainWindow.on('minimize', (event) => {
     event.preventDefault();
-    mainWindow.hide();
+    if (mainWindow.isVisible()) mainWindow.hide();
 
     if (tray && config.trayNotificationEnabled) {
       new Notification({
@@ -454,8 +458,23 @@ function startScraper(platform) {
     }
   });
 
+  if (platform.type === 'tiktok') {
+    win.webContents.session.webRequest.onBeforeRequest(
+      { urls: [
+          '*://*.tiktok.com/*.mp4*', 
+          '*://*.tiktokv.com/*.mp4*', 
+          '*://*.tiktok.com/*.m3u8*',
+          '*://*.tiktok.com/*xgplayer*'
+        ] 
+      },
+      (details, callback) => callback({ cancel: true })
+    );
+    win.webContents.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+  } else {
+    win.webContents.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+  }
+
   win.webContents.setAudioMuted(true);
-  win.webContents.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
 
   let url = platform.url;
   if (platform.type === 'twitch') {
@@ -548,6 +567,16 @@ function startScraper(platform) {
   win.on('closed', () => {
     chatScraperRegistry.delete(wcId);
   });
+
+  // Log de console para depuração do TikTok
+  if (platform.type === 'tiktok') {
+    win.webContents.on('console-message', (event, level, message) => {
+      // Filtra apenas logs relevantes (nossos logs e erros)
+      if (message.includes('[TikTok') || message.includes('DriftChat') || level >= 2) {
+        console.log(`[ChatScraper TikTok] ${message}`);
+      }
+    });
+  }
 
   win.loadURL(url);
   scrapers[platform.id] = win;
@@ -695,10 +724,14 @@ ipcMain.on('open-external', (e, url) => { require('electron').shell.openExternal
 
 // Listener Global para Mensagens (captura de qualquer janela, inclusive viewer scrapers)
 ipcMain.on('new-message', (event, msg) => {
+  if (msg.platform === 'tiktok') {
+    console.log(`[IPC TikTok] Mensagem recebida: ${msg.author}: ${(msg.message || '').substring(0, 40)}`);
+  }
   if (msg.rawId) {
     if (globalProcessedIds.has(msg.rawId)) return;
     globalProcessedIds.add(msg.rawId);
-    const timeout = msg.isFallback ? 60 * 1000 : 30 * 60 * 1000;
+    // Para fallbacks (TikTok), usa 3 segundos. Evita bloquear mensagens idênticas repetidas intencionalmente.
+    const timeout = msg.isFallback ? 3 * 1000 : 30 * 60 * 1000;
     setTimeout(() => globalProcessedIds.delete(msg.rawId), timeout);
   }
   
@@ -768,11 +801,7 @@ if (!gotTheLock) {
 } else {
   app.on('second-instance', (event, commandLine, workingDirectory) => {
     // Quando uma segunda instância tentar abrir, foca na janela principal já existente
-    if (mainWindow) {
-      if (!mainWindow.isVisible()) mainWindow.show();
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.focus();
-    }
+    restoreMainWindow();
   });
 
   app.whenReady().then(async () => {
