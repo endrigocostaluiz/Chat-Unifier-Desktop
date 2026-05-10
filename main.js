@@ -724,9 +724,7 @@ ipcMain.on('open-external', (e, url) => { require('electron').shell.openExternal
 
 // Listener Global para Mensagens (captura de qualquer janela, inclusive viewer scrapers)
 ipcMain.on('new-message', (event, msg) => {
-  if (msg.platform === 'tiktok') {
-    console.log(`[IPC TikTok] Mensagem recebida: ${msg.author}: ${(msg.message || '').substring(0, 40)}`);
-  }
+
   if (msg.rawId) {
     if (globalProcessedIds.has(msg.rawId)) return;
     globalProcessedIds.add(msg.rawId);

@@ -183,10 +183,7 @@ function sendTikTokMessage(tiktokMsg) {
   }
   
   const message = parseMessageContent(msgEl);
-  if (!message) {
-    console.log(`[TikTok Debug] Autor "${author}" encontrado mas sem texto de mensagem`);
-    return;
-  }
+  if (!message) return;
   
   // Ignora se a mensagem é "entrou" / "joined" / contém "entrou"
   const msgLower = message.trim().toLowerCase();
@@ -197,10 +194,7 @@ function sendTikTokMessage(tiktokMsg) {
   const rawId = dataIndex ? `tiktok-idx-${dataIndex}-${author}` : `tiktok-${author}-${message.substring(0, 40)}`;
   const isFallbackId = !dataIndex;
   if (isNewMessage(rawId, isFallbackId)) {
-    console.log(`[TikTok Chat] Mensagem capturada: ${author}: ${message.substring(0, 50)}`);
     ipcRenderer.send('new-message', { author, message, avatar: tiktokMsg.querySelector('img')?.src || null, timestamp: Date.now(), platform: 'tiktok', rawId, isFallback: isFallbackId });
-  } else {
-    console.log(`[TikTok Debug] Duplicada ignorada: ${author}: ${message.substring(0, 30)}`);
   }
 }
 
@@ -238,17 +232,6 @@ if (window.location.href.includes('tiktok.com')) {
     const allChatMsgs = document.querySelectorAll('[data-e2e="chat-message"]');
     const allNames = document.querySelectorAll('[data-e2e="message-owner-name"]');
     
-    // Log de diagnóstico a cada 10 ciclos (~15 segundos)
-    if (!window._ttPollCount) window._ttPollCount = 0;
-    window._ttPollCount++;
-    if (window._ttPollCount % 10 === 1) {
-      console.log(`[TikTok Poll Debug] URL: ${window.location.href.substring(0, 80)}`);
-      console.log(`[TikTok Poll Debug] data-index: ${allIndexed.length}, chat-message: ${allChatMsgs.length}, owner-name: ${allNames.length}, processed: ${tiktokProcessedIndexes.size}`);
-      if (allNames.length > 0) {
-        const lastName = allNames[allNames.length - 1];
-        console.log(`[TikTok Poll Debug] Último nome encontrado: "${lastName.innerText}" no data-index="${lastName.closest('[data-index]')?.getAttribute('data-index')}"`);
-      }
-    }
     
     let found = 0;
     allIndexed.forEach(container => {
@@ -268,9 +251,6 @@ if (window.location.href.includes('tiktok.com')) {
       sendTikTokMessage(msgContainer);
     });
     
-    if (found > 0) {
-      console.log(`[TikTok Poll] ${found} mensagens novas processadas`);
-    }
     
     // Limpa indexes antigos para evitar vazamento de memória (mantém os últimos 200)
     if (tiktokProcessedIndexes.size > 200) {
