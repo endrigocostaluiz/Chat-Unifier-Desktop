@@ -36,7 +36,9 @@ O **Chat Unifier** é a solução definitiva para o seu **unificador de chat**. 
 
 </div>
 
-<img width="1906" height="1024" alt="Captura de tela 2026-05-01 231158" src="https://github.com/user-attachments/assets/e6e5506a-9bfb-4a5f-993a-3046bcaf4d60" />
+<img width="1183" height="785" alt="image" src="https://github.com/user-attachments/assets/57f3c3ab-4326-4a13-96a8-5f7189556afc" />
+
+<img width="1183" height="785" alt="contatodrpt" src="https://github.com/user-attachments/assets/8d648c68-55c3-4626-9999-9b3a0734873f" />
 
 
 ---
@@ -69,7 +71,9 @@ O **Chat Unifier** é a solução definitiva para o seu **unificador de chat**. 
 
 </div>
 
-<img width="1917" height="1030" alt="Captura de tela 2026-05-01 231239" src="https://github.com/user-attachments/assets/0a27709a-f415-48d2-afbf-22e541037954" />
+<img width="1183" height="785" alt="en" src="https://github.com/user-attachments/assets/717393fc-aa7b-4c85-a018-c912af4d7922" />
+
+<img width="1183" height="785" alt="contatoen" src="https://github.com/user-attachments/assets/bac0a333-3a54-43e2-b4c9-596459dc5cc1" />
 
 
 ---
