@@ -6,7 +6,7 @@ Object.defineProperty(document, 'hidden', { get: () => false });
 Object.defineProperty(document, 'hasFocus', { get: () => true });
 window.addEventListener('visibilitychange', (e) => e.stopImmediatePropagation(), true);
 
-console.log('DriftChat Scraper Ativo: ' + window.location.href);
+console.log('Chat Unifier Scraper Ativo: ' + window.location.href);
 
 // Limpeza de Banners e Popups do TikTok (evita que o chat pare de rolar/atualizar)
 if (window.location.href.includes('tiktok.com')) {

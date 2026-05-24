@@ -9,6 +9,7 @@ let appConfig = {
 };
 
 let editingPlatformIndex = -1;
+let localBasePath = '';
 
 const elements = {
     platformList: document.getElementById('platform-list'),
@@ -222,7 +223,8 @@ const i18n = {
         "Lembrar mais tarde": "Remind me later",
         "Versão": "Version",
         "Não foram encontradas atualizações.": "No updates found.",
-        "Você já está na versão mais recente!": "You are already on the latest version!"
+        "Você já está na versão mais recente!": "You are already on the latest version!",
+        "Badges + Total": "Badges + Total"
     }
 };
 
@@ -419,6 +421,9 @@ function formatTime(seconds) {
 // Inicialização
 async function init() {
     try {
+        const rawPath = await api.getAppPath();
+        localBasePath = 'file:///' + rawPath.replace(/\\/g, '/');
+
         const savedConfig = await api.getConfig();
         if (savedConfig) {
             appConfig = {
@@ -636,7 +641,7 @@ function updateViewersPreview() {
 
         const spacing = elements.vSpacing ? elements.vSpacing.value : 20;
         let containerClass = "flex items-center p-4 rounded-xl transition-all";
-        let containerStyle = `background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; gap: ${layout === 'stacked' ? Math.floor(spacing / 2) : spacing}px;`;
+        let containerStyle = `background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; gap: ${layout === 'stacked' ? Math.floor(spacing / 2) : layout === 'badges' ? 4 : spacing}px;`;
         
         if (layout === 'vertical') {
             containerClass = "flex flex-col p-6 rounded-2xl transition-all items-start";
@@ -646,6 +651,8 @@ function updateViewersPreview() {
             containerClass = "flex items-center p-2 rounded-lg transition-all";
         } else if (layout === 'stacked') {
             containerClass = "flex items-center p-3 rounded-2xl transition-all gap-3";
+        } else if (layout === 'badges') {
+            containerClass = "flex items-center p-2 rounded-xl transition-all gap-1";
         }
 
         const ch = v.channels || {};
@@ -659,6 +666,9 @@ function updateViewersPreview() {
 
         const activePlatforms = platforms.filter(p => p.enabled);
 
+        // Cores dos badges por plataforma
+        const badgeColors = { youtube: '#FF0000', shorts: '#CC0000', twitch: '#9146FF', kick: '#53FC18', tiktok: '#111111' };
+
         let statsHtml = '';
         if (layout === 'stacked') {
             const iconsHtml = activePlatforms.map((p, idx) => `
@@ -667,6 +677,21 @@ function updateViewersPreview() {
                 </div>
             `).join('');
             statsHtml = `<div class="flex items-center">${iconsHtml}</div>`;
+        } else if (layout === 'badges') {
+            const badgeSize = 30;
+            const iconSize = 18;
+            const iconsHtml = activePlatforms.map(p => {
+                const bgColor = badgeColors[p.key] || '#444';
+                const isKick = p.key === 'kick';
+                const iconColor = isKick ? 'black' : 'white';
+                const extraStyle = (p.key === 'tiktok' || p.key === 'kick' || p.key === 'shorts') ? 'transform: scale(0.85);' : '';
+                return `
+                    <div style="width:${badgeSize}px;height:${badgeSize}px;border-radius:9px;background:${bgColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <img src="${getIconUrl(p.key, iconColor)}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;${extraStyle}">
+                    </div>
+                `;
+            }).join('');
+            statsHtml = iconsHtml;
         } else {
             statsHtml = activePlatforms.map(p => `
                 <div class="flex items-center gap-1">
@@ -676,13 +701,16 @@ function updateViewersPreview() {
             `).join('');
         }
 
+        const showTotalInPreview = showTotal && (layout === 'stacked' || layout === 'badges' || (layout !== 'minimalist' && activePlatforms.length > 1));
+
         vPreviewContent.innerHTML = `
             <div class="w-full flex flex-col items-center gap-3">
                 <div class="${containerClass}" style="${containerStyle}">
                     ${statsHtml}
-                    ${showTotal && (layout === 'stacked' || (layout !== 'minimalist' && activePlatforms.length > 1)) ? `
-                    <div class="${(layout === 'vertical' || layout === 'grid') ? 'pt-2 border-t w-full' : (layout === 'stacked' ? 'pl-2' : 'pl-4 border-l')} border-white/10 flex items-center gap-2">
-                        ${layout !== 'stacked' ? `<span class="text-[9px] uppercase opacity-40 font-black tracking-widest">Total</span>` : ''}
+                    ${showTotalInPreview ? `
+                    <div class="${(layout === 'vertical' || layout === 'grid') ? 'pt-2 border-t w-full' : (layout === 'stacked' ? 'pl-2' : (layout === 'badges' ? 'pl-1.5' : 'pl-4 border-l'))} border-white/10 flex items-center gap-2">
+                        ${(layout !== 'stacked' && layout !== 'badges') ? `<span class="text-[9px] uppercase opacity-40 font-black tracking-widest">Total</span>` : ''}
+                        ${layout === 'badges' ? `<span class="text-white/50 text-lg">•</span>` : ''}
                         <span class="font-black text-lg">56.6K</span>
                     </div>
                     ` : ''}
@@ -744,7 +772,10 @@ function getPlatformColor(type) {
 }
 
 function updateObsUrl() {
-    if (elements.obsUrl) elements.obsUrl.value = `http://localhost:3000/chat`;
+    if (elements.obsUrl) elements.obsUrl.value = `${localBasePath}/public/overlay/index.html`;
+    if (elements.monitorUrl) elements.monitorUrl.value = `${localBasePath}/public/overlay/index.html?monitor=true`;
+    if (elements.vObsUrl) elements.vObsUrl.value = `${localBasePath}/public/viewers/index.html`;
+    if (elements.vMonitorUrl) elements.vMonitorUrl.value = `${localBasePath}/public/viewers-monitor/index.html`;
 }
 
 // Eventos

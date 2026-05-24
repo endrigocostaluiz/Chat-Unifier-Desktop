@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DriftChat Overlay</title>
+    <title>Chat Unifier Overlay</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
@@ -13,12 +13,12 @@
     <style id="custom-styles-container"></style>
 
     <script>
-        const socket = io();
+        const socket = io('http://localhost:3000', { reconnection: true, reconnectionDelay: 1000, reconnectionDelayMax: 5000, reconnectionAttempts: Infinity });
         const container = document.getElementById('chat-container');
         const customStyles = document.getElementById('custom-styles-container');
 
         // Detecta qual overlay é pela URL
-        const isMonitor = window.location.pathname.includes('/monitor');
+        const isMonitor = window.location.search.includes('monitor=true') || window.location.pathname.includes('/monitor');
         const ROOM = isMonitor ? 'overlay2' : 'overlay1';
 
         if (isMonitor) {

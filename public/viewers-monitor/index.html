@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Viewers Monitor - Chat Unifier</title>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -105,7 +105,7 @@
     </div>
 
     <script>
-        const socket = io();
+        const socket = io('http://localhost:3000', { reconnection: true, reconnectionDelay: 1000, reconnectionDelayMax: 5000, reconnectionAttempts: Infinity });
         const totalDisplay = document.getElementById('total-viewers');
         const totalContainer = document.getElementById('total-container');
         const grid = document.getElementById('platforms-grid');

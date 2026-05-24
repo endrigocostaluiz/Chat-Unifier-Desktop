@@ -572,7 +572,7 @@ function startScraper(platform) {
   if (platform.type === 'tiktok') {
     win.webContents.on('console-message', (event, level, message) => {
       // Filtra apenas logs relevantes (nossos logs e erros)
-      if (message.includes('[TikTok') || message.includes('DriftChat') || level >= 2) {
+      if (message.includes('[TikTok') || message.includes('Chat Unifier') || level >= 2) {
         console.log(`[ChatScraper TikTok] ${message}`);
       }
     });
@@ -620,7 +620,7 @@ function startScraper(platform) {
               const txt = (item.textContent || '').trim().toLowerCase();
               if ((txt === 'live chat' || txt === 'chat ao vivo') && item.clientHeight > 0) {
                 item.click();
-                console.log('[DriftChat] Forçado modo Live Chat');
+                console.log('[Chat Unifier] Forçado modo Live Chat');
                 break;
               }
             }
@@ -637,6 +637,7 @@ function startScraper(platform) {
 
 // API IPC
 ipcMain.handle('get-config', () => config);
+ipcMain.handle('get-app-path', () => app.getAppPath());
 
 ipcMain.handle('save-config', (e, newConfig) => {
   config = newConfig;
