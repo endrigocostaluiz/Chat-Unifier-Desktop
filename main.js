@@ -302,6 +302,22 @@ function startViewerScraper(key, url) {
         const vid = targetUrl.match(/[?&]v=([^&#]+)/) || targetUrl.match(/v\/([^&#]+)/);
         if (vid) targetUrl = `https://www.youtube.com/shorts/${vid[1]}`;
     }
+  } else if (key === 'youtube') {
+    if (!targetUrl.includes('youtube.com') && !targetUrl.includes('youtu.be')) {
+      const cleanHandle = targetUrl.trim().replace(/^\/+/, '');
+      if (cleanHandle.startsWith('@')) {
+        targetUrl = `https://www.youtube.com/${cleanHandle}/live`;
+      } else {
+        targetUrl = `https://www.youtube.com/@${cleanHandle}/live`;
+      }
+    } else {
+      const isDirectVideo = targetUrl.includes('watch?v=') || targetUrl.includes('youtu.be/') || targetUrl.includes('/live/') || targetUrl.includes('/shorts/');
+      if (!isDirectVideo) {
+        if (!targetUrl.includes('/live')) {
+          targetUrl = targetUrl.replace(/\/$/, '') + '/live';
+        }
+      }
+    }
   } else if (key === 'tiktok') {
     let cleanUrl = targetUrl.split('?')[0].replace(/\/$/, '');
     if (!cleanUrl.includes('tiktok.com')) {

@@ -327,8 +327,51 @@ const fetchViewers = async () => {
       }
       
       if (!count || count === '0') {
-        const el = document.querySelector('.viewers-count, #view-count, span[dir="auto"], .ytd-video-view-count-renderer, yt-formatted-string.ytd-video-view-count-renderer, [aria-label*="viewers"], [aria-label*="espectadores"]');
-        if (el) count = extractCount(el.innerText || el.getAttribute('aria-label'));
+        if (platform === 'shorts') {
+          const el = document.querySelector('.viewers-count, #view-count, span[dir="auto"]');
+          if (el) count = extractCount(el.innerText);
+        } else {
+          // YouTube Regular (Live / Watch)
+          // 1. Tenta pegar o elemento de view count específico que tem o texto formatado limpo
+          let el = document.querySelector('ytd-video-view-count-renderer .view-count');
+          if (el && el.innerText) {
+            const text = el.innerText;
+            if (/assistindo|watching|espectadores|espectador/i.test(text)) {
+              count = extractCount(text);
+            }
+          }
+          
+          // 2. Se não conseguiu, tenta pegar do aria-label do #view-count (evita o innerText poluído por animações)
+          if (!count || count === '0') {
+            el = document.querySelector('#info-container #view-count, #view-count');
+            if (el) {
+              const text = el.getAttribute('aria-label') || el.innerText || '';
+              if (/assistindo|watching|espectadores|espectador/i.test(text)) {
+                count = extractCount(text);
+              }
+            }
+          }
+          
+          // 3. Fallback para a página inicial do canal (caso o redirecionamento ainda não tenha ocorrido)
+          if (!count || count === '0') {
+            const lockups = Array.from(document.querySelectorAll('.ytLockupViewModelHost'));
+            for (const lockup of lockups) {
+              const badge = lockup.querySelector('badge-shape, .ytd-thumbnail-overlay-time-status-renderer');
+              const isLive = badge && (badge.innerText.includes('AO VIVO') || badge.innerText.includes('LIVE'));
+              if (isLive) {
+                const metadataRows = Array.from(lockup.querySelectorAll('.ytContentMetadataViewModelMetadataRow'));
+                for (const row of metadataRows) {
+                  const text = row.innerText || '';
+                  if (/assistindo|watching|espectadores|espectador/i.test(text)) {
+                    count = extractCount(text);
+                    if (count && count !== '0') break;
+                  }
+                }
+              }
+              if (count && count !== '0') break;
+            }
+          }
+        }
       }
     } else if (window.location.href.includes('kick.com')) {
       platform = 'kick';
