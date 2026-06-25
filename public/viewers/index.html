@@ -247,9 +247,12 @@
             // Tamanho do badge (caixa colorida) proporcional ao fontSize
             const badgeSize = Math.round(fontSize * 1.75);
 
+            const channelsOrder = currentConfig.channelsOrder || ['youtube', 'shorts', 'twitch', 'kick', 'tiktok'];
+
             // Calcula quais plataformas devem aparecer
             const visiblePlatforms = [];
-            for (const [platform, count] of Object.entries(currentData.counts)) {
+            for (const platform of channelsOrder) {
+                const count = currentData.counts[platform];
                 if (!count && count !== 0 && count !== '0') continue;
                 if (channels[platform] && channels[platform].enabled === false) continue;
                 visiblePlatforms.push(platform);

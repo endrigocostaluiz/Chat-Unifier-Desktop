@@ -205,17 +205,18 @@ const observer = new MutationObserver((mutations) => {
       processNode(node);
       
       // "Raio-X": Captura mensagens que venham dentro de containers (essencial para Twitch/YT/TikTok)
-      node.querySelectorAll?.('.chat-line__message, yt-live-chat-text-message-renderer, yt-live-chat-paid-message-renderer, [data-chat-entry], .chat-entry, [data-index], [data-e2e="chat-message"], div[class*="ChatMessage"], div[class*="ChatItem"]')
-          .forEach(child => processNode(child));
+      // Otimização: evita fazer buscas custosas de querySelectorAll se o nó não tiver filhos
+      if (node.children && node.children.length > 0) {
+        node.querySelectorAll?.('.chat-line__message, yt-live-chat-text-message-renderer, yt-live-chat-paid-message-renderer, [data-chat-entry], .chat-entry, [data-index], [data-e2e="chat-message"], div[class*="ChatMessage"], div[class*="ChatItem"]')
+            .forEach(child => processNode(child));
+      }
     }
   }
 });
 
 function initChatObserver() {
-    if (!document.body) { setTimeout(initChatObserver, 500); return; }
     observer.observe(document.body, { childList: true, subtree: true });
 }
-initChatObserver();
 
 // ─── POLLING FALLBACK PARA TIKTOK (lista virtualizada) ───────
 // O TikTok usa scroll virtual que pode reciclar nós sem disparar addedNodes
@@ -467,10 +468,15 @@ const fetchViewers = async () => {
 };
 
 const runLoop = () => { fetchViewers(); setTimeout(runLoop, (window._viewerInterval || 30) * 1000); };
-// Tenta iniciar no milésimo zero assim que o corpo da página estiver disponível
-const checkBody = setInterval(() => {
-    if (document.body) {
-        clearInterval(checkBody);
-        setTimeout(runLoop, 500);
-    }
-}, 100);
+
+// Inicialização coordenada e limpa após o DOM estar pronto
+function startScrapers() {
+  initChatObserver();
+  setTimeout(runLoop, 500);
+}
+
+if (document.body) {
+  startScrapers();
+} else {
+  document.addEventListener('DOMContentLoaded', startScrapers);
+}

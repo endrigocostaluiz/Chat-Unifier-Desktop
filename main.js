@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session, clipboard, Tray, Menu, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, session, clipboard, Tray, Menu, Notification, shell } = require('electron');
 const path = require('path');
 const fs = require('fs-extra');
 const http = require('http');
@@ -53,6 +53,7 @@ const defaultViewersConfig = () => ({
     kick: { url: '', enabled: true },
     tiktok: { url: '', enabled: true }
   },
+  channelsOrder: ['youtube', 'shorts', 'twitch', 'kick', 'tiktok'],
   customCSS: '',
   customCssEnabled: true
 });
@@ -274,6 +275,9 @@ function startViewerScraper(key, url) {
     }
   });
 
+  win.setMenu(null);
+  win.setMenuBarVisibility(false);
+
   if (key === 'tiktok') {
     win.webContents.session.webRequest.onBeforeRequest(
       { urls: [
@@ -462,9 +466,11 @@ function startScraper(platform) {
     width: 800,
     height: 800,
     skipTaskbar: true, // Esconde da barra de tarefas
-    frame: false,
-    focusable: false,
-    transparent: true,
+    frame: true,
+    focusable: true,
+    movable: true,
+    resizable: true,
+    transparent: false,
     webPreferences: {
       preload: path.join(__dirname, 'scraper.js'),
       contextIsolation: true,
@@ -473,6 +479,9 @@ function startScraper(platform) {
       backgroundThrottling: false
     }
   });
+
+  win.setMenu(null);
+  win.setMenuBarVisibility(false);
 
   if (platform.type === 'tiktok') {
     win.webContents.session.webRequest.onBeforeRequest(
@@ -579,6 +588,14 @@ function startScraper(platform) {
 
   const wcId = win.webContents.id;
   chatScraperRegistry.set(wcId, platform.id);
+
+  win.on('close', (event) => {
+    if (!app.isQuiting) {
+      event.preventDefault();
+      win.setPosition(-10000, -10000);
+      win.setSkipTaskbar(true);
+    }
+  });
 
   win.on('closed', () => {
     chatScraperRegistry.delete(wcId);
@@ -737,7 +754,7 @@ ipcMain.on('request-viewers-update', () => {
 
 
 ipcMain.on('copy-to-clipboard', (e, text) => { clipboard.writeText(text); });
-ipcMain.on('open-external', (e, url) => { require('electron').shell.openExternal(url); });
+ipcMain.on('open-external', (e, url) => { shell.openExternal(url); });
 
 // Listener Global para Mensagens (captura de qualquer janela, inclusive viewer scrapers)
 ipcMain.on('new-message', (event, msg) => {
@@ -784,16 +801,28 @@ ipcMain.on('tiktok-login-required', (event) => {
             title: "Login TikTok - Chat Unifier",
             autoHideMenuBar: true
         });
+        win.setMenu(null);
+        win.setMenuBarVisibility(false);
         win.loadURL('https://www.tiktok.com/login');
     }
 });
 
 ipcMain.on('show-scraper-window', (e, id) => {
-  if (scrapers[id] && !scrapers[id].isDestroyed()) {
-    scrapers[id].setPosition(100, 100);
-    scrapers[id].show();
-    scrapers[id].setSkipTaskbar(false);
-    scrapers[id].setFocusable(true);
+  const win = scrapers[id];
+  if (win && !win.isDestroyed()) {
+    const pos = win.getPosition();
+    if (pos[0] > -5000) {
+      // Janela está visível na tela, esconde de volta para fora da tela
+      win.setPosition(-10000, -10000);
+      win.setSkipTaskbar(true);
+    } else {
+      // Janela está fora da tela, exibe na tela
+      win.setPosition(100, 100);
+      win.show();
+      win.setSkipTaskbar(false);
+      win.setFocusable(true);
+      win.focus();
+    }
   }
 });
 
@@ -805,6 +834,8 @@ ipcMain.on('open-login-window', (e, platform) => {
       title: "Login TikTok - Chat Unifier",
       autoHideMenuBar: true
     });
+    win.setMenu(null);
+    win.setMenuBarVisibility(false);
     win.loadURL('https://www.tiktok.com/login');
   }
 });

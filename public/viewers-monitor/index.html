@@ -124,9 +124,16 @@
             socket.emit('get-config');
         });
 
+        let currentChannelsOrder = ['youtube', 'shorts', 'twitch', 'kick', 'tiktok'];
+        let lastData = null;
+
         socket.on('config-update', (config) => {
-            if (config && config.monitor) {
-                const monitor = config.monitor;
+            if (config) {
+                const viewersConfig = config.viewersConfig || config;
+                if (viewersConfig.channelsOrder) {
+                    currentChannelsOrder = viewersConfig.channelsOrder;
+                }
+                const monitor = viewersConfig.monitor || {};
                 document.body.style.setProperty('--bg-color', monitor.bgColor || '#0f172a');
                 document.body.style.setProperty('--text-color', monitor.textColor || '#f8fafc');
                 document.body.style.setProperty('--font-size', (monitor.fontSize || 4) + 'rem');
@@ -136,10 +143,15 @@
                 } else {
                     totalContainer.classList.remove('hidden');
                 }
+
+                if (lastData) {
+                    renderMonitor(lastData);
+                }
             }
         });
 
-        socket.on('viewers-update', (data) => {
+        function renderMonitor(data) {
+            lastData = data;
             if (!data || !data.active) {
                 totalDisplay.innerText = "OFF";
                 grid.innerHTML = "";
@@ -149,16 +161,21 @@
             totalDisplay.innerText = data.total.toLocaleString('pt-BR');
             
             let html = '';
-            for (const [platform, count] of Object.entries(data.counts)) {
-                if (!count && count !== 0) continue;
+            for (const platform of currentChannelsOrder) {
+                const count = data.counts[platform];
+                if (count === undefined || count === null) continue;
                 html += `
                     <div class="platform-item">
                         <img src="${icons[platform]}" class="platform-icon">
-                        <span>${count.toLocaleString('pt-BR')}</span>
+                        <span>${count === '...' ? '...' : count.toLocaleString('pt-BR')}</span>
                     </div>
                 `;
             }
             grid.innerHTML = html;
+        }
+
+        socket.on('viewers-update', (data) => {
+            renderMonitor(data);
         });
     </script>
 </body>

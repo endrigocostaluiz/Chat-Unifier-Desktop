@@ -541,9 +541,22 @@ async function init() {
         if (elements.vCustomCss) elements.vCustomCss.value = v.customCSS || '';
         if (elements.vCustomCssEnabled) elements.vCustomCssEnabled.checked = v.customCssEnabled !== false;
 
+        // Reordena os cards físicos do contador com base em channelsOrder
+        const channelsOrder = v.channelsOrder || ['youtube', 'shorts', 'twitch', 'kick', 'tiktok'];
+        const vList = document.getElementById('viewer-channels-list');
+        if (vList) {
+            channelsOrder.forEach(key => {
+                const item = vList.querySelector(`[data-platform-key="${key}"]`);
+                if (item) vList.appendChild(item);
+            });
+        }
+
         updateObsUrl();
         updatePreviewLayout();
         updateViewersPreview();
+
+        setupChatDragAndDrop();
+        setupViewerDragAndDrop();
     } catch (err) {
         console.error("Erro na inicialização:", err);
     }
@@ -656,6 +669,7 @@ function updateViewersPreview() {
         }
 
         const ch = v.channels || {};
+        const channelsOrder = v.channelsOrder || ['youtube', 'shorts', 'twitch', 'kick', 'tiktok'];
         const platforms = [
             { key: 'youtube', icon: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png', count: '38K', enabled: ch.youtube?.enabled !== false },
             { key: 'shorts', icon: 'https://cdn.simpleicons.org/youtubeshorts/FF0000', count: '8K', enabled: ch.shorts?.enabled !== false },
@@ -665,6 +679,7 @@ function updateViewersPreview() {
         ];
 
         const activePlatforms = platforms.filter(p => p.enabled);
+        activePlatforms.sort((a, b) => channelsOrder.indexOf(a.key) - channelsOrder.indexOf(b.key));
 
         // Cores dos badges por plataforma
         const badgeColors = { youtube: '#FF0000', shorts: '#CC0000', twitch: '#9146FF', kick: '#53FC18', tiktok: '#111111' };
@@ -734,7 +749,9 @@ function renderPlatforms(filter = '') {
         if (filter && !name.toLowerCase().includes(query) && !url.toLowerCase().includes(query)) return;
 
         const div = document.createElement('div');
-        div.className = 'card p-4 rounded-2xl flex items-center justify-between group';
+        div.className = 'card p-4 rounded-2xl flex items-center justify-between group cursor-grab active:cursor-grabbing chat-draggable-item';
+        div.draggable = true;
+        div.dataset.id = p.id;
         div.innerHTML = `
             <div class="flex items-center gap-3">
                 <div class="w-1.5 h-8 rounded-full" style="background: ${getPlatformColor(p.type)}"></div>
@@ -958,6 +975,7 @@ const saveAndUpdateMonitor = async () => {
 
 const saveAndUpdateViewers = async () => {
     appConfig.viewersConfig = {
+        channelsOrder: (appConfig.viewersConfig && appConfig.viewersConfig.channelsOrder) || ['youtube', 'shorts', 'twitch', 'kick', 'tiktok'],
         bgColor: elements.vBgColor ? elements.vBgColor.value : '#000000',
         bgOpacity: elements.vBgOpacity ? parseInt(elements.vBgOpacity.value) : 85,
         fontColor: elements.vFontColor ? elements.vFontColor.value : '#ffffff',
@@ -1260,3 +1278,84 @@ document.addEventListener('click', (e) => {
         content.classList.toggle('hidden');
     }
 });
+
+function setupChatDragAndDrop() {
+    const list = elements.platformList;
+    if (!list) return;
+
+    list.addEventListener('dragstart', (e) => {
+        const item = e.target.closest('.chat-draggable-item');
+        if (item) item.classList.add('dragging');
+    });
+
+    list.addEventListener('dragend', async (e) => {
+        const item = e.target.closest('.chat-draggable-item');
+        if (item) {
+            item.classList.remove('dragging');
+            const newOrderIds = [...list.children].map(child => child.dataset.id).filter(Boolean);
+            appConfig.platforms.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
+            await api.saveConfig(appConfig);
+            renderPlatforms(elements.searchChannels ? elements.searchChannels.value : '');
+            saveAndUpdate();
+        }
+    });
+
+    list.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const draggingItem = list.querySelector('.dragging');
+        if (!draggingItem) return;
+
+        const siblings = [...list.querySelectorAll('.chat-draggable-item:not(.dragging)')];
+        const nextSibling = siblings.find(sibling => {
+            const box = sibling.getBoundingClientRect();
+            const offset = e.clientY - box.top - box.height / 2;
+            return offset < 0;
+        });
+
+        if (nextSibling) {
+            list.insertBefore(draggingItem, nextSibling);
+        } else {
+            list.appendChild(draggingItem);
+        }
+    });
+}
+
+function setupViewerDragAndDrop() {
+    const list = document.getElementById('viewer-channels-list');
+    if (!list) return;
+
+    list.addEventListener('dragstart', (e) => {
+        const item = e.target.closest('.v-draggable-item');
+        if (item) item.classList.add('dragging');
+    });
+
+    list.addEventListener('dragend', async (e) => {
+        const item = e.target.closest('.v-draggable-item');
+        if (item) {
+            item.classList.remove('dragging');
+            const newOrderKeys = [...list.children].map(child => child.dataset.platformKey).filter(Boolean);
+            if (!appConfig.viewersConfig) appConfig.viewersConfig = {};
+            appConfig.viewersConfig.channelsOrder = newOrderKeys;
+            await saveAndUpdateViewers();
+        }
+    });
+
+    list.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        const draggingItem = list.querySelector('.dragging');
+        if (!draggingItem) return;
+
+        const siblings = [...list.querySelectorAll('.v-draggable-item:not(.dragging)')];
+        const nextSibling = siblings.find(sibling => {
+            const box = sibling.getBoundingClientRect();
+            const offset = e.clientY - box.top - box.height / 2;
+            return offset < 0;
+        });
+
+        if (nextSibling) {
+            list.insertBefore(draggingItem, nextSibling);
+        } else {
+            list.appendChild(draggingItem);
+        }
+    });
+}
