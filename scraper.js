@@ -310,6 +310,17 @@ const fetchViewers = async () => {
       let v = urlParams.get('v');
       if (!v) { const pathMatch = window.location.pathname.match(/\/(live|shorts)\/([^/]+)/); if (pathMatch) v = pathMatch[2]; }
       
+      if (v) {
+        const player = document.querySelector('#movie_player');
+        if (player && typeof player.getVideoData === 'function') {
+          const currentVideoId = player.getVideoData().video_id;
+          if (currentVideoId && currentVideoId !== v) {
+            console.log(`[YouTube Scraper] Ignorando contagem (player ainda no vídeo antigo: ${currentVideoId} vs esperado: ${v})`);
+            return;
+          }
+        }
+      }
+
       if (v && !isShortsPage) {
         try {
           const res = await fetch('https://www.youtube.com/youtubei/v1/updated_metadata?prettyPrint=false', {

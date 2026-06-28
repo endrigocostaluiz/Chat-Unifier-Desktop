@@ -16,6 +16,156 @@ app.isQuiting = false;
 // Configurações e Persistência
 const CONFIG_PATH = path.join(app.getPath('userData'), 'driftweb-stream-chat.json');
 
+function isYoutubeRedirectUrl(url) {
+  if (!url) return false;
+  if (url.includes('youtube.com/@') || url.includes('youtube.com/channel/') || url.includes('youtube.com/c/') || url.includes('youtube.com/user/')) {
+    if (!url.includes('watch?v=') && !url.includes('live_chat')) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function getYoutubeStartUrl(url) {
+  if (!url) return null;
+  const clean = url.split('?')[0].replace(/\/$/, '');
+  return clean.endsWith('/live') ? url : clean + '/live';
+}
+
+function resolveYoutubeRedirect(win, startUrl, callback) {
+  let resolved = false;
+
+  const checkUrl = () => {
+    if (resolved || win.isDestroyed()) return;
+    try {
+      const currentUrl = win.webContents.getURL();
+      let videoId = null;
+
+      if (currentUrl.includes('watch?v=')) {
+        const match = currentUrl.match(/[?&]v=([^&]+)/);
+        if (match) videoId = match[1];
+      } else if (currentUrl.includes('/live/')) {
+        const match = currentUrl.match(/\/live\/([^/?#]+)/);
+        if (match) videoId = match[1];
+      }
+
+      if (videoId && videoId !== 'live') {
+        resolved = true;
+        clearInterval(pollIntervalId);
+        clearTimeout(timeoutId);
+        console.log('[YouTube Redirect] Resolvido videoId via URL: ' + videoId + ' a partir de: ' + currentUrl);
+        callback(videoId);
+      }
+    } catch (e) {
+      // Ignorar
+    }
+  };
+
+  const extractVideoIdFromDOM = async () => {
+    if (resolved || win.isDestroyed()) return;
+    try {
+      const videoId = await win.webContents.executeJavaScript(`
+        (function() {
+          try {
+            if (window.ytInitialData) {
+              var videoIds = [];
+              var search = function(obj) {
+                if (!obj || typeof obj !== 'object') return;
+                if (obj.gridVideoRenderer) {
+                  var renderer = obj.gridVideoRenderer;
+                  var isLive = false;
+                  var isUpcoming = false;
+                  if (renderer.thumbnailOverlays) {
+                    var overlays = renderer.thumbnailOverlays;
+                    for (var i = 0; i < overlays.length; i++) {
+                      var overlay = overlays[i];
+                      if (overlay.thumbnailOverlayTimeStatusRenderer) {
+                        var style = overlay.thumbnailOverlayTimeStatusRenderer.style;
+                        if (style === 'LIVE') isLive = true;
+                        if (style === 'UPCOMING') isUpcoming = true;
+                      }
+                    }
+                  }
+                  videoIds.push({
+                    videoId: renderer.videoId,
+                    isLive: isLive,
+                    isUpcoming: isUpcoming
+                  });
+                }
+                for (var key in obj) {
+                  if (obj.hasOwnProperty(key)) {
+                    search(obj[key]);
+                  }
+                }
+              };
+              search(window.ytInitialData);
+              
+              var liveStream = videoIds.find(function(v) { return v.isLive; });
+              if (liveStream) return liveStream.videoId;
+              
+              var upcomingStream = videoIds.find(function(v) { return v.isUpcoming; });
+              if (upcomingStream) return upcomingStream.videoId;
+              
+              if (videoIds.length > 0) return videoIds[0].videoId;
+            }
+            return null;
+          } catch(e) { return null; }
+        })()
+      `);
+
+      if (videoId && videoId !== 'live') {
+        resolved = true;
+        clearInterval(pollIntervalId);
+        clearTimeout(timeoutId);
+        console.log('[YouTube DOM Scraping] Resolvido videoId: ' + videoId);
+        callback(videoId);
+      }
+    } catch (e) {
+      // Ignorar
+    }
+  };
+
+  const pollIntervalId = setInterval(() => {
+    checkUrl();
+    if (!resolved) {
+      extractVideoIdFromDOM();
+    }
+  }, 1500);
+
+  const timeoutId = setTimeout(() => {
+    clearInterval(pollIntervalId);
+    if (!resolved) {
+      console.log('[YouTube Redirect] Timeout (20s) - Não foi possível determinar a live a partir de: ' + startUrl);
+      if (!win.isDestroyed()) {
+        win.webContents.executeJavaScript(`
+          (function() {
+            var canonical = document.querySelector('link[rel="canonical"]');
+            if (canonical) {
+              var href = canonical.getAttribute('href') || '';
+              var m = href.match(/[?&]v=([^&]+)/);
+              if (m) return m[1];
+            }
+            return null;
+          })()
+        `).then(vid => {
+          if (vid && vid !== 'live') {
+            console.log('[YouTube Redirect Fallback] Resolvido via DOM canonical: ' + vid);
+            callback(vid);
+          }
+        }).catch(() => {});
+      }
+    }
+  }, 20000);
+
+  win.webContents.on('did-navigate', checkUrl);
+  win.webContents.on('did-navigate-in-page', checkUrl);
+  win.webContents.on('did-redirect-navigation', checkUrl);
+  win.webContents.on('did-finish-load', checkUrl);
+
+  console.log('[YouTube Redirect] Carregando URL inicial de canal: ' + startUrl);
+  win.loadURL(startUrl);
+}
+
 const defaultOverlay = (id) => ({
   layout: 'modern',
   animation: 'slide',
@@ -305,6 +455,7 @@ function startViewerScraper(key, url) {
   win._interval = config.viewersConfig.interval || 30;
   
   let targetUrl = url;
+  let isRedirect = false;
   if (key === 'twitch' && !targetUrl.includes('twitch.tv')) {
     targetUrl = `https://www.twitch.tv/${targetUrl}`;
   } else if (key === 'shorts') {
@@ -314,6 +465,16 @@ function startViewerScraper(key, url) {
     }
   } else if (key === 'youtube') {
     targetUrl = targetUrl.trim();
+    isRedirect = isYoutubeRedirectUrl(targetUrl);
+    if (isRedirect) {
+      const startUrl = getYoutubeStartUrl(targetUrl);
+      resolveYoutubeRedirect(win, startUrl, (videoId) => {
+        if (!win.isDestroyed()) {
+          const finalUrl = `https://www.youtube.com/watch?v=${videoId}&unifier_platform=${key}&unifier_mode=viewer`;
+          win.loadURL(finalUrl);
+        }
+      });
+    }
   } else if (key === 'tiktok') {
     let cleanUrl = targetUrl.split('?')[0].replace(/\/$/, '');
     if (!cleanUrl.includes('tiktok.com')) {
@@ -330,11 +491,13 @@ function startViewerScraper(key, url) {
     targetUrl = `https://kick.com/${targetUrl}`;
   }
 
-  // Adiciona a chave na URL para que o scraper saiba quem ele é sem depender de injeção assíncrona
-  const separator = targetUrl.includes('?') ? '&' : '?';
-  const urlWithKey = targetUrl + `${separator}unifier_platform=${key}&unifier_mode=viewer`;
+  if (!isRedirect) {
+    // Adiciona a chave na URL para que o scraper saiba quem ele é sem depender de injeção assíncrona
+    const separator = targetUrl.includes('?') ? '&' : '?';
+    const urlWithKey = targetUrl + `${separator}unifier_platform=${key}&unifier_mode=viewer`;
 
-  win.loadURL(urlWithKey);
+    win.loadURL(urlWithKey);
+  }
   
   win.webContents.on('console-message', (event, level, message, line, sourceId) => {
     console.log(`[Scraper ${key}] ${message}`);
@@ -494,33 +657,44 @@ function startScraper(platform) {
   win.webContents.setAudioMuted(true);
 
   let url = platform.url;
+  let isRedirect = false;
   if (platform.type === 'twitch') {
     const channel = url.replace(/\/$/, "").split('/').pop();
     url = `https://www.twitch.tv/popout/${channel}/chat`;
 
   } else if (platform.type === 'youtube') {
-    let videoId = null;
-    if (url.includes('live_chat')) {
-      // Já é a URL direta de chat
-    } else if (url.includes('watch?v=')) {
-      try {
-        videoId = new URL(url).searchParams.get('v');
-      } catch (e) {
-        const match = url.match(/[?&]v=([^&]+)/);
-        if (match) videoId = match[1];
-      }
-    } else if (url.includes('youtu.be/')) {
-      const parts = url.split('/');
-      videoId = parts[parts.length - 1].split('?')[0];
+    isRedirect = isYoutubeRedirectUrl(url);
+    if (isRedirect) {
+      const startUrl = getYoutubeStartUrl(url);
+      resolveYoutubeRedirect(win, startUrl, (videoId) => {
+        if (!win.isDestroyed()) {
+          win.loadURL(`https://www.youtube.com/live_chat?v=${videoId}&is_popout=1`);
+        }
+      });
     } else {
-      const match = url.match(/\/(live|shorts)\/([^/?#]+)/);
-      if (match) {
-        videoId = match[2];
+      let videoId = null;
+      if (url.includes('live_chat')) {
+        // Já é a URL direta de chat
+      } else if (url.includes('watch?v=')) {
+        try {
+          videoId = new URL(url).searchParams.get('v');
+        } catch (e) {
+          const match = url.match(/[?&]v=([^&]+)/);
+          if (match) videoId = match[1];
+        }
+      } else if (url.includes('youtu.be/')) {
+        const parts = url.split('/');
+        videoId = parts[parts.length - 1].split('?')[0];
+      } else {
+        const match = url.match(/\/(live|shorts)\/([^/?#]+)/);
+        if (match) {
+          videoId = match[2];
+        }
       }
-    }
 
-    if (videoId) {
-      url = `https://www.youtube.com/live_chat?v=${videoId}&is_popout=1`;
+      if (videoId) {
+        url = `https://www.youtube.com/live_chat?v=${videoId}&is_popout=1`;
+      }
     }
 
   } else if (platform.type === 'kick' && !url.includes('chatroom')) {
@@ -562,7 +736,9 @@ function startScraper(platform) {
     });
   }
 
-  win.loadURL(url);
+  if (!isRedirect) {
+    win.loadURL(url);
+  }
   scrapers[platform.id] = win;
 
   // Para YouTube: após carregar a live_chat, força o modo "Live Chat" (todas as mensagens)

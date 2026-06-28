@@ -928,9 +928,9 @@ if (elements.modalSave) {
         const url = elements.newUrl.value.trim();
         if (!url) return;
         if (type === 'youtube') {
-            const isDirectLive = url.includes('watch?v=') || url.includes('youtu.be/') || url.includes('/live/') || url.includes('/shorts/');
-            if (!isDirectLive) {
-                showToast(appConfig.lang === 'en' ? 'Please enter a valid YouTube live URL (must contain /watch?v=, /live/ or youtu.be/).' : 'Por favor, insira uma URL de live válida do YouTube (deve conter /watch?v=, /live/ ou youtu.be/).', 'error');
+            const isValidYoutube = url.includes('youtube.com') || url.includes('youtu.be');
+            if (!isValidYoutube) {
+                showToast(appConfig.lang === 'en' ? 'Please enter a valid YouTube URL (must contain youtube.com or youtu.be).' : 'Por favor, insira uma URL válida do YouTube (deve conter youtube.com ou youtu.be).', 'error');
                 return;
             }
         }
@@ -1089,9 +1089,9 @@ const saveAndUpdateViewers = async () => {
     const ytUrl = elements.vYtUrl ? elements.vYtUrl.value.trim() : '';
     const ytEnabled = elements.vYtEnabled ? elements.vYtEnabled.checked : false;
     if (ytUrl && ytEnabled) {
-        const isDirectLive = ytUrl.includes('watch?v=') || ytUrl.includes('youtu.be/') || ytUrl.includes('/live/') || ytUrl.includes('/shorts/');
-        if (!isDirectLive) {
-            showToast(appConfig.lang === 'en' ? 'Please enter a valid YouTube live URL for the counter (must contain /watch?v=, /live/ or youtu.be/).' : 'Por favor, insira uma URL de live válida do YouTube no contador (deve conter /watch?v=, /live/ ou youtu.be/).', 'error');
+        const isValidYoutube = ytUrl.includes('youtube.com') || ytUrl.includes('youtu.be');
+        if (!isValidYoutube) {
+            showToast(appConfig.lang === 'en' ? 'Please enter a valid YouTube URL for the counter (must contain youtube.com or youtu.be).' : 'Por favor, insira uma URL válida do YouTube no contador (deve conter youtube.com ou youtu.be).', 'error');
             return;
         }
     }
