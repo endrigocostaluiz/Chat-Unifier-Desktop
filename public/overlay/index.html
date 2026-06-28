@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Unifier Overlay</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=1.2.8">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
 <body class="transparent layout-modern">
@@ -80,6 +80,20 @@
             }
             if (data.hideLeftBorder !== undefined) {
                 document.body.classList.toggle('hide-borders', data.hideLeftBorder);
+            }
+
+            // Variáveis do layout Sticker
+            if (data.stickerAuthorBg) {
+                document.documentElement.style.setProperty('--sticker-author-bg', data.stickerAuthorBg);
+            }
+            if (data.stickerAuthorColor) {
+                document.documentElement.style.setProperty('--sticker-author-color', data.stickerAuthorColor);
+            }
+            if (data.stickerTextBg) {
+                document.documentElement.style.setProperty('--sticker-text-bg', data.stickerTextBg);
+            }
+            if (data.stickerTextColor) {
+                document.documentElement.style.setProperty('--sticker-text-color', data.stickerTextColor);
             }
 
             window.appConfig = data;

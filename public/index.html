@@ -131,7 +131,7 @@
                     Verificar Atualizações
                 </div>
             </button>
-            <span class="text-[9px] font-black text-white/10 mt-2">v1.2.7</span>
+            <span class="text-[9px] font-black text-white/10 mt-2">v1.2.8</span>
         </div>
     </aside>
 
@@ -199,6 +199,7 @@
                                          <label class="block text-[10px] opacity-40 uppercase">Estilo Visual</label>
                                          <select id="select-layout" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-2.5 text-xs focus:outline-none focus:border-emerald-500">
                                              <option value="modern">Moderno (Avatares)</option>
+                                             <option value="sticker">Sticker (Etiqueta)</option>
                                              <option value="bubble">Bubble (Balões)</option>
                                              <option value="cyberpunk">Cyberpunk (Neon)</option>
                                              <option value="glass">Glassmorphism (Vidro)</option>
@@ -272,6 +273,41 @@
                                                  <input type="checkbox" id="show-channel-name" class="sr-only peer">
                                                  <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
                                              </label>
+                                         </div>
+                                     </div>
+
+                                     <!-- Personalização do layout Sticker -->
+                                     <div id="sticker-custom-panel" class="hidden pt-2 border-t border-white/5 space-y-3 animate-in fade-in duration-200">
+                                         <div class="flex items-center justify-between">
+                                             <h4 class="text-[10px] font-black uppercase text-emerald-500 tracking-widest">Cores do Tema Sticker</h4>
+                                         </div>
+                                         <div class="grid grid-cols-2 gap-4">
+                                             <div class="space-y-1.5">
+                                                 <label class="block text-[10px] opacity-40 uppercase">Fundo do Autor</label>
+                                                 <div class="relative group">
+                                                     <input type="color" id="sticker-author-bg" value="#ffd11e" class="h-10 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-emerald-500/50">
+                                                 </div>
+                                             </div>
+                                             <div class="space-y-1.5">
+                                                 <label class="block text-[10px] opacity-40 uppercase">Texto do Autor</label>
+                                                 <div class="relative group">
+                                                     <input type="color" id="sticker-author-color" value="#000000" class="h-10 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-emerald-500/50">
+                                                 </div>
+                                             </div>
+                                         </div>
+                                         <div class="grid grid-cols-2 gap-4">
+                                             <div class="space-y-1.5">
+                                                 <label class="block text-[10px] opacity-40 uppercase">Fundo do Comentário</label>
+                                                 <div class="relative group">
+                                                     <input type="color" id="sticker-text-bg" value="#000000" class="h-10 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-emerald-500/50">
+                                                 </div>
+                                             </div>
+                                             <div class="space-y-1.5">
+                                                 <label class="block text-[10px] opacity-40 uppercase">Texto do Comentário</label>
+                                                 <div class="relative group">
+                                                     <input type="color" id="sticker-text-color" value="#ffffff" class="h-10 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-emerald-500/50">
+                                                 </div>
+                                             </div>
                                          </div>
                                      </div>
                                  </div>
@@ -401,6 +437,7 @@
                                             <label class="block text-[9px] text-white/40 mb-1.5 uppercase">Estilo Visual</label>
                                             <select id="m2-layout" class="w-full bg-[#0a0a0a] border border-white/10 rounded-lg p-2 text-xs focus:outline-none focus:border-blue-500">
                                                 <option value="modern">Moderno</option>
+                                                <option value="sticker">Sticker (Etiqueta)</option>
                                                 <option value="bubble">Bubble</option>
                                                 <option value="cyberpunk">Cyberpunk</option>
                                                 <option value="glass">Glassmorphism</option>
@@ -486,6 +523,31 @@
                                                 </label>
                                             </div>
                                         </div>
+
+                                        <!-- Personalização do layout Sticker (Monitor) -->
+                                        <div id="m2-sticker-custom-panel" class="hidden card p-3 rounded-xl bg-white/3 space-y-2 border-t border-white/5 animate-in fade-in duration-200">
+                                            <label class="block text-[9px] text-white/40 uppercase font-black">Cores do Tema Sticker</label>
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-[9px] opacity-40 mb-1">Fundo do Autor</label>
+                                                    <input type="color" id="m2-sticker-author-bg" value="#ffd11e" class="h-9 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-blue-500/50">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[9px] opacity-40 mb-1">Texto do Autor</label>
+                                                    <input type="color" id="m2-sticker-author-color" value="#000000" class="h-9 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-blue-500/50">
+                                                </div>
+                                            </div>
+                                            <div class="grid grid-cols-2 gap-3">
+                                                <div>
+                                                    <label class="block text-[9px] opacity-40 mb-1">Fundo do Texto</label>
+                                                    <input type="color" id="m2-sticker-text-bg" value="#000000" class="h-9 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-blue-500/50">
+                                                </div>
+                                                <div>
+                                                    <label class="block text-[9px] opacity-40 mb-1">Cor do Texto</label>
+                                                    <input type="color" id="m2-sticker-text-color" value="#ffffff" class="h-9 w-full bg-white/5 border border-white/10 rounded-xl cursor-pointer p-1 transition hover:border-blue-500/50">
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -536,7 +598,7 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <label class="block text-[10px] font-black text-white/20 uppercase mb-1">YouTube Live</label>
-                                    <input type="text" id="v-yt-url" placeholder="URL da Live ou Canal" class="w-full bg-transparent text-sm focus:outline-none placeholder:text-white/10">
+                                    <input type="text" id="v-yt-url" placeholder="URL da Live apenas (ex: watch?v=...)" class="w-full bg-transparent text-sm focus:outline-none placeholder:text-white/10">
                                 </div>
                                 <label class="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" id="v-yt-enabled" checked class="sr-only peer">
@@ -742,13 +804,29 @@
                                 </div>
                             </div>
 
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="card p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                                    <label class="block text-[10px] text-white/40 mb-2 uppercase font-black" data-i18n="Estilo dos Ícones">Estilo dos Ícones</label>
+                                    <select id="v-icon-style" class="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500">
+                                        <option value="original">Cores Originais</option>
+                                        <option value="custom">Cor Personalizada</option>
+                                    </select>
+                                </div>
+                                <div id="v-icon-color-container" class="card p-4 rounded-2xl bg-white/[0.02] border border-white/5 hidden animate-in fade-in duration-200">
+                                    <label class="block text-[10px] text-white/40 mb-2 uppercase font-black">Fundo dos Ícones</label>
+                                    <div class="flex items-center gap-3">
+                                        <input type="color" id="v-icon-color" value="#ffffff" class="w-full h-10 rounded-lg bg-transparent border-none cursor-pointer">
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="card p-4 rounded-2xl bg-white/[0.02] border border-white/5">
-                                <label class="block text-[10px] text-white/40 mb-2 uppercase font-black" data-i18n="Estilo dos Ícones">Estilo dos Ícones</label>
-                                <select id="v-icon-style" class="w-full bg-black/40 border border-white/10 rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500">
-                                    <option value="original">Cores Originais</option>
-                                    <option value="white">Branco</option>
-                                    <option value="black">Preto</option>
-                                </select>
+                                <label class="block text-[10px] text-white/40 mb-2 uppercase font-black">Borda dos Ícones</label>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-[10px] text-white/20 uppercase">Arredondamento (Border Radius)</span>
+                                    <span id="v-icon-radius-val" class="text-[10px] font-bold text-emerald-500">30%</span>
+                                </div>
+                                <input type="range" id="v-icon-radius" min="0" max="100" value="30" class="w-full accent-emerald-500 h-1 bg-white/10 rounded-lg appearance-none cursor-pointer">
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
@@ -833,6 +911,49 @@
         .layout-slim .avatar { width: 22px; height: 22px; }
         .layout-slim .text { font-size: 0.8rem; }
 
+        /* Layout Sticker */
+        .layout-sticker .preview-msg-fidelity {
+            border-radius: 0px;
+            background: transparent !important;
+            backdrop-filter: unset;
+            box-shadow: unset;
+            border-left: none !important;
+            margin-top: -10px;
+            padding: 10px 14px;
+        }
+        .layout-sticker .avatar, 
+        .layout-sticker .avatar-placeholder {
+            margin-right: -18px;
+            z-index: 3;
+            border: 3px solid #000 !important;
+            margin-top: 6px;
+            border-radius: 50%;
+        }
+        .layout-sticker .author-row {
+            background: var(--sticker-author-bg, #ffd11e);
+            padding: 2px 2px 2px 10px;
+            border: 3px solid #000;
+            z-index: 1;
+            transform: rotate(-2deg);
+            margin-left: -4px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .layout-sticker .author-name {
+            color: var(--sticker-author-color, #000000) !important;
+        }
+        .layout-sticker .text {
+            background: var(--sticker-text-bg, #000000);
+            color: var(--sticker-text-color, #ffffff) !important;
+            padding: 5px;
+            margin-top: -7px;
+            border: 3px solid #000;
+            border-top: none;
+            display: block;
+            opacity: 1 !important;
+        }
+
         .avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
         .avatar-placeholder { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; }
         .author-name { font-weight: 700; font-size: 0.9rem; }
@@ -868,8 +989,9 @@
                     <input type="text" id="new-name" placeholder="Ex: Nome do canal" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500">
                 </div>
                 <div>
-                    <label class="block text-[10px] uppercase font-black opacity-30 mb-1.5 ml-1">URL do Canal</label>
+                    <label id="new-url-label" class="block text-[10px] uppercase font-black opacity-30 mb-1.5 ml-1">URL do Canal</label>
                     <input type="text" id="new-url" placeholder="https://..." class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500">
+                    <p id="new-url-help" class="text-[9px] opacity-40 mt-1.5 ml-1 leading-normal"></p>
                 </div>
             </div>
             <div class="flex gap-3 mt-8">

@@ -57,6 +57,13 @@ const elements = {
     hideTimeoutVal: document.getElementById('hide-timeout-val'),
     hideTimeoutPanel: document.getElementById('hide-timeout-panel'),
 
+    // Sticker Overlay 1
+    stickerCustomPanel: document.getElementById('sticker-custom-panel'),
+    stickerAuthorBg: document.getElementById('sticker-author-bg'),
+    stickerAuthorColor: document.getElementById('sticker-author-color'),
+    stickerTextBg: document.getElementById('sticker-text-bg'),
+    stickerTextColor: document.getElementById('sticker-text-color'),
+
     // Monitor (Overlay 2)
     overlay2Enabled: document.getElementById('overlay2-enabled'),
     overlay2Panel: document.getElementById('overlay2-panel'),
@@ -77,6 +84,13 @@ const elements = {
     m2SpacingVal: document.getElementById('m2-spacing-val'),
     m2HideLeftBorder: document.getElementById('m2-hide-left-border'),
 
+    // Sticker Overlay 2
+    m2StickerCustomPanel: document.getElementById('m2-sticker-custom-panel'),
+    m2StickerAuthorBg: document.getElementById('m2-sticker-author-bg'),
+    m2StickerAuthorColor: document.getElementById('m2-sticker-author-color'),
+    m2StickerTextBg: document.getElementById('m2-sticker-text-bg'),
+    m2StickerTextColor: document.getElementById('m2-sticker-text-color'),
+
     // Viewer Counter
     vBgColor: document.getElementById('v-bg-color'),
     vBgOpacity: document.getElementById('v-bg-opacity'),
@@ -89,6 +103,10 @@ const elements = {
     vPreview: document.getElementById('v-preview-container'),
     vLayoutSelect: document.getElementById('v-layout-select'),
     vIconStyle: document.getElementById('v-icon-style'),
+    vIconColorContainer: document.getElementById('v-icon-color-container'),
+    vIconColor: document.getElementById('v-icon-color'),
+    vIconRadius: document.getElementById('v-icon-radius'),
+    vIconRadiusVal: document.getElementById('v-icon-radius-val'),
     vInterval: document.getElementById('v-interval'),
     vIntervalVal: document.getElementById('v-interval-val'),
     vSpacing: document.getElementById('v-spacing'),
@@ -471,6 +489,13 @@ async function init() {
         if (elements.hideTimeoutVal) elements.hideTimeoutVal.innerText = formatTime(o1.hideTimeout !== undefined ? o1.hideTimeout : 15);
         if (elements.hideTimeoutPanel) elements.hideTimeoutPanel.classList.toggle('hidden', !o1.hideMessages);
 
+        // Carregar configurações do Sticker - Overlay 1
+        if (elements.stickerAuthorBg) elements.stickerAuthorBg.value = o1.stickerAuthorBg || '#ffd11e';
+        if (elements.stickerAuthorColor) elements.stickerAuthorColor.value = o1.stickerAuthorColor || '#000000';
+        if (elements.stickerTextBg) elements.stickerTextBg.value = o1.stickerTextBg || '#000000';
+        if (elements.stickerTextColor) elements.stickerTextColor.value = o1.stickerTextColor || '#ffffff';
+        if (elements.stickerCustomPanel) elements.stickerCustomPanel.classList.toggle('hidden', (o1.layout || 'modern') !== 'sticker');
+
         // Sincronizar UI - Overlay 2
         const o2 = appConfig.overlay2 || {};
         const o2En = appConfig.overlay2Enabled || false;
@@ -491,6 +516,13 @@ async function init() {
         if (elements.m2SpacingVal) elements.m2SpacingVal.innerText = `${o2.messageSpacing !== undefined ? o2.messageSpacing : 10}px`;
         if (elements.m2HideLeftBorder) elements.m2HideLeftBorder.checked = o2.hideLeftBorder === true;
 
+        // Carregar configurações do Sticker - Overlay 2
+        if (elements.m2StickerAuthorBg) elements.m2StickerAuthorBg.value = o2.stickerAuthorBg || '#ffd11e';
+        if (elements.m2StickerAuthorColor) elements.m2StickerAuthorColor.value = o2.stickerAuthorColor || '#000000';
+        if (elements.m2StickerTextBg) elements.m2StickerTextBg.value = o2.stickerTextBg || '#000000';
+        if (elements.m2StickerTextColor) elements.m2StickerTextColor.value = o2.stickerTextColor || '#ffffff';
+        if (elements.m2StickerCustomPanel) elements.m2StickerCustomPanel.classList.toggle('hidden', (o2.layout || 'modern') !== 'sticker');
+
         // Sincronizar UI - Viewers
         const v = appConfig.viewersConfig || {};
         if (elements.vBgColor) elements.vBgColor.value = v.bgColor || '#000000';
@@ -503,6 +535,13 @@ async function init() {
         if (elements.vShowTotal) elements.vShowTotal.checked = v.showTotal !== false;
         if (elements.vLayoutSelect) elements.vLayoutSelect.value = v.layout || 'default';
         if (elements.vIconStyle) elements.vIconStyle.value = v.iconStyle || 'original';
+        if (elements.vIconColor) elements.vIconColor.value = v.iconColor || '#ffffff';
+        if (elements.vIconRadius) {
+            elements.vIconRadius.value = v.iconRadius !== undefined ? v.iconRadius : 30;
+            if (elements.vIconRadiusVal) elements.vIconRadiusVal.innerText = `${elements.vIconRadius.value}%`;
+        }
+        const isCustomIcon = (v.iconStyle || 'original') === 'custom';
+        if (elements.vIconColorContainer) elements.vIconColorContainer.classList.toggle('hidden', !isCustomIcon);
         
         if (elements.vInterval) {
             elements.vInterval.value = v.interval || 30;
@@ -562,9 +601,12 @@ async function init() {
     }
 }
 
-function updatePreviewLayout() {
+    function updatePreviewLayout() {
     if (!elements.preview) return;
     const layout = elements.layoutSelect.value || 'modern';
+    if (elements.stickerCustomPanel) {
+        elements.stickerCustomPanel.classList.toggle('hidden', layout !== 'sticker');
+    }
     // Removido 'space-y-4' para o 'gap' dinâmico funcionar
     elements.preview.className = `flex-1 flex flex-col card rounded-3xl p-6 min-h-[500px] overflow-y-auto layout-${layout}`;
     
@@ -588,6 +630,17 @@ function updatePreviewLayout() {
     
     const hideBorder = elements.hideLeftBorder ? elements.hideLeftBorder.checked : false;
     elements.preview.classList.toggle('hide-borders-preview', hideBorder);
+
+    // Aplicar variáveis do layout Sticker no Preview se necessário
+    const stickerAuthorBg = elements.stickerAuthorBg ? elements.stickerAuthorBg.value : '#ffd11e';
+    const stickerAuthorColor = elements.stickerAuthorColor ? elements.stickerAuthorColor.value : '#000000';
+    const stickerTextBg = elements.stickerTextBg ? elements.stickerTextBg.value : '#000000';
+    const stickerTextColor = elements.stickerTextColor ? elements.stickerTextColor.value : '#ffffff';
+
+    elements.preview.style.setProperty('--sticker-author-bg', stickerAuthorBg);
+    elements.preview.style.setProperty('--sticker-author-color', stickerAuthorColor);
+    elements.preview.style.setProperty('--sticker-text-bg', stickerTextBg);
+    elements.preview.style.setProperty('--sticker-text-color', stickerTextColor);
 
     // Aplicar limite de mensagens imediatamente
     const maxMsgs = elements.maxMessages ? parseInt(elements.maxMessages.value) : 5;
@@ -620,6 +673,8 @@ function updateViewersPreview() {
         
         const fontColor = (elements.vFontColor && elements.vFontColor.value) ? elements.vFontColor.value : '#ffffff';
         const iconStyle = (elements.vIconStyle && elements.vIconStyle.value) ? elements.vIconStyle.value : 'original';
+        const iconColorVal = (elements.vIconColor && elements.vIconColor.value) ? elements.vIconColor.value.replace('#', '') : 'ffffff';
+        const iconRadius = (elements.vIconRadius) ? elements.vIconRadius.value : 30;
         const layout = (elements.vLayoutSelect && elements.vLayoutSelect.value) ? elements.vLayoutSelect.value : 'default';
         const showTotal = elements.vShowTotal ? elements.vShowTotal.checked : true;
 
@@ -635,7 +690,7 @@ function updateViewersPreview() {
                 return originals[key];
             }
             
-            const color = style === 'white' ? 'FFFFFF' : '000000';
+            const color = style === 'custom' ? iconColorVal : (style === 'white' ? 'FFFFFF' : (style === 'black' ? '000000' : style.replace('#', '')));
             const slugs = {
                 youtube: 'youtube',
                 shorts: 'youtubeshorts',
@@ -648,8 +703,9 @@ function updateViewersPreview() {
 
         const getIconStyle = (key) => {
             let transform = (key === 'kick' || key === 'shorts') ? 'transform: scale(0.8);' : '';
-            if (transform) return `style="${transform}"`;
-            return '';
+            let styleStr = `border-radius: ${iconRadius}%;`;
+            if (transform) styleStr += ` ${transform}`;
+            return `style="${styleStr}"`;
         };
 
         const spacing = elements.vSpacing ? elements.vSpacing.value : 20;
@@ -684,33 +740,65 @@ function updateViewersPreview() {
         // Cores dos badges por plataforma
         const badgeColors = { youtube: '#FF0000', shorts: '#CC0000', twitch: '#9146FF', kick: '#53FC18', tiktok: '#111111' };
 
+        const getContrastColor = (hexColor) => {
+            if (!hexColor) return 'white';
+            const hex = hexColor.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16) || 0;
+            const g = parseInt(hex.substring(2, 4), 16) || 0;
+            const b = parseInt(hex.substring(4, 6), 16) || 0;
+            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 128) ? 'black' : 'white';
+        };
+
+        const iconColor = elements.vIconColor ? elements.vIconColor.value : '#ffffff';
+        const contrastColor = getContrastColor(iconColor);
+
+        const renderIcon = (key, idx) => {
+            const isCustom = iconStyle === 'custom';
+            const extraStyle = (key === 'kick' || key === 'shorts') ? 'transform: scale(0.8);' : '';
+            const size = (layout === 'stacked') ? 28 : 24; // size in px
+            const padding = Math.round(size * 0.25);
+            const innerSize = size - padding;
+            
+            if (isCustom) {
+                return `
+                    <div style="width: ${size}px; height: ${size}px; border-radius: ${iconRadius}% !important; background: ${iconColor} !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; ${layout === 'stacked' && idx > 0 ? 'margin-left: -14px;' : ''} z-index: ${10 - idx};">
+                        <img src="${getIconUrl(key, contrastColor)}" style="width: ${innerSize}px; height: ${innerSize}px; object-fit: contain; border-radius: ${iconRadius}% !important; ${extraStyle}">
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="relative" style="${layout === 'stacked' && idx > 0 ? 'margin-left: -14px;' : ''} z-index: ${10 - idx};">
+                        <img src="${getIconUrl(key, iconStyle)}" class="w-6 h-6 object-contain" style="border-radius: ${iconRadius}% !important; ${extraStyle}">
+                    </div>
+                `;
+            }
+        };
+
         let statsHtml = '';
         if (layout === 'stacked') {
-            const iconsHtml = activePlatforms.map((p, idx) => `
-                <div class="relative" style="margin-left: ${idx === 0 ? '0' : '-16px'}; z-index: ${10 - idx};">
-                    <img src="${getIconUrl(p.key, iconStyle)}" class="w-7 h-7 object-contain" ${getIconStyle(p.key)}>
-                </div>
-            `).join('');
+            const iconsHtml = activePlatforms.map((p, idx) => renderIcon(p.key, idx)).join('');
             statsHtml = `<div class="flex items-center">${iconsHtml}</div>`;
         } else if (layout === 'badges') {
             const badgeSize = 30;
             const iconSize = 18;
             const iconsHtml = activePlatforms.map(p => {
-                const bgColor = badgeColors[p.key] || '#444';
+                const isCustom = iconStyle === 'custom';
+                const bgColor = isCustom ? iconColor : (badgeColors[p.key] || '#444');
                 const isKick = p.key === 'kick';
-                const iconColor = isKick ? 'black' : 'white';
+                const iconColorName = isCustom ? contrastColor : (isKick ? 'black' : 'white');
                 const extraStyle = (p.key === 'tiktok' || p.key === 'kick' || p.key === 'shorts') ? 'transform: scale(0.85);' : '';
                 return `
-                    <div style="width:${badgeSize}px;height:${badgeSize}px;border-radius:9px;background:${bgColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <img src="${getIconUrl(p.key, iconColor)}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;${extraStyle}">
+                    <div style="width:${badgeSize}px;height:${badgeSize}px;border-radius:${iconRadius}%;background:${bgColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                        <img src="${getIconUrl(p.key, iconColorName)}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;border-radius:${iconRadius}%;${extraStyle}">
                     </div>
                 `;
             }).join('');
             statsHtml = iconsHtml;
         } else {
-            statsHtml = activePlatforms.map(p => `
-                <div class="flex items-center gap-1">
-                    <img src="${getIconUrl(p.key, iconStyle)}" class="w-6 h-6 object-contain" ${getIconStyle(p.key)}>
+            statsHtml = activePlatforms.map((p, idx) => `
+                <div class="flex items-center gap-1.5">
+                    ${renderIcon(p.key, idx)}
                     <span class="font-black text-lg" style="color: ${fontColor}">${p.count}</span>
                 </div>
             `).join('');
@@ -826,6 +914,9 @@ if (elements.btnAdd) {
         elements.modalAdd.querySelector('h2').innerText = appConfig.lang === 'en' ? 'New Channel' : 'Novo Canal';
         elements.modalSave.innerText = appConfig.lang === 'en' ? 'Save Channel' : 'Salvar Canal';
         elements.modalAdd.classList.remove('hidden');
+        if (elements.newType && typeof elements.newType.onchange === 'function') {
+            elements.newType.onchange();
+        }
     };
 }
 if (elements.modalCancel) elements.modalCancel.onclick = () => elements.modalAdd.classList.add('hidden');
@@ -836,6 +927,13 @@ if (elements.modalSave) {
         let name = elements.newName.value.trim();
         const url = elements.newUrl.value.trim();
         if (!url) return;
+        if (type === 'youtube') {
+            const isDirectLive = url.includes('watch?v=') || url.includes('youtu.be/') || url.includes('/live/') || url.includes('/shorts/');
+            if (!isDirectLive) {
+                showToast(appConfig.lang === 'en' ? 'Please enter a valid YouTube live URL (must contain /watch?v=, /live/ or youtu.be/).' : 'Por favor, insira uma URL de live válida do YouTube (deve conter /watch?v=, /live/ ou youtu.be/).', 'error');
+                return;
+            }
+        }
         if (!name) name = type.charAt(0).toUpperCase() + type.slice(1);
 
         if (editingPlatformIndex === -1) {
@@ -906,6 +1004,9 @@ window.editPlatform = (index) => {
     elements.modalSave.innerText = appConfig.lang === 'en' ? 'Update Channel' : 'Atualizar Canal';
     
     elements.modalAdd.classList.remove('hidden');
+    if (elements.newType && typeof elements.newType.onchange === 'function') {
+        elements.newType.onchange();
+    }
 };
 
 window.showScraper = (id) => {
@@ -941,7 +1042,11 @@ const saveAndUpdate = async () => {
         hideLeftBorder: elements.hideLeftBorder ? elements.hideLeftBorder.checked : false,
         maxMessages: elements.maxMessages ? parseInt(elements.maxMessages.value) : 5,
         hideMessages: elements.hideMessages ? elements.hideMessages.checked : false,
-        hideTimeout: elements.hideTimeout ? parseInt(elements.hideTimeout.value) : 15
+        hideTimeout: elements.hideTimeout ? parseInt(elements.hideTimeout.value) : 15,
+        stickerAuthorBg: elements.stickerAuthorBg ? elements.stickerAuthorBg.value : '#ffd11e',
+        stickerAuthorColor: elements.stickerAuthorColor ? elements.stickerAuthorColor.value : '#000000',
+        stickerTextBg: elements.stickerTextBg ? elements.stickerTextBg.value : '#000000',
+        stickerTextColor: elements.stickerTextColor ? elements.stickerTextColor.value : '#ffffff'
     };
     if (elements.maxMessagesVal) elements.maxMessagesVal.innerText = `${appConfig.overlay1.maxMessages}`;
     if (elements.hideTimeoutVal) elements.hideTimeoutVal.innerText = formatTime(appConfig.overlay1.hideTimeout);
@@ -966,14 +1071,31 @@ const saveAndUpdateMonitor = async () => {
         channelNameColor: elements.m2ChannelNameColor ? elements.m2ChannelNameColor.value : '#ffffff',
         messageSpacing: elements.m2MessageSpacing ? parseInt(elements.m2MessageSpacing.value) : 10,
         hideLeftBorder: elements.m2HideLeftBorder ? elements.m2HideLeftBorder.checked : false,
-        customCSS: ''
+        customCSS: '',
+        stickerAuthorBg: elements.m2StickerAuthorBg ? elements.m2StickerAuthorBg.value : '#ffd11e',
+        stickerAuthorColor: elements.m2StickerAuthorColor ? elements.m2StickerAuthorColor.value : '#000000',
+        stickerTextBg: elements.m2StickerTextBg ? elements.m2StickerTextBg.value : '#000000',
+        stickerTextColor: elements.m2StickerTextColor ? elements.m2StickerTextColor.value : '#ffffff'
     };
+    if (elements.m2StickerCustomPanel) {
+        elements.m2StickerCustomPanel.classList.toggle('hidden', appConfig.overlay2.layout !== 'sticker');
+    }
     if (elements.m2SlowModeVal) elements.m2SlowModeVal.innerText = `${appConfig.overlay2.slowMode}s`;
     if (elements.m2SpacingVal) elements.m2SpacingVal.innerText = `${appConfig.overlay2.messageSpacing}px`;
     await api.saveConfig(appConfig);
 };
 
 const saveAndUpdateViewers = async () => {
+    const ytUrl = elements.vYtUrl ? elements.vYtUrl.value.trim() : '';
+    const ytEnabled = elements.vYtEnabled ? elements.vYtEnabled.checked : false;
+    if (ytUrl && ytEnabled) {
+        const isDirectLive = ytUrl.includes('watch?v=') || ytUrl.includes('youtu.be/') || ytUrl.includes('/live/') || ytUrl.includes('/shorts/');
+        if (!isDirectLive) {
+            showToast(appConfig.lang === 'en' ? 'Please enter a valid YouTube live URL for the counter (must contain /watch?v=, /live/ or youtu.be/).' : 'Por favor, insira uma URL de live válida do YouTube no contador (deve conter /watch?v=, /live/ ou youtu.be/).', 'error');
+            return;
+        }
+    }
+
     appConfig.viewersConfig = {
         channelsOrder: (appConfig.viewersConfig && appConfig.viewersConfig.channelsOrder) || ['youtube', 'shorts', 'twitch', 'kick', 'tiktok'],
         bgColor: elements.vBgColor ? elements.vBgColor.value : '#000000',
@@ -983,6 +1105,8 @@ const saveAndUpdateViewers = async () => {
         showTotal: elements.vShowTotal ? elements.vShowTotal.checked : true,
         layout: elements.vLayoutSelect ? elements.vLayoutSelect.value : 'default',
         iconStyle: elements.vIconStyle ? elements.vIconStyle.value : 'original',
+        iconColor: elements.vIconColor ? elements.vIconColor.value : '#ffffff',
+        iconRadius: elements.vIconRadius ? parseInt(elements.vIconRadius.value) : 30,
         interval: elements.vInterval ? parseInt(elements.vInterval.value) : 30,
         spacing: elements.vSpacing ? parseInt(elements.vSpacing.value) : 20,
         channels: {
@@ -1002,6 +1126,9 @@ const saveAndUpdateViewers = async () => {
         customCSS: elements.vCustomCss ? elements.vCustomCss.value : '',
         customCssEnabled: elements.vCustomCssEnabled ? elements.vCustomCssEnabled.checked : true
     };
+    const isCustomIcon = (elements.vIconStyle ? elements.vIconStyle.value : 'original') === 'custom';
+    if (elements.vIconColorContainer) elements.vIconColorContainer.classList.toggle('hidden', !isCustomIcon);
+    if (elements.vIconRadiusVal && elements.vIconRadius) elements.vIconRadiusVal.innerText = `${elements.vIconRadius.value}%`;
     if (elements.vMonitorSizeVal) elements.vMonitorSizeVal.innerText = `${appConfig.viewersConfig.monitor.fontSize}rem`;
     if (elements.vBgOpacityVal) elements.vBgOpacityVal.innerText = `${appConfig.viewersConfig.bgOpacity}%`;
     if (elements.vIntervalVal) elements.vIntervalVal.innerText = `${appConfig.viewersConfig.interval}s`;
@@ -1010,6 +1137,25 @@ const saveAndUpdateViewers = async () => {
     updateViewersPreview();
     await api.saveConfig(appConfig);
 };
+
+// Bind Events - YouTube input validation helpers in Add Channel modal
+if (elements.newType) {
+    elements.newType.onchange = () => {
+        const type = elements.newType.value;
+        const urlLabel = document.getElementById('new-url-label');
+        const helpText = document.getElementById('new-url-help');
+        
+        if (type === 'youtube') {
+            if (urlLabel) urlLabel.innerText = appConfig.lang === 'en' ? 'YouTube Live URL' : 'URL da Live do YouTube';
+            if (elements.newUrl) elements.newUrl.placeholder = 'https://www.youtube.com/watch?v=... ou https://www.youtube.com/live/...';
+            if (helpText) helpText.innerText = appConfig.lang === 'en' ? 'Enter the direct URL of the live stream.' : 'Insira a URL direta da transmissão ao vivo (não use o link do canal).';
+        } else {
+            if (urlLabel) urlLabel.innerText = appConfig.lang === 'en' ? 'Channel URL' : 'URL do Canal';
+            if (elements.newUrl) elements.newUrl.placeholder = 'https://...';
+            if (helpText) helpText.innerText = '';
+        }
+    };
+}
 
 // Bind Events - Overlay 1
 if (elements.layoutSelect) elements.layoutSelect.onchange = saveAndUpdate;
@@ -1029,6 +1175,12 @@ if (elements.hideLeftBorder) elements.hideLeftBorder.onchange = saveAndUpdate;
 if (elements.maxMessages) elements.maxMessages.oninput = saveAndUpdate;
 if (elements.hideMessages) elements.hideMessages.onchange = saveAndUpdate;
 if (elements.hideTimeout) elements.hideTimeout.oninput = saveAndUpdate;
+
+// Bind Events - Sticker Overlay 1
+if (elements.stickerAuthorBg) elements.stickerAuthorBg.oninput = saveAndUpdate;
+if (elements.stickerAuthorColor) elements.stickerAuthorColor.oninput = saveAndUpdate;
+if (elements.stickerTextBg) elements.stickerTextBg.oninput = saveAndUpdate;
+if (elements.stickerTextColor) elements.stickerTextColor.oninput = saveAndUpdate;
 
 // Bind Events - Monitor (Overlay 2)
 if (elements.overlay2Enabled) {
@@ -1050,6 +1202,12 @@ if (elements.m2ShowChannelName) elements.m2ShowChannelName.onchange = saveAndUpd
 if (elements.m2ChannelNameColor) elements.m2ChannelNameColor.oninput = saveAndUpdateMonitor;
 if (elements.m2MessageSpacing) elements.m2MessageSpacing.oninput = saveAndUpdateMonitor;
 if (elements.m2HideLeftBorder) elements.m2HideLeftBorder.onchange = saveAndUpdateMonitor;
+
+// Bind Events - Sticker Overlay 2
+if (elements.m2StickerAuthorBg) elements.m2StickerAuthorBg.oninput = saveAndUpdateMonitor;
+if (elements.m2StickerAuthorColor) elements.m2StickerAuthorColor.oninput = saveAndUpdateMonitor;
+if (elements.m2StickerTextBg) elements.m2StickerTextBg.oninput = saveAndUpdateMonitor;
+if (elements.m2StickerTextColor) elements.m2StickerTextColor.oninput = saveAndUpdateMonitor;
 
 if (elements.btnCopy) {
     elements.btnCopy.onclick = () => {
@@ -1181,13 +1339,18 @@ if (elements.vFontSize) elements.vFontSize.oninput = saveAndUpdateViewers;
 if (elements.vShowTotal) elements.vShowTotal.onchange = saveAndUpdateViewers;
 if (elements.vLayoutSelect) elements.vLayoutSelect.onchange = saveAndUpdateViewers;
 if (elements.vIconStyle) elements.vIconStyle.onchange = saveAndUpdateViewers;
+if (elements.vIconColor) elements.vIconColor.oninput = saveAndUpdateViewers;
+if (elements.vIconRadius) elements.vIconRadius.oninput = saveAndUpdateViewers;
 if (elements.vInterval) elements.vInterval.oninput = saveAndUpdateViewers;
 if (elements.vSpacing) elements.vSpacing.oninput = saveAndUpdateViewers;
 
 // Canais do Contador - Events
-[elements.vYtUrl, elements.vShortsUrl, elements.vTwUrl, elements.vKickUrl, elements.vTtUrl].forEach(el => {
+[elements.vShortsUrl, elements.vTwUrl, elements.vKickUrl, elements.vTtUrl].forEach(el => {
     if (el) el.oninput = saveAndUpdateViewers;
 });
+if (elements.vYtUrl) {
+    elements.vYtUrl.onchange = saveAndUpdateViewers;
+}
 if (elements.vMonitorEnabled) {
     elements.vMonitorEnabled.onchange = async () => {
         const enabled = elements.vMonitorEnabled.checked;

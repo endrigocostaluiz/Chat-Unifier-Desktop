@@ -184,6 +184,51 @@ body.hide-borders .message-item {
 .layout-card .author-name { color: #1e293b !important; }
 .layout-card .avatar { border: 2px solid #f1f5f9; }
 
+/* Layout Sticker (Etiqueta) */
+.layout-sticker .message-item {
+    border-radius: 0px;
+    background: transparent !important;
+    backdrop-filter: unset;
+    box-shadow: unset;
+    border-left: none !important;
+    margin-top: -10px;
+}
+
+.layout-sticker .avatar, 
+.layout-sticker .avatar-placeholder {
+    margin-right: -18px;
+    z-index: 3;
+    border: 3px solid #000 !important;
+    margin-top: 6px;
+    border-radius: 50%;
+}
+
+.layout-sticker .author-row {
+    background: var(--sticker-author-bg, #ffd11e);
+    padding: 2px 2px 2px 10px;
+    border: 3px solid #000;
+    z-index: 1;
+    transform: rotate(-2deg);
+    margin-left: -4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.layout-sticker .author-name {
+    color: var(--sticker-author-color, #000000) !important;
+}
+
+.layout-sticker .text {
+    background: var(--sticker-text-bg, #000000);
+    color: var(--sticker-text-color, #ffffff) !important;
+    padding: 5px;
+    margin-top: -7px;
+    border: 3px solid #000;
+    border-top: none;
+    display: block;
+}
+
 /* Layout Slim (Ultra Compacto) */
 .layout-slim .message-item {
     padding: 4px 10px;

@@ -207,7 +207,13 @@
 
         function getIconUrl(platform, style) {
             if (style === 'original') return icons[platform];
-            const color = style === 'white' ? 'FFFFFF' : '000000';
+            let color = style === 'white' ? 'FFFFFF' : '000000';
+            if (style === 'custom') {
+                const hexColor = (currentConfig.iconColor || '#ffffff').replace('#', '');
+                color = hexColor;
+            } else if (style !== 'black' && style !== 'white') {
+                color = style.replace('#', '');
+            }
             const slugs = { youtube: 'youtube', shorts: 'youtubeshorts', twitch: 'twitch', kick: 'kick', tiktok: 'tiktok' };
             return `https://cdn.simpleicons.org/${slugs[platform]}/${color}`;
         }
@@ -234,16 +240,27 @@
             container.style.background = `rgba(${br}, ${bg}, ${bb}, ${opacity})`;
             container.style.color = fontColor;
 
+            const getContrastColor = (hexColor) => {
+                if (!hexColor) return 'white';
+                const hex = hexColor.replace('#', '');
+                const r = parseInt(hex.substring(0, 2), 16) || 0;
+                const g = parseInt(hex.substring(2, 4), 16) || 0;
+                const b = parseInt(hex.substring(4, 6), 16) || 0;
+                const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+                return (yiq >= 128) ? 'black' : 'white';
+            };
+
             const layout = currentConfig.layout || 'default';
             const spacing = currentConfig.spacing !== undefined ? currentConfig.spacing : 20;
             const channels = currentConfig.channels || {};
             const iconStyle = currentConfig.iconStyle || 'original';
             const fontSize = currentConfig.fontSize || 18;
+            const iconRadius = currentConfig.iconRadius !== undefined ? currentConfig.iconRadius : 30;
             const showTotal = currentData.total > 0 && currentConfig.showTotal && (layout === 'stacked' || layout !== 'minimalist');
+            const iconColor = currentConfig.iconColor || '#ffffff';
+            const contrastColor = getContrastColor(iconColor);
 
-            // No layout badges, ícones sempre ficam brancos (via CSS filter)
-            // Usa URL original para que o filter CSS funcione corretamente com PNGs
-            const effectiveIconStyle = layout === 'badges' ? 'original' : iconStyle;
+            const effectiveIconStyle = iconStyle;
             // Tamanho do badge (caixa colorida) proporcional ao fontSize
             const badgeSize = Math.round(fontSize * 1.75);
 
@@ -258,9 +275,30 @@
                 visiblePlatforms.push(platform);
             }
 
-            // Chave de estrutura: muda apenas quando layout/plataformas/ícone/tamanho mudam
-            const newStructureKey = visiblePlatforms.join(',') + '|' + layout + '|' + effectiveIconStyle + '|' + fontSize + '|' + showTotal;
+            // Chave de estrutura: muda apenas quando layout/plataformas/ícone/tamanho/radius/cor mudam
+            const newStructureKey = visiblePlatforms.join(',') + '|' + layout + '|' + effectiveIconStyle + '|' + fontSize + '|' + showTotal + '|' + iconRadius + '|' + (currentConfig.iconColor || '');
             const needsRebuild = !container._structureKey || container._structureKey !== newStructureKey;
+
+            const renderIcon = (platform, idx) => {
+                const isCustom = effectiveIconStyle === 'custom';
+                const extraStyle = (platform === 'kick' || platform === 'shorts') ? 'transform: scale(0.8);' : '';
+                const size = fontSize * 1.5;
+                const innerSize = fontSize * 0.9;
+                
+                if (isCustom) {
+                    return `
+                        <div style="width: ${size}px; height: ${size}px; border-radius: ${iconRadius}% !important; background: ${iconColor} !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; ${layout === 'stacked' && idx > 0 ? `margin-left: -${fontSize * 0.5}px;` : ''} z-index: ${10 - idx};">
+                            <img src="${getIconUrl(platform, contrastColor)}" class="icon" style="width: ${innerSize}px; height: ${innerSize}px; object-fit: contain; border-radius: ${iconRadius}% !important; ${extraStyle}">
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div style="position: relative; ${layout === 'stacked' && idx > 0 ? `margin-left: -${fontSize * 0.5}px;` : ''} z-index: ${10 - idx};">
+                            <img src="${getIconUrl(platform, effectiveIconStyle)}" class="icon" style="width: ${fontSize}px; height: ${fontSize}px; border-radius: ${iconRadius}% !important; ${extraStyle}">
+                        </div>
+                    `;
+                }
+            };
 
             if (needsRebuild) {
                 // Reconstrói DOM apenas quando estrutura muda (inclui imgs dos ícones)
@@ -278,29 +316,38 @@
                 if (layout !== 'default') container.classList.add(`layout-${layout}`);
 
                 let html = '';
+                let idx = 0;
                 for (const platform of visiblePlatforms) {
                     const count = currentData.counts[platform];
 
                     if (layout === 'badges') {
                         // Badge: caixa colorida com ícone centralizado (sem contagem individual)
                         // Para o Kick usamos o ícone preto ('black'), para as outras branco ('white')
-                        const iconColor = platform === 'kick' ? 'black' : 'white';
+                        const isCustom = effectiveIconStyle === 'custom';
+                        const bgColor = isCustom ? iconColor : (badgeColors[platform] || '#444');
+                        const iconColorName = isCustom ? contrastColor : (platform === 'kick' ? 'black' : 'white');
                         // Escala ajustada para os ícones ficarem proporcionais
                         const extraStyle = (platform === 'tiktok' || platform === 'kick' || platform === 'shorts') ? 'transform: scale(0.85);' : '';
                         html += `
-                            <div class="platform-stat" data-platform="${platform}" style="width: ${badgeSize}px; height: ${badgeSize}px;">
-                                <img src="${getIconUrl(platform, iconColor)}" class="icon" style="width: ${fontSize}px; height: ${fontSize}px; ${extraStyle}">
+                            <div class="platform-stat" data-platform="${platform}" style="width: ${badgeSize}px; height: ${badgeSize}px; border-radius: ${iconRadius}% !important; background: ${bgColor} !important;">
+                                <img src="${getIconUrl(platform, iconColorName)}" class="icon" style="width: ${fontSize}px; height: ${fontSize}px; border-radius: ${iconRadius}% !important; ${extraStyle}">
+                            </div>
+                        `;
+                    } else if (layout === 'stacked') {
+                        html += `
+                            <div class="platform-stat" data-platform="${platform}">
+                                ${renderIcon(platform, idx)}
                             </div>
                         `;
                     } else {
-                        const extraStyle = (platform === 'kick' || platform === 'shorts') ? 'transform: scale(0.8);' : '';
                         html += `
                             <div class="platform-stat" data-platform="${platform}">
-                                <img src="${getIconUrl(platform, effectiveIconStyle)}" class="icon" style="width: ${fontSize}px; height: ${fontSize}px; ${extraStyle}">
+                                ${renderIcon(platform, idx)}
                                 <span class="count" style="font-size: ${fontSize}px;">${formatCount(count)}</span>
                             </div>
                         `;
                     }
+                    idx++;
                 }
                 if (showTotal) {
                     const dotHtml = layout === 'badges' ? `<span class="total-dot" style="font-size: ${fontSize}px; opacity: 0.5; margin-right: 4px;">•</span>` : '';

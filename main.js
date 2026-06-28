@@ -32,7 +32,11 @@ const defaultOverlay = (id) => ({
   hideTimeout: 15,
   showChannelName: false,
   channelNameColor: '#ffffff',
-  customCSS: ''
+  customCSS: '',
+  stickerAuthorBg: '#ffd11e',
+  stickerAuthorColor: '#000000',
+  stickerTextBg: '#000000',
+  stickerTextColor: '#ffffff'
 });
 
 const defaultViewersConfig = () => ({
@@ -43,7 +47,9 @@ const defaultViewersConfig = () => ({
   bgColor: '#000000',
   bgOpacity: 85,
   layout: 'default',
+  iconStyle: 'original',
   iconColor: '#ffffff',
+  iconRadius: 30,
   iconOriginal: true,
   interval: 30,
   channels: {
@@ -307,21 +313,7 @@ function startViewerScraper(key, url) {
         if (vid) targetUrl = `https://www.youtube.com/shorts/${vid[1]}`;
     }
   } else if (key === 'youtube') {
-    if (!targetUrl.includes('youtube.com') && !targetUrl.includes('youtu.be')) {
-      const cleanHandle = targetUrl.trim().replace(/^\/+/, '');
-      if (cleanHandle.startsWith('@')) {
-        targetUrl = `https://www.youtube.com/${cleanHandle}/live`;
-      } else {
-        targetUrl = `https://www.youtube.com/@${cleanHandle}/live`;
-      }
-    } else {
-      const isDirectVideo = targetUrl.includes('watch?v=') || targetUrl.includes('youtu.be/') || targetUrl.includes('/live/') || targetUrl.includes('/shorts/');
-      if (!isDirectVideo) {
-        if (!targetUrl.includes('/live')) {
-          targetUrl = targetUrl.replace(/\/$/, '') + '/live';
-        }
-      }
-    }
+    targetUrl = targetUrl.trim();
   } else if (key === 'tiktok') {
     let cleanUrl = targetUrl.split('?')[0].replace(/\/$/, '');
     if (!cleanUrl.includes('tiktok.com')) {
@@ -507,69 +499,28 @@ function startScraper(platform) {
     url = `https://www.twitch.tv/popout/${channel}/chat`;
 
   } else if (platform.type === 'youtube') {
-    // Caso já seja uma URL live_chat direta
+    let videoId = null;
     if (url.includes('live_chat')) {
-      // Usa direto
+      // Já é a URL direta de chat
+    } else if (url.includes('watch?v=')) {
+      try {
+        videoId = new URL(url).searchParams.get('v');
+      } catch (e) {
+        const match = url.match(/[?&]v=([^&]+)/);
+        if (match) videoId = match[1];
+      }
+    } else if (url.includes('youtu.be/')) {
+      const parts = url.split('/');
+      videoId = parts[parts.length - 1].split('?')[0];
+    } else {
+      const match = url.match(/\/(live|shorts)\/([^/?#]+)/);
+      if (match) {
+        videoId = match[2];
+      }
     }
-    // Caso seja um vídeo direto
-    else if (url.includes('watch?v=')) {
-      const videoId = new URL(url).searchParams.get('v');
-      if (videoId) url = `https://www.youtube.com/live_chat?v=${videoId}&is_popout=1`;
-    }
-    // Caso seja URL de canal → abre /live e extrai o videoId da página
-    else {
-      // Garante que tem /live no final
-      if (!url.includes('/live')) url = url.replace(/\/$/, '') + '/live';
 
-      // Quando a página /live terminar de carregar, extrai o videoId e redireciona
-      win.webContents.once('did-finish-load', async () => {
-        try {
-          const videoId = await win.webContents.executeJavaScript(`
-            new Promise((resolve) => {
-              let attempts = 0;
-              const maxAttempts = 20; // 10 segundos (500ms * 20)
-              
-              const checkId = setInterval(() => {
-                attempts++;
-                
-                // 1. Tenta pegar da URL atual (caso o YT tenha feito redirecionamento nativo)
-                let m = location.href.match(/[?&]v=([^&]+)/);
-                if (m) { clearInterval(checkId); return resolve(m[1]); }
-                
-                // 2. Tenta pegar da meta tag itemprop
-                const meta = document.querySelector('meta[itemprop="videoId"]');
-                if (meta && meta.content) { clearInterval(checkId); return resolve(meta.content); }
-                
-                // 3. Tenta pegar do ytInitialPlayerResponse
-                if (typeof ytInitialPlayerResponse !== 'undefined' && ytInitialPlayerResponse.videoDetails) {
-                   clearInterval(checkId); return resolve(ytInitialPlayerResponse.videoDetails.videoId);
-                }
-                
-                // 4. Tenta procurar em links canônicos
-                const canonical = document.querySelector('link[rel="canonical"]');
-                if (canonical) {
-                  m = canonical.href.match(/[?&]v=([^&]+)/);
-                  if (m) { clearInterval(checkId); return resolve(m[1]); }
-                }
-
-                if (attempts >= maxAttempts) {
-                  clearInterval(checkId);
-                  resolve(null);
-                }
-              }, 500);
-            });
-          `);
-
-          if (videoId && !win.isDestroyed()) {
-            console.log('[YouTube] ID da Live Encontrado:', videoId);
-            win.loadURL('https://www.youtube.com/live_chat?v=' + videoId + '&is_popout=1');
-          } else {
-            console.log('[YouTube] Não foi possível extrair o ID da live.');
-          }
-        } catch(e) {
-          console.error('[YouTube] Erro ao extrair videoId:', e.message);
-        }
-      });
+    if (videoId) {
+      url = `https://www.youtube.com/live_chat?v=${videoId}&is_popout=1`;
     }
 
   } else if (platform.type === 'kick' && !url.includes('chatroom')) {
