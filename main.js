@@ -242,6 +242,8 @@ const server = http.createServer(serverApp);
 const io = new Server(server, { cors: { origin: "*" } });
 
 serverApp.use(express.static(path.join(__dirname, 'public/overlay')));
+serverApp.use('/viewers', express.static(path.join(__dirname, 'public/viewers')));
+serverApp.use('/viewers-monitor', express.static(path.join(__dirname, 'public/viewers-monitor')));
 
 serverApp.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/overlay/index.html')));
 serverApp.get('/monitor', (req, res) => res.sendFile(path.join(__dirname, 'public/overlay/index.html')));

@@ -877,10 +877,12 @@ function getPlatformColor(type) {
 }
 
 function updateObsUrl() {
-    if (elements.obsUrl) elements.obsUrl.value = `${localBasePath}/public/overlay/index.html`;
-    if (elements.monitorUrl) elements.monitorUrl.value = `${localBasePath}/public/overlay/index.html?monitor=true`;
-    if (elements.vObsUrl) elements.vObsUrl.value = `${localBasePath}/public/viewers/index.html`;
-    if (elements.vMonitorUrl) elements.vMonitorUrl.value = `${localBasePath}/public/viewers-monitor/index.html`;
+    const port = appConfig.port || 3000;
+    const httpBasePath = `http://localhost:${port}`;
+    if (elements.obsUrl) elements.obsUrl.value = `${httpBasePath}/chat`;
+    if (elements.monitorUrl) elements.monitorUrl.value = `${httpBasePath}/monitor`;
+    if (elements.vObsUrl) elements.vObsUrl.value = `${httpBasePath}/viewers`;
+    if (elements.vMonitorUrl) elements.vMonitorUrl.value = `${httpBasePath}/viewers-monitor`;
 }
 
 // Eventos
