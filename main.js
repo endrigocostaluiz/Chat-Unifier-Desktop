@@ -800,6 +800,7 @@ function startScraper(platform) {
 // API IPC
 ipcMain.handle('get-config', () => config);
 ipcMain.handle('get-app-path', () => app.getAppPath());
+ipcMain.handle('get-version', () => app.getVersion());
 
 ipcMain.handle('save-config', (e, newConfig) => {
   config = newConfig;

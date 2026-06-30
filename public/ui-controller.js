@@ -442,6 +442,16 @@ async function init() {
         const rawPath = await api.getAppPath();
         localBasePath = 'file:///' + rawPath.replace(/\\/g, '/');
 
+        try {
+            const appVersion = await api.getVersion();
+            const versionEl = document.getElementById('app-version');
+            if (versionEl && appVersion) {
+                versionEl.innerText = `v${appVersion}`;
+            }
+        } catch (err) {
+            console.error("Erro ao carregar versão:", err);
+        }
+
         const savedConfig = await api.getConfig();
         if (savedConfig) {
             appConfig = {

@@ -3,6 +3,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   getConfig: () => ipcRenderer.invoke('get-config'),
   getAppPath: () => ipcRenderer.invoke('get-app-path'),
+  getVersion: () => ipcRenderer.invoke('get-version'),
   saveConfig: (config) => ipcRenderer.invoke('save-config', config),
   startAll: () => ipcRenderer.send('start-all-scrapers'),
   startSingle: (platform) => ipcRenderer.send('start-single-scraper', platform),
