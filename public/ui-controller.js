@@ -144,7 +144,10 @@ const elements = {
     btnUpdateNow: document.getElementById('btn-update-now'),
     btnUpdateLater: document.getElementById('btn-update-later'),
     updateVersionTag: document.getElementById('update-version-tag'),
-    updateChangelog: document.getElementById('update-changelog')
+    updateChangelog: document.getElementById('update-changelog'),
+    updateProgressContainer: document.getElementById('update-progress-container'),
+    updateProgressPercent: document.getElementById('update-progress-percent'),
+    updateProgressBar: document.getElementById('update-progress-bar')
 };
 
 // Dicionário de Traduções
@@ -447,6 +450,10 @@ async function init() {
             const versionEl = document.getElementById('app-version');
             if (versionEl && appVersion) {
                 versionEl.innerText = `v${appVersion}`;
+            }
+            const footerVersionEl = document.getElementById('app-footer-version');
+            if (footerVersionEl && appVersion) {
+                footerVersionEl.innerText = `Chat Unifier v${appVersion}`;
             }
         } catch (err) {
             console.error("Erro ao carregar versão:", err);
@@ -1307,8 +1314,12 @@ api.onUpdateAvailable((info) => {
         elements.modalUpdate.classList.remove('hidden');
         
         elements.btnUpdateNow.onclick = () => {
-            api.openExternal(info.url);
-            elements.modalUpdate.classList.add('hidden');
+            if (info.downloadUrl) {
+                api.downloadUpdate(info.downloadUrl);
+            } else {
+                api.openExternal(info.url);
+                elements.modalUpdate.classList.add('hidden');
+            }
         };
         
         elements.btnUpdateLater.onclick = () => {
@@ -1318,13 +1329,49 @@ api.onUpdateAvailable((info) => {
             elements.modalUpdate.classList.add('hidden');
         };
         
-        elements.modalUpdateClose.onclick = () => elements.modalUpdate.classList.add('hidden');
+        elements.modalUpdateClose.onclick = () => {
+            elements.modalUpdate.classList.add('hidden');
+            resetUpdateModalState();
+        };
     }
 });
 
 api.onUpdateNotFound(() => {
     showToast(appConfig.lang === 'en' ? "You are already on the latest version!" : "Você já está na versão mais recente!", 'info');
 });
+
+// Listeners do download da atualização
+api.onDownloadProgress((progressInfo) => {
+    if (elements.updateProgressContainer) {
+        elements.updateProgressContainer.classList.remove('hidden');
+        if (elements.btnUpdateNow) elements.btnUpdateNow.classList.add('hidden');
+        if (elements.btnUpdateLater) elements.btnUpdateLater.classList.add('hidden');
+        
+        elements.updateProgressPercent.innerText = `${progressInfo.percent}%`;
+        elements.updateProgressBar.style.width = `${progressInfo.percent}%`;
+    }
+});
+
+api.onDownloadCompleted((filePath) => {
+    showToast(appConfig.lang === 'en' ? 'Update downloaded to your Downloads folder!' : 'Atualização baixada na sua pasta de Downloads!', 'success');
+    if (elements.modalUpdate) {
+        elements.modalUpdate.classList.add('hidden');
+    }
+    resetUpdateModalState();
+});
+
+api.onDownloadFailed((error) => {
+    showToast(`${appConfig.lang === 'en' ? 'Download failed: ' : 'Falha no download: '}${error}`, 'error');
+    resetUpdateModalState();
+});
+
+function resetUpdateModalState() {
+    if (elements.updateProgressContainer) elements.updateProgressContainer.classList.add('hidden');
+    if (elements.updateProgressBar) elements.updateProgressBar.style.width = '0%';
+    if (elements.updateProgressPercent) elements.updateProgressPercent.innerText = '0%';
+    if (elements.btnUpdateNow) elements.btnUpdateNow.classList.remove('hidden');
+    if (elements.btnUpdateLater) elements.btnUpdateLater.classList.remove('hidden');
+}
 
 
 // Botões independentes do Contador de Views

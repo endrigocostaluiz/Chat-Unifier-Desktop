@@ -330,6 +330,14 @@ async function checkNewVersion(manual = false) {
         const release = JSON.parse(data);
         if (!release || !release.tag_name) return;
 
+        let downloadUrl = null;
+        if (release.assets && Array.isArray(release.assets)) {
+          const exeAsset = release.assets.find(asset => asset.name && asset.name.endsWith('.exe'));
+          if (exeAsset) {
+            downloadUrl = exeAsset.browser_download_url;
+          }
+        }
+
         const remoteVersion = release.tag_name.replace('v', '');
         const currentVersion = app.getVersion();
         
@@ -342,6 +350,7 @@ async function checkNewVersion(manual = false) {
               mainWindow.webContents.send('update-available', {
                 version: remoteVersion,
                 url: release.html_url,
+                downloadUrl: downloadUrl,
                 body: release.body,
                 manual
               });
@@ -885,6 +894,49 @@ ipcMain.on('request-viewers-update', () => {
 
 ipcMain.on('copy-to-clipboard', (e, text) => { clipboard.writeText(text); });
 ipcMain.on('open-external', (e, url) => { shell.openExternal(url); });
+
+ipcMain.on('download-update', (event, downloadUrl) => {
+  if (!downloadUrl) return;
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const downloadsPath = app.getPath('downloads');
+  const fileName = downloadUrl.split('/').pop() || 'Chat-Unifier-Update.exe';
+  const filePath = path.join(downloadsPath, fileName);
+  const ses = event.sender.session;
+
+  ses.once('will-download', (downloadEvent, item, webContents) => {
+    item.setSavePath(filePath);
+
+    item.on('updated', (updateEvent, state) => {
+      if (state === 'progressing') {
+        if (!win.isDestroyed()) {
+          const received = item.getReceivedBytes();
+          const total = item.getTotalBytes();
+          const percent = total > 0 ? Math.round((received / total) * 100) : 0;
+          win.webContents.send('download-progress', { percent, received, total });
+        }
+      } else if (state === 'interrupted') {
+        if (!win.isDestroyed()) {
+          win.webContents.send('download-failed', 'Download interrompido.');
+        }
+      }
+    });
+
+    item.once('done', (doneEvent, state) => {
+      if (state === 'completed') {
+        if (!win.isDestroyed()) {
+          win.webContents.send('download-completed', filePath);
+        }
+        shell.showItemInFolder(filePath);
+      } else {
+        if (!win.isDestroyed()) {
+          win.webContents.send('download-failed', `Falha no download: ${state}`);
+        }
+      }
+    });
+  });
+
+  ses.downloadURL(downloadUrl);
+});
 
 // Listener Global para Mensagens (captura de qualquer janela, inclusive viewer scrapers)
 ipcMain.on('new-message', (event, msg) => {
