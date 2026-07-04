@@ -938,6 +938,10 @@ ipcMain.on('download-update', (event, downloadUrl) => {
           win.webContents.send('download-completed', filePath);
         }
         shell.showItemInFolder(filePath);
+        setTimeout(() => {
+          app.isQuiting = true;
+          app.quit();
+        }, 1500);
       } else {
         if (!win.isDestroyed()) {
           win.webContents.send('download-failed', `Falha no download: ${state}`);
