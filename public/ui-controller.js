@@ -944,9 +944,28 @@ if (elements.modalSave) {
     elements.modalSave.onclick = async () => {
         const type = elements.newType.value;
         let name = elements.newName.value.trim();
-        const url = elements.newUrl.value.trim();
+        let url = elements.newUrl.value.trim();
         if (!url) return;
         if (type === 'youtube') {
+            if (url.startsWith('@')) {
+                url = `https://www.youtube.com/${url}`;
+            }
+            if (!/^https?:\/\//i.test(url)) {
+                url = 'https://' + url;
+            }
+            
+            const isChannel = url.includes('youtube.com/@') || 
+                              url.includes('youtube.com/channel/') || 
+                              url.includes('youtube.com/c/') || 
+                              url.includes('youtube.com/user/');
+            
+            if (isChannel && !url.includes('watch?v=') && !url.includes('live_chat')) {
+                let cleanUrl = url.split('?')[0].replace(/\/$/, '');
+                if (!cleanUrl.endsWith('/live')) {
+                    url = cleanUrl + '/live';
+                }
+            }
+
             const isValidYoutube = url.includes('youtube.com') || url.includes('youtu.be');
             if (!isValidYoutube) {
                 showToast(appConfig.lang === 'en' ? 'Please enter a valid YouTube URL (must contain youtube.com or youtu.be).' : 'Por favor, insira uma URL válida do YouTube (deve conter youtube.com ou youtu.be).', 'error');
@@ -1105,9 +1124,32 @@ const saveAndUpdateMonitor = async () => {
 };
 
 const saveAndUpdateViewers = async () => {
-    const ytUrl = elements.vYtUrl ? elements.vYtUrl.value.trim() : '';
+    let ytUrl = elements.vYtUrl ? elements.vYtUrl.value.trim() : '';
     const ytEnabled = elements.vYtEnabled ? elements.vYtEnabled.checked : false;
     if (ytUrl && ytEnabled) {
+        if (ytUrl.startsWith('@')) {
+            ytUrl = `https://www.youtube.com/${ytUrl}`;
+        }
+        if (!/^https?:\/\//i.test(ytUrl)) {
+            ytUrl = 'https://' + ytUrl;
+        }
+        
+        const isChannel = ytUrl.includes('youtube.com/@') || 
+                          ytUrl.includes('youtube.com/channel/') || 
+                          ytUrl.includes('youtube.com/c/') || 
+                          ytUrl.includes('youtube.com/user/');
+                          
+        if (isChannel && !ytUrl.includes('watch?v=') && !ytUrl.includes('live_chat')) {
+            let cleanUrl = ytUrl.split('?')[0].replace(/\/$/, '');
+            if (!cleanUrl.endsWith('/live')) {
+                ytUrl = cleanUrl + '/live';
+            }
+        }
+        
+        if (elements.vYtUrl) {
+            elements.vYtUrl.value = ytUrl;
+        }
+
         const isValidYoutube = ytUrl.includes('youtube.com') || ytUrl.includes('youtu.be');
         if (!isValidYoutube) {
             showToast(appConfig.lang === 'en' ? 'Please enter a valid YouTube URL for the counter (must contain youtube.com or youtu.be).' : 'Por favor, insira uma URL válida do YouTube no contador (deve conter youtube.com ou youtu.be).', 'error');

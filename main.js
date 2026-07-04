@@ -28,8 +28,12 @@ function isYoutubeRedirectUrl(url) {
 
 function getYoutubeStartUrl(url) {
   if (!url) return null;
-  const clean = url.split('?')[0].replace(/\/$/, '');
-  return clean.endsWith('/live') ? url : clean + '/live';
+  let formatted = url.trim();
+  if (!/^https?:\/\//i.test(formatted)) {
+    formatted = 'https://' + formatted;
+  }
+  const clean = formatted.split('?')[0].replace(/\/$/, '');
+  return clean.endsWith('/live') ? formatted : clean + '/live';
 }
 
 function resolveYoutubeRedirect(win, startUrl, callback) {
@@ -476,6 +480,9 @@ function startViewerScraper(key, url) {
     }
   } else if (key === 'youtube') {
     targetUrl = targetUrl.trim();
+    if (!/^https?:\/\//i.test(targetUrl)) {
+      targetUrl = 'https://' + targetUrl;
+    }
     isRedirect = isYoutubeRedirectUrl(targetUrl);
     if (isRedirect) {
       const startUrl = getYoutubeStartUrl(targetUrl);
@@ -674,6 +681,10 @@ function startScraper(platform) {
     url = `https://www.twitch.tv/popout/${channel}/chat`;
 
   } else if (platform.type === 'youtube') {
+    url = url.trim();
+    if (!/^https?:\/\//i.test(url)) {
+      url = 'https://' + url;
+    }
     isRedirect = isYoutubeRedirectUrl(url);
     if (isRedirect) {
       const startUrl = getYoutubeStartUrl(url);
