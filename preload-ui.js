@@ -18,6 +18,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   stopViewers: () => ipcRenderer.send('stop-viewer-scrapers'),
   openLoginWindow: (platform) => ipcRenderer.send('open-login-window', platform),
   checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  openOBS: () => ipcRenderer.invoke('open-obs'),
   onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (event, info) => callback(info)),
   onUpdateNotFound: (callback) => ipcRenderer.on('update-not-found', () => callback()),
   ignoreVersion: (version) => ipcRenderer.send('ignore-version', version),

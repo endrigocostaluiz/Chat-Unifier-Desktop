@@ -5,6 +5,8 @@ const http = require('http');
 const https = require('https');
 const express = require('express');
 const { Server } = require('socket.io');
+const { spawn } = require('child_process');
+
 
 // Força o Chromium a não congelar as janelas que estão fora da tela
 app.commandLine.appendSwitch('disable-backgrounding-occluded-windows', 'true');
@@ -821,6 +823,44 @@ function startScraper(platform) {
 ipcMain.handle('get-config', () => config);
 ipcMain.handle('get-app-path', () => app.getAppPath());
 ipcMain.handle('get-version', () => app.getVersion());
+
+ipcMain.handle('open-obs', async () => {
+  const possiblePaths = [
+    'C:\\Program Files\\obs-studio\\bin\\64bit\\obs64.exe',
+    'C:\\Program Files (x86)\\obs-studio\\bin\\64bit\\obs64.exe',
+    path.join(process.env.PROGRAMFILES || 'C:\\Program Files', 'obs-studio\\bin\\64bit\\obs64.exe'),
+    path.join(process.env['PROGRAMFILES(X86)'] || 'C:\\Program Files (x86)', 'obs-studio\\bin\\64bit\\obs64.exe')
+  ];
+
+  let obsPath = null;
+  for (const p of possiblePaths) {
+    if (fs.existsSync(p)) {
+      obsPath = p;
+      break;
+    }
+  }
+
+  if (!obsPath) {
+    console.error('[OBS] Executável do OBS não encontrado nos caminhos padrão.');
+    return { success: false, error: 'OBS Studio não encontrado nos caminhos padrão do sistema. Por favor, abra-o manualmente.' };
+  }
+
+  try {
+    const obsDir = path.dirname(obsPath);
+    console.log(`[OBS] Iniciando OBS Studio a partir de: ${obsPath} (CWD: ${obsDir})`);
+    const child = spawn(obsPath, [], {
+      cwd: obsDir,
+      detached: true,
+      stdio: 'ignore'
+    });
+    child.unref();
+    return { success: true };
+  } catch (err) {
+    console.error('[OBS] Erro ao abrir OBS Studio:', err);
+    return { success: false, error: err.message };
+  }
+});
+
 
 ipcMain.handle('save-config', (e, newConfig) => {
   config = newConfig;

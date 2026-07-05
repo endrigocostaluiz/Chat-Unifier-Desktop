@@ -147,12 +147,20 @@ const elements = {
     updateChangelog: document.getElementById('update-changelog'),
     updateProgressContainer: document.getElementById('update-progress-container'),
     updateProgressPercent: document.getElementById('update-progress-percent'),
-    updateProgressBar: document.getElementById('update-progress-bar')
+    updateProgressBar: document.getElementById('update-progress-bar'),
+    // OBS Notice Modal
+    modalObsNotice: document.getElementById('modal-obs-notice'),
+    btnObsOpen: document.getElementById('btn-modal-open-obs'),
+    btnObsClose: document.getElementById('btn-modal-obs-close')
 };
 
 // Dicionário de Traduções
 const i18n = {
-    pt: {}, // HTML original já está em PT
+    pt: {
+        "obsNoticeDesc": "Para que seus overlays e chats carreguem corretamente no OBS, lembre-se de abrir primeiro este aplicativo e somente depois abrir o OBS Studio.",
+        "obsNoticeWhyTitle": "💡 Por que isso é necessário?",
+        "obsNoticeWhyDesc": "Este aplicativo cria um servidor de chat local. Se o OBS for aberto antes dele, as fontes de navegador do OBS tentarão se conectar e podem falhar (tela em branco), exigindo que você atualize as fontes manualmente."
+    },
     en: {
         "Pesquisar canais...": "Search channels...",
         "Canais do Contador": "Counter Channels",
@@ -245,7 +253,16 @@ const i18n = {
         "Versão": "Version",
         "Não foram encontradas atualizações.": "No updates found.",
         "Você já está na versão mais recente!": "You are already on the latest version!",
-        "Badges + Total": "Badges + Total"
+        "Badges + Total": "Badges + Total",
+        "Aviso Importante": "Important Notice",
+        "Recomendação do OBS": "OBS Recommendation",
+        "obsNoticeDesc": "To ensure your overlays and chats load correctly in OBS, remember to open this app first and only then open OBS Studio.",
+        "obsNoticeWhyTitle": "💡 Why is this necessary?",
+        "obsNoticeWhyDesc": "This app creates a local chat server. If OBS is opened before it, the OBS Browser Sources will try to connect and might fail (showing a blank screen), requiring you to manually refresh them.",
+        "Abrir OBS Studio": "Open OBS Studio",
+        "Entendi e Vou Seguir a Ordem": "Got it, I will follow the order",
+        "OBS Studio está sendo iniciado...": "OBS Studio is launching...",
+        "OBS Studio já deve estar aberto ou não foi encontrado nos caminhos padrão.": "OBS Studio might already be open or wasn't found in default directories."
     }
 };
 
@@ -613,6 +630,11 @@ async function init() {
 
         setupChatDragAndDrop();
         setupViewerDragAndDrop();
+
+        // Modal OBS Notice - Exibição inicial
+        if (elements.modalObsNotice) {
+            elements.modalObsNotice.classList.remove('hidden');
+        }
     } catch (err) {
         console.error("Erro na inicialização:", err);
     }
@@ -1509,6 +1531,37 @@ if (btnCopyPix) {
         setTimeout(() => btnCopyPix.innerText = orig, 2000);
     };
 }
+
+// Modal Aviso OBS - Eventos
+if (elements.btnObsClose) {
+    elements.btnObsClose.onclick = () => {
+        if (elements.modalObsNotice) {
+            elements.modalObsNotice.classList.add('hidden');
+        }
+    };
+}
+
+if (elements.btnObsOpen) {
+    elements.btnObsOpen.onclick = async () => {
+        // Esconde o modal
+        if (elements.modalObsNotice) {
+            elements.modalObsNotice.classList.add('hidden');
+        }
+        
+        try {
+            const res = await api.openOBS();
+            if (res && res.success) {
+                showToast(appConfig.lang === 'en' ? 'OBS Studio is launching...' : 'OBS Studio está sendo iniciado...', 'success');
+            } else {
+                showToast(res?.error || (appConfig.lang === 'en' ? 'OBS Studio might already be open or wasn\'t found in default directories.' : 'OBS Studio já deve estar aberto ou não foi encontrado nos caminhos padrão.'), 'info');
+            }
+        } catch (err) {
+            console.error('Erro ao abrir OBS:', err);
+            showToast(appConfig.lang === 'en' ? 'Error launching OBS Studio.' : 'Erro ao iniciar o OBS Studio.', 'error');
+        }
+    };
+}
+
 
 
 window.copyToClipboard = (text) => {

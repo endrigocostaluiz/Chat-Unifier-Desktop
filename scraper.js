@@ -215,7 +215,9 @@ const observer = new MutationObserver((mutations) => {
 });
 
 function initChatObserver() {
-    observer.observe(document.body, { childList: true, subtree: true });
+    // Observa o documentElement (<html>) em vez de document.body, permitindo capturar mensagens no exato momento do parse
+    const target = document.documentElement || document;
+    observer.observe(target, { childList: true, subtree: true });
 }
 
 // ─── POLLING FALLBACK PARA TIKTOK (lista virtualizada) ───────
@@ -480,14 +482,11 @@ const fetchViewers = async () => {
 
 const runLoop = () => { fetchViewers(); setTimeout(runLoop, (window._viewerInterval || 30) * 1000); };
 
-// Inicialização coordenada e limpa após o DOM estar pronto
+// Inicialização coordenada e limpa
 function startScrapers() {
   initChatObserver();
   setTimeout(runLoop, 500);
 }
 
-if (document.body) {
-  startScrapers();
-} else {
-  document.addEventListener('DOMContentLoaded', startScrapers);
-}
+// Inicia imediatamente (o preload garante acesso ao documentElement/document)
+startScrapers();
