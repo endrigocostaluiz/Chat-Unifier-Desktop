@@ -1,6 +1,6 @@
 {
   "name": "chat-unifier",
-  "version": "1.3.2",
+  "version": "1.3.3",
   "description": "Unificador de chats para Streamers (Twitch/YT/Kick) via Scraping Local",
   "main": "main.js",
   "author": "Endrigo",

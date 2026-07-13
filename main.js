@@ -40,13 +40,27 @@ function getYoutubeStartUrl(url) {
 
 function resolveYoutubeRedirect(win, startUrl, callback) {
   let resolved = false;
+  let checkIntervalId = null;
+  let retryTimeoutId = null;
 
-  const checkUrl = () => {
+  const cleanTimers = () => {
+    if (checkIntervalId) {
+      clearInterval(checkIntervalId);
+      checkIntervalId = null;
+    }
+    if (retryTimeoutId) {
+      clearTimeout(retryTimeoutId);
+      retryTimeoutId = null;
+    }
+  };
+
+  const checkUrlAndDOM = async () => {
     if (resolved || win.isDestroyed()) return;
     try {
       const currentUrl = win.webContents.getURL();
       let videoId = null;
 
+      // 1. Tenta extrair o ID da URL
       if (currentUrl.includes('watch?v=')) {
         const match = currentUrl.match(/[?&]v=([^&]+)/);
         if (match) videoId = match[1];
@@ -57,20 +71,14 @@ function resolveYoutubeRedirect(win, startUrl, callback) {
 
       if (videoId && videoId !== 'live') {
         resolved = true;
-        clearInterval(pollIntervalId);
-        clearTimeout(timeoutId);
+        cleanTimers();
         console.log('[YouTube Redirect] Resolvido videoId via URL: ' + videoId + ' a partir de: ' + currentUrl);
         callback(videoId);
+        return;
       }
-    } catch (e) {
-      // Ignorar
-    }
-  };
 
-  const extractVideoIdFromDOM = async () => {
-    if (resolved || win.isDestroyed()) return;
-    try {
-      const videoId = await win.webContents.executeJavaScript(`
+      // 2. Se não achou na URL, tenta extrair via DOM (apenas se for live ativa de fato)
+      const domVideoId = await win.webContents.executeJavaScript(`
         (function() {
           try {
             if (window.ytInitialData) {
@@ -80,7 +88,6 @@ function resolveYoutubeRedirect(win, startUrl, callback) {
                 if (obj.gridVideoRenderer) {
                   var renderer = obj.gridVideoRenderer;
                   var isLive = false;
-                  var isUpcoming = false;
                   if (renderer.thumbnailOverlays) {
                     var overlays = renderer.thumbnailOverlays;
                     for (var i = 0; i < overlays.length; i++) {
@@ -88,14 +95,12 @@ function resolveYoutubeRedirect(win, startUrl, callback) {
                       if (overlay.thumbnailOverlayTimeStatusRenderer) {
                         var style = overlay.thumbnailOverlayTimeStatusRenderer.style;
                         if (style === 'LIVE') isLive = true;
-                        if (style === 'UPCOMING') isUpcoming = true;
                       }
                     }
                   }
                   videoIds.push({
                     videoId: renderer.videoId,
-                    isLive: isLive,
-                    isUpcoming: isUpcoming
+                    isLive: isLive
                   });
                 }
                 for (var key in obj) {
@@ -108,68 +113,54 @@ function resolveYoutubeRedirect(win, startUrl, callback) {
               
               var liveStream = videoIds.find(function(v) { return v.isLive; });
               if (liveStream) return liveStream.videoId;
-              
-              var upcomingStream = videoIds.find(function(v) { return v.isUpcoming; });
-              if (upcomingStream) return upcomingStream.videoId;
-              
-              if (videoIds.length > 0) return videoIds[0].videoId;
             }
             return null;
           } catch(e) { return null; }
         })()
       `);
 
-      if (videoId && videoId !== 'live') {
+      if (domVideoId && domVideoId !== 'live') {
         resolved = true;
-        clearInterval(pollIntervalId);
-        clearTimeout(timeoutId);
-        console.log('[YouTube DOM Scraping] Resolvido videoId: ' + videoId);
-        callback(videoId);
+        cleanTimers();
+        console.log('[YouTube DOM Scraping] Resolvido videoId (Live Ativa): ' + domVideoId);
+        callback(domVideoId);
+        return;
       }
     } catch (e) {
       // Ignorar
     }
   };
 
-  const pollIntervalId = setInterval(() => {
-    checkUrl();
-    if (!resolved) {
-      extractVideoIdFromDOM();
-    }
-  }, 1500);
+  const loadAndScheduleCheck = () => {
+    if (resolved || win.isDestroyed()) return;
 
-  const timeoutId = setTimeout(() => {
-    clearInterval(pollIntervalId);
-    if (!resolved) {
-      console.log('[YouTube Redirect] Timeout (20s) - Não foi possível determinar a live a partir de: ' + startUrl);
-      if (!win.isDestroyed()) {
-        win.webContents.executeJavaScript(`
-          (function() {
-            var canonical = document.querySelector('link[rel="canonical"]');
-            if (canonical) {
-              var href = canonical.getAttribute('href') || '';
-              var m = href.match(/[?&]v=([^&]+)/);
-              if (m) return m[1];
-            }
-            return null;
-          })()
-        `).then(vid => {
-          if (vid && vid !== 'live') {
-            console.log('[YouTube Redirect Fallback] Resolvido via DOM canonical: ' + vid);
-            callback(vid);
-          }
-        }).catch(() => {});
+    cleanTimers();
+
+    console.log('[YouTube Redirect] Carregando/Recarregando URL de canal: ' + startUrl);
+    win.loadURL(startUrl).catch(err => {
+      console.log('[YouTube Redirect] Erro ao carregar URL: ', err.message);
+    });
+
+    // Checa a URL e o DOM periodicamente a cada 1.5 segundos
+    checkIntervalId = setInterval(checkUrlAndDOM, 1500);
+
+    // Se após 7 segundos não resolver, significa que o canal está offline. Agenda nova tentativa para dali a 5 segundos.
+    retryTimeoutId = setTimeout(() => {
+      if (!resolved && !win.isDestroyed()) {
+        console.log('[YouTube Redirect] Canal offline ou live não propagou. Nova tentativa em 5 segundos...');
+        cleanTimers();
+        retryTimeoutId = setTimeout(loadAndScheduleCheck, 5000);
       }
-    }
-  }, 20000);
+    }, 7000);
+  };
 
-  win.webContents.on('did-navigate', checkUrl);
-  win.webContents.on('did-navigate-in-page', checkUrl);
-  win.webContents.on('did-redirect-navigation', checkUrl);
-  win.webContents.on('did-finish-load', checkUrl);
+  win.webContents.on('did-navigate', checkUrlAndDOM);
+  win.webContents.on('did-navigate-in-page', checkUrlAndDOM);
+  win.webContents.on('did-redirect-navigation', checkUrlAndDOM);
+  win.webContents.on('did-finish-load', checkUrlAndDOM);
 
-  console.log('[YouTube Redirect] Carregando URL inicial de canal: ' + startUrl);
-  win.loadURL(startUrl);
+  // Inicia o processo de carregamento e checagem contínua
+  loadAndScheduleCheck();
 }
 
 const defaultOverlay = (id) => ({
