@@ -32,7 +32,7 @@ const processedIds = new Set();
 function isNewMessage(id, isFallback = false) {
   if (!id || processedIds.has(id)) return false;
   processedIds.add(id);
-  const timeout = isFallback ? 3 * 1000 : 30 * 60 * 1000;
+  const timeout = 30 * 60 * 1000;
   setTimeout(() => processedIds.delete(id), timeout);
   return true;
 }
@@ -62,14 +62,20 @@ function parseMessageContent(msgEl) {
 }
 
 function processKickEntry(kickEntry) {
-  if (!kickEntry) return;
+  if (!kickEntry || kickEntry.dataset?.unifierProcessed) return;
   const authorEl = kickEntry.querySelector('.chat-entry-username, [data-chat-entry-user]');
   const author = authorEl?.innerText?.trim() || authorEl?.textContent?.trim();
   if (!author) return;
   const chatEntry = kickEntry.querySelector('.chat-entry') || kickEntry;
-  const entryId = kickEntry.getAttribute('data-chat-entry') || kickEntry.getAttribute('data-index') || '';
+  let entryId = kickEntry.getAttribute('data-chat-entry') || kickEntry.getAttribute('data-index') || '';
+  if (!entryId) {
+    if (!kickEntry.dataset.unifierId) {
+      kickEntry.dataset.unifierId = 'kick_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    }
+    entryId = kickEntry.dataset.unifierId;
+  }
   const rawId = `kick-${author}-${entryId}`;
-  if (!isNewMessage(rawId, !entryId)) return;
+  if (!isNewMessage(rawId, false)) return;
   let message = '';
   const walker = document.createTreeWalker(chatEntry, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
     acceptNode(node) {
@@ -94,9 +100,10 @@ function processKickEntry(kickEntry) {
   }
   message = message.trim();
   if (!message) return;
+  kickEntry.dataset.unifierProcessed = 'true';
   const avatarImg = kickEntry.querySelector('img.avatar, img[class*="avatar"]');
   let avatar = avatarImg?.src || kickAvatarCache.get(author) || null;
-  ipcRenderer.send('new-message', { author, message, avatar, timestamp: Date.now(), platform: 'kick', rawId, isFallback: !entryId });
+  ipcRenderer.send('new-message', { author, message, avatar, timestamp: Date.now(), platform: 'kick', rawId, isFallback: false });
 }
 
 function processNode(node) {
@@ -108,25 +115,41 @@ function processNode(node) {
 
   const twitchLine = node.classList?.contains('chat-line__message') ? node : node.closest?.('.chat-line__message');
   if (twitchLine) {
+    if (twitchLine.dataset?.unifierProcessed) return;
     const author = twitchLine.querySelector('.chat-author__display-name, .display-name')?.innerText;
     const msgBody = twitchLine.querySelector('[data-a-target="chat-line-message-body"]');
     const message = parseMessageContent(msgBody);
     if (author && message) {
-      const twitchId = twitchLine.getAttribute('data-id') || twitchLine.id;
-      const rawId = `twitch-${twitchId || `${author}-${message.substring(0, 40)}`}`;
-      if (isNewMessage(rawId, !twitchId)) ipcRenderer.send('new-message', { author, message, avatar: null, timestamp: Date.now(), platform: 'twitch', rawId, isFallback: !twitchId });
+      twitchLine.dataset.unifierProcessed = 'true';
+      let twitchId = twitchLine.getAttribute('data-id') || twitchLine.id;
+      if (!twitchId) {
+        if (!twitchLine.dataset.unifierId) {
+          twitchLine.dataset.unifierId = 'tw_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+        }
+        twitchId = twitchLine.dataset.unifierId;
+      }
+      const rawId = `twitch-${twitchId}`;
+      if (isNewMessage(rawId, false)) ipcRenderer.send('new-message', { author, message, avatar: null, timestamp: Date.now(), platform: 'twitch', rawId, isFallback: false });
     }
     return;
   }
   const ytItem = node.tagName?.startsWith('YT-LIVE-CHAT') ? (node.closest?.('yt-live-chat-text-message-renderer, yt-live-chat-paid-message-renderer') || node) : null;
   if (ytItem && (ytItem.tagName === 'YT-LIVE-CHAT-TEXT-MESSAGE-RENDERER' || ytItem.tagName === 'YT-LIVE-CHAT-PAID-MESSAGE-RENDERER')) {
+    if (ytItem.dataset?.unifierProcessed) return;
     const author = ytItem.querySelector('#author-name')?.innerText?.trim();
     const msgEl = ytItem.querySelector('#message');
     const message = parseMessageContent(msgEl);
     if (author && message) {
-      const ytId = ytItem.getAttribute('data-id') || ytItem.id;
-      const rawId = 'yt-' + (ytId || `${author}-${message.substring(0, 40)}`);
-      if (isNewMessage(rawId, !ytId)) ipcRenderer.send('new-message', { author, message, avatar: ytItem.querySelector('#img')?.src || null, timestamp: Date.now(), platform: 'youtube', rawId, isFallback: !ytId });
+      ytItem.dataset.unifierProcessed = 'true';
+      let ytId = ytItem.getAttribute('data-id') || ytItem.id;
+      if (!ytId) {
+        if (!ytItem.dataset.unifierId) {
+          ytItem.dataset.unifierId = 'yt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+        }
+        ytId = ytItem.dataset.unifierId;
+      }
+      const rawId = 'yt-' + ytId;
+      if (isNewMessage(rawId, false)) ipcRenderer.send('new-message', { author, message, avatar: ytItem.querySelector('#img')?.src || null, timestamp: Date.now(), platform: 'youtube', rawId, isFallback: false });
     }
     return;
   }
@@ -152,6 +175,8 @@ function processTikTokNode(node) {
 }
 
 function sendTikTokMessage(tiktokMsg) {
+  if (!tiktokMsg || tiktokMsg.dataset?.unifierProcessed) return;
+  
   // Busca o nome do autor
   const authorEl = tiktokMsg.querySelector('[data-e2e="message-owner-name"]');
   if (!authorEl) return;
@@ -189,12 +214,18 @@ function sendTikTokMessage(tiktokMsg) {
   const msgLower = message.trim().toLowerCase();
   if (msgLower === 'entrou' || msgLower === 'joined' || msgLower.endsWith(' entrou') || msgLower.endsWith(' joined')) return;
   
+  tiktokMsg.dataset.unifierProcessed = 'true';
   const parentIndex = tiktokMsg.closest?.('[data-index]');
-  const dataIndex = parentIndex?.getAttribute?.('data-index') || '';
-  const rawId = dataIndex ? `tiktok-idx-${dataIndex}-${author}` : `tiktok-${author}-${message.substring(0, 40)}`;
-  const isFallbackId = !dataIndex;
-  if (isNewMessage(rawId, isFallbackId)) {
-    ipcRenderer.send('new-message', { author, message, avatar: tiktokMsg.querySelector('img')?.src || null, timestamp: Date.now(), platform: 'tiktok', rawId, isFallback: isFallbackId });
+  let dataIndex = parentIndex?.getAttribute?.('data-index') || '';
+  if (!dataIndex) {
+    if (!tiktokMsg.dataset.unifierId) {
+      tiktokMsg.dataset.unifierId = 'tt_' + Date.now() + '_' + Math.random().toString(36).substring(2, 7);
+    }
+    dataIndex = tiktokMsg.dataset.unifierId;
+  }
+  const rawId = `tiktok-idx-${dataIndex}-${author}`;
+  if (isNewMessage(rawId, false)) {
+    ipcRenderer.send('new-message', { author, message, avatar: tiktokMsg.querySelector('img')?.src || null, timestamp: Date.now(), platform: 'tiktok', rawId, isFallback: false });
   }
 }
 

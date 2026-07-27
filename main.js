@@ -1068,8 +1068,7 @@ ipcMain.on('new-message', (event, msg) => {
   if (msg.rawId) {
     if (globalProcessedIds.has(msg.rawId)) return;
     globalProcessedIds.add(msg.rawId);
-    // Para fallbacks (TikTok), usa 3 segundos. Evita bloquear mensagens idênticas repetidas intencionalmente.
-    const timeout = msg.isFallback ? 3 * 1000 : 30 * 60 * 1000;
+    const timeout = 30 * 60 * 1000;
     setTimeout(() => globalProcessedIds.delete(msg.rawId), timeout);
   }
   
