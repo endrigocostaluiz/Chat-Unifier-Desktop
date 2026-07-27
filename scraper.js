@@ -214,10 +214,27 @@ const observer = new MutationObserver((mutations) => {
   }
 });
 
+function scanExistingTwitchChat() {
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('unifier_mode') === 'viewer') return;
+  if (window.location.href.includes('twitch.tv')) {
+    document.querySelectorAll('.chat-line__message').forEach(processNode);
+  }
+}
+
 function initChatObserver() {
     // Observa o documentElement (<html>) em vez de document.body, permitindo capturar mensagens no exato momento do parse
     const target = document.documentElement || document;
     observer.observe(target, { childList: true, subtree: true });
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', scanExistingTwitchChat);
+    } else {
+      scanExistingTwitchChat();
+    }
+    if (window.location.href.includes('twitch.tv')) {
+      setInterval(scanExistingTwitchChat, 3000);
+    }
 }
 
 // ─── POLLING FALLBACK PARA TIKTOK (lista virtualizada) ───────
@@ -287,21 +304,37 @@ const fetchViewers = async () => {
 
     if (window.location.href.includes('twitch.tv')) {
       platform = 'twitch';
-      const m = window.location.pathname.match(/\/popout\/([^/]+)\/chat/) || window.location.pathname.match(/^\/([^/]+)/);
-      if (m && m[1] && !['directory', 'search', 'p', 'settings', 'moderator'].includes(m[1].toLowerCase())) {
+      let channel = urlParams.get('unifier_channel') || window._channelName;
+      if (!channel) {
+        const m = window.location.pathname.match(/\/popout\/([^/]+)\/chat/) || 
+                  window.location.pathname.match(/\/embed\/([^/]+)\/chat/) || 
+                  window.location.pathname.match(/^\/([^/]+)/);
+        if (m && m[1] && !['directory', 'search', 'p', 'settings', 'moderator', 'videos', 'clips'].includes(m[1].toLowerCase())) {
+          channel = m[1].toLowerCase();
+        }
+      }
+      if (channel) {
+        const targetChannel = channel.toLowerCase().trim();
         try {
           const res = await fetch('https://gql.twitch.tv/gql', {
             method: 'POST',
-            headers: { 'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko' },
-            body: JSON.stringify({ query: `query { user(login: "${m[1]}") { stream { viewersCount } } }` })
+            headers: { 
+              'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ query: `query { user(login: "${targetChannel}") { stream { viewersCount } } }` })
           });
           const json = await res.json();
-          if (json?.data?.user?.stream) count = String(json.data.user.stream.viewersCount);
-        } catch(e) {}
+          if (json?.data?.user?.stream) {
+            count = String(json.data.user.stream.viewersCount);
+          }
+        } catch(e) {
+          console.error('[Scraper Twitch GQL]', e);
+        }
       }
       // Fallback apenas se o GQL falhar e não for popout (onde o DOM não tem o contador)
       if ((!count || count === '0') && !window.location.href.includes('/popout/')) {
-        const viewerEl = document.querySelector('p[data-a-target*="count"], strong[data-a-target="viewer-count"], .channel-viewers-count');
+        const viewerEl = document.querySelector('p[data-a-target*="count"], strong[data-a-target="viewer-count"], .channel-viewers-count, [data-a-target="animated-channel-viewers-count"]');
         if (viewerEl) count = extractCount(viewerEl.innerText);
       }
     } else if (window.location.href.includes('youtube.com')) {
@@ -480,12 +513,24 @@ const fetchViewers = async () => {
   }
 };
 
-const runLoop = () => { fetchViewers(); setTimeout(runLoop, (window._viewerInterval || 30) * 1000); };
+let fetchTimer = null;
+const runLoop = async () => {
+  if (fetchTimer) clearTimeout(fetchTimer);
+  try {
+    await fetchViewers();
+  } catch(e) {}
+
+  // Se ainda não capturou um valor válido (ex: 0 viewers, stream iniciando ou app recém aberto),
+  // tenta rápido (a cada 5s). Assim que capturar um valor > 0, usa o intervalo normal do usuário.
+  const isZero = (!window._lastValidCount || window._lastValidCount === '0');
+  const delay = isZero ? 5000 : ((window._viewerInterval || 30) * 1000);
+  fetchTimer = setTimeout(runLoop, delay);
+};
 
 // Inicialização coordenada e limpa
 function startScrapers() {
   initChatObserver();
-  setTimeout(runLoop, 500);
+  runLoop();
 }
 
 // Inicia imediatamente (o preload garante acesso ao documentElement/document)

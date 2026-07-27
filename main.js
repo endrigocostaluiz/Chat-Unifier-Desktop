@@ -422,6 +422,35 @@ async function loadConfig() {
   }
 }
 
+function getTwitchChannel(inputUrl) {
+  if (!inputUrl) return '';
+  let str = inputUrl.trim();
+  str = str.split('?')[0].split('#')[0].replace(/\/$/, '');
+  const parts = str.split('/').filter(Boolean);
+  
+  const popoutIndex = parts.indexOf('popout');
+  if (popoutIndex !== -1 && parts[popoutIndex + 1]) {
+    return parts[popoutIndex + 1].toLowerCase();
+  }
+  
+  const embedIndex = parts.indexOf('embed');
+  if (embedIndex !== -1 && parts[embedIndex + 1]) {
+    return parts[embedIndex + 1].toLowerCase();
+  }
+  
+  const last = parts[parts.length - 1];
+  if (last && last !== 'chat' && !last.includes('.')) {
+    return last.toLowerCase();
+  }
+  if (last === 'chat' && parts.length >= 2) {
+    const prev = parts[parts.length - 2];
+    if (prev && prev !== 'popout' && prev !== 'embed' && !prev.includes('.')) {
+      return prev.toLowerCase();
+    }
+  }
+  return str.toLowerCase();
+}
+
 function updateViewerScrapers() {
   if (!config.viewersConfig || !config.viewersConfig.channels) return;
   const vc = config.viewersConfig.channels;
@@ -503,8 +532,9 @@ function startViewerScraper(key, url) {
   
   let targetUrl = url;
   let isRedirect = false;
-  if (key === 'twitch' && !targetUrl.includes('twitch.tv')) {
-    targetUrl = `https://www.twitch.tv/${targetUrl}`;
+  if (key === 'twitch') {
+    const channel = getTwitchChannel(targetUrl);
+    targetUrl = `https://www.twitch.tv/${channel}`;
   } else if (key === 'shorts') {
     if (!targetUrl.includes('youtube.com/shorts/')) {
         const vid = targetUrl.match(/[?&]v=([^&#]+)/) || targetUrl.match(/v\/([^&#]+)/);
@@ -544,7 +574,10 @@ function startViewerScraper(key, url) {
   if (!isRedirect) {
     // Adiciona a chave na URL para que o scraper saiba quem ele é sem depender de injeção assíncrona
     const separator = targetUrl.includes('?') ? '&' : '?';
-    const urlWithKey = targetUrl + `${separator}unifier_platform=${key}&unifier_mode=viewer`;
+    let urlWithKey = targetUrl + `${separator}unifier_platform=${key}&unifier_mode=viewer`;
+    if (key === 'twitch') {
+      urlWithKey += `&unifier_channel=${getTwitchChannel(url)}`;
+    }
 
     win.loadURL(urlWithKey);
   }
@@ -554,7 +587,13 @@ function startViewerScraper(key, url) {
   });
   
   win.webContents.on('dom-ready', () => {
-    win.webContents.executeJavaScript(`window._platformKey = "${key}"; window._viewerInterval = ${win._interval};`).catch(e => console.log(`[Scraper ${key}] Erro ao injetar vars:`, e));
+    const channelName = key === 'twitch' ? getTwitchChannel(url) : '';
+    win.webContents.executeJavaScript(`
+      window._platformKey = "${key}";
+      window._channelName = "${channelName}";
+      window._viewerInterval = ${win._interval};
+      if (typeof fetchViewers === "function") fetchViewers();
+    `).catch(e => console.log(`[Scraper ${key}] Erro ao injetar vars:`, e));
   });
 
   scraperRegistry.set(win.webContents.id, key);
@@ -709,7 +748,7 @@ function startScraper(platform) {
   let url = platform.url;
   let isRedirect = false;
   if (platform.type === 'twitch') {
-    const channel = url.replace(/\/$/, "").split('/').pop();
+    const channel = getTwitchChannel(url);
     url = `https://www.twitch.tv/popout/${channel}/chat`;
 
   } else if (platform.type === 'youtube') {
