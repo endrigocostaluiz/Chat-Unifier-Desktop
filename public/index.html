@@ -106,8 +106,14 @@
             </div>
             <div class="sidebar-item group relative flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/5 cursor-pointer transition-all opacity-40 hover:opacity-100" data-tab="viewers">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-                <div class="absolute left-14 bg-[#161616] border border-white/10 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl">
+                <div class="absolute left-14 bg-[#161616] border border-white/10 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl" data-i18n="Contador de Views">
                     Contador de Views
+                </div>
+            </div>
+            <div class="sidebar-item group relative flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/5 cursor-pointer transition-all opacity-40 hover:opacity-100" data-tab="giveaway">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-gift"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                <div class="absolute left-14 bg-[#161616] border border-white/10 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl" data-i18n="Sorteio">
+                    Sorteio
                 </div>
             </div>
         </nav>
@@ -131,7 +137,7 @@
                     Verificar Atualizações
                 </div>
             </button>
-            <span id="app-version" class="text-[9px] font-black text-white/10 mt-2">v1.3.6</span>
+            <span id="app-version" class="text-[9px] font-black text-white/10 mt-2">v1.4.0</span>
         </div>
     </aside>
 
@@ -560,7 +566,7 @@
 
                             <footer class="pt-4 pb-8 px-2 flex flex-col items-center gap-2">
                                 <div class="opacity-30 hover:opacity-100 transition-all duration-300 flex flex-col items-center gap-1 cursor-default group">
-                                    <p id="app-footer-version" class="text-[9px] font-black tracking-[0.2em] uppercase group-hover:text-emerald-400 transition-colors">Chat Unifier v1.3.6</p>
+                                    <p id="app-footer-version" class="text-[9px] font-black tracking-[0.2em] uppercase group-hover:text-emerald-400 transition-colors">Chat Unifier v1.4.0</p>
                                     <p class="text-[8px] font-medium tracking-wider group-hover:text-white/80 transition-colors"><span data-i18n="developedBy">Desenvolvido por</span> <span class="text-emerald-500 font-bold group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.8)] transition-all">Endrigo</span></p>
                                 </div>
                             </footer>
@@ -863,6 +869,255 @@
                     </section>
                 </div>
             </div>
+
+            <!-- ABA: Sorteio (Giveaways) -->
+            <div id="tab-giveaway" class="tab-content hidden animate-in fade-in slide-in-from-left-4 duration-500 space-y-6">
+                <!-- Alerta de Chat Desconectado -->
+                <div id="giveaway-chat-alert" class="card p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center flex-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black uppercase text-amber-400 tracking-wider" data-i18n="Chat Não Conectado">Chat Não Conectado</h4>
+                            <p class="text-xs text-white/70" data-i18n="giveawayChatAlertDesc">A captura do chat está pausada. Inicie o chat para receber mensagens e coletar os participantes do sorteio.</p>
+                        </div>
+                    </div>
+                    <button id="btn-giveaway-start-chat" class="emerald-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 flex-none shadow-lg shadow-emerald-500/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <span data-i18n="Iniciar Chat Agora">Iniciar Chat Agora</span>
+                    </button>
+                </div>
+
+                <div class="flex gap-8 items-start">
+                    <!-- Coluna 1: Regras e Configurações (Fixo em 368px) -->
+                    <section class="w-[368px] flex-none space-y-6">
+                        <!-- Card: Inscrições & Regras -->
+                        <div class="card p-6 rounded-3xl space-y-5 bg-white/[0.02] border border-white/5">
+                            <div class="flex justify-between items-center">
+                                <h3 class="text-xs font-black uppercase text-emerald-500 tracking-widest" data-i18n="Regras do Sorteio">Regras do Sorteio</h3>
+                                <div class="flex items-center gap-2">
+                                    <span id="giveaway-status-badge" class="text-[9px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full font-black uppercase tracking-wider">Inscrições Abertas</span>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="giveaway-active-toggle" checked class="sr-only peer">
+                                        <div class="w-8 h-4 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Critério de Entrada -->
+                            <div class="space-y-2">
+                                <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Como Participar">Como Participar</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button" id="giveaway-mode-keyword-btn" class="p-2.5 rounded-xl text-xs font-bold border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 transition flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>
+                                        <span data-i18n="Palavra-Chave">Palavra-Chave</span>
+                                    </button>
+                                    <button type="button" id="giveaway-mode-all-btn" class="p-2.5 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-white/40 hover:text-white transition flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                                        <span data-i18n="Qualquer Mensagem">Qualquer Mensagem</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Campo Palavra-chave -->
+                            <div id="giveaway-keyword-panel" class="space-y-1.5">
+                                <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Palavra ou Comando de Entrada">Palavra ou Comando de Entrada</label>
+                                <div class="relative">
+                                    <input type="text" id="giveaway-keyword-input" value="!sorteio" placeholder="Ex: !sorteio, #quero, participar" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-2.5 pl-9 pr-3 text-xs font-mono text-white focus:outline-none focus:border-emerald-500">
+                                    <span class="absolute left-3 top-2.5 text-white/30 font-mono text-xs">#</span>
+                                </div>
+                                <p class="text-[9px] text-white/30" data-i18n="giveawayKeywordHelp">Quem digitar esta palavra em qualquer chat ativo entra no sorteio.</p>
+                            </div>
+
+                            <!-- Opções Adicionais -->
+                            <div class="space-y-3 pt-2 border-t border-white/5">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-[10px] text-white/60 font-bold" data-i18n="Ignorar Maiúsculas/Minúsculas">Ignorar Maiúsculas/Minúsculas</label>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="giveaway-case-insensitive" checked class="sr-only peer">
+                                        <div class="w-7 h-4 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
+                                    </label>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <label class="text-[10px] text-white/60 font-bold" data-i18n="Apenas 1 Inscrição por Usuário">Apenas 1 Inscrição por Usuário</label>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="giveaway-unique-user" checked class="sr-only peer">
+                                        <div class="w-7 h-4 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Filtro de Plataformas -->
+                            <div class="space-y-2 pt-2 border-t border-white/5">
+                                <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Plataformas Permitidas">Plataformas Permitidas</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center gap-2 p-2 rounded-xl bg-white/[0.02] border border-white/5 text-[11px] cursor-pointer hover:border-white/10">
+                                        <input type="checkbox" id="giveaway-plat-twitch" checked class="accent-purple-500 rounded">
+                                        <span class="text-purple-400 font-bold">Twitch</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 p-2 rounded-xl bg-white/[0.02] border border-white/5 text-[11px] cursor-pointer hover:border-white/10">
+                                        <input type="checkbox" id="giveaway-plat-youtube" checked class="accent-red-500 rounded">
+                                        <span class="text-red-400 font-bold">YouTube</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 p-2 rounded-xl bg-white/[0.02] border border-white/5 text-[11px] cursor-pointer hover:border-white/10">
+                                        <input type="checkbox" id="giveaway-plat-kick" checked class="accent-emerald-500 rounded">
+                                        <span class="text-emerald-400 font-bold">Kick</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 p-2 rounded-xl bg-white/[0.02] border border-white/5 text-[11px] cursor-pointer hover:border-white/10">
+                                        <input type="checkbox" id="giveaway-plat-tiktok" checked class="accent-pink-500 rounded">
+                                        <span class="text-pink-400 font-bold">TikTok</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card: Modo de Sorteio (Timer ou Manual) -->
+                        <div class="card p-6 rounded-3xl space-y-5 bg-white/[0.02] border border-white/5">
+                            <h3 class="text-xs font-black uppercase text-emerald-500 tracking-widest" data-i18n="Execução do Sorteio">Execução do Sorteio</h3>
+                            
+                            <div class="space-y-2">
+                                <label class="block text-[10px] text-white/40 uppercase font-black" data-i18n="Tipo de Sorteio">Tipo de Sorteio</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <button type="button" id="giveaway-type-manual-btn" class="p-2.5 rounded-xl text-xs font-bold border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 transition flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+                                        <span data-i18n="Manual">Manual</span>
+                                    </button>
+                                    <button type="button" id="giveaway-type-timer-btn" class="p-2.5 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-white/40 hover:text-white transition flex items-center justify-center gap-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        <span data-i18n="Com Timer">Com Timer</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Configuração do Timer -->
+                            <div id="giveaway-timer-settings" class="hidden space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <label class="text-[10px] text-white/40 uppercase font-black" data-i18n="Duração do Timer">Duração do Timer</label>
+                                    <span id="giveaway-timer-display-val" class="text-xs font-mono font-bold text-emerald-400">60s</span>
+                                </div>
+                                <input type="range" id="giveaway-timer-slider" min="10" max="600" step="5" value="60" class="w-full accent-emerald-500 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                                <div class="grid grid-cols-4 gap-1.5">
+                                    <button type="button" class="btn-timer-preset px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white/60 hover:text-white" data-seconds="30">30s</button>
+                                    <button type="button" class="btn-timer-preset px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white/60 hover:text-white" data-seconds="60">1m</button>
+                                    <button type="button" class="btn-timer-preset px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white/60 hover:text-white" data-seconds="120">2m</button>
+                                    <button type="button" class="btn-timer-preset px-2 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[10px] font-bold text-white/60 hover:text-white" data-seconds="300">5m</button>
+                                </div>
+                            </div>
+
+                            <!-- Botões de Ação do Sorteio -->
+                            <div class="space-y-2 pt-2">
+                                <button id="btn-giveaway-draw" class="w-full emerald-btn py-3.5 rounded-2xl text-sm font-black flex items-center justify-center gap-2 shadow-xl shadow-emerald-500/20">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></svg>
+                                    <span id="btn-giveaway-draw-label" data-i18n="Realizar Sorteio Agora">Realizar Sorteio Agora</span>
+                                </button>
+                                <button id="btn-giveaway-cancel-timer" class="hidden w-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                                    <span data-i18n="Cancelar Timer">Cancelar Timer</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card: Ações de Gerenciamento -->
+                        <div class="card p-4 rounded-2xl space-y-2 bg-white/[0.02] border border-white/5">
+                            <div class="flex gap-2">
+                                <button id="btn-giveaway-add-manual" class="flex-1 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                    <span data-i18n="Adicionar Manual">+ Participante</span>
+                                </button>
+                                <button id="btn-giveaway-clear" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 py-2 px-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5" title="Limpar Lista">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                    <span data-i18n="Limpar">Limpar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Coluna 2: Palco Principal do Sorteio & Lista de Participantes -->
+                    <section class="flex-1 flex flex-col gap-6 overflow-hidden min-w-0">
+                        <!-- Palco / Display da Roleta / Timer -->
+                        <div id="giveaway-stage" class="card rounded-3xl p-8 bg-gradient-to-br from-[#161616] to-[#0d0d0d] border border-white/10 relative overflow-hidden flex flex-col items-center justify-center min-h-[220px]">
+                            <!-- Fundo de Efeito Neon -->
+                            <div class="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                            <!-- Estado 1: Standby / Pronto -->
+                            <div id="stage-standby" class="flex flex-col items-center text-center space-y-3 z-10">
+                                <div class="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shadow-lg shadow-emerald-500/10">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-black tracking-tight" data-i18n="Módulo de Sorteio Ativo">Módulo de Sorteio Ativo</h3>
+                                    <p class="text-xs text-white/40 max-w-md mt-1" data-i18n="giveawayStandbyDesc">Os espectadores que enviarem mensagens ou a palavra-chave entrarão na lista abaixo em tempo real.</p>
+                                </div>
+                            </div>
+
+                            <!-- Estado 2: Timer Regressivo Rodando -->
+                            <div id="stage-timer" class="hidden flex-col items-center text-center space-y-4 z-10 w-full max-w-sm">
+                                <div class="flex items-center gap-2 text-emerald-400 text-xs font-black uppercase tracking-widest">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                                    <span data-i18n="Sorteio em Andamento...">Sorteio em Andamento...</span>
+                                </div>
+                                <div id="stage-timer-clock" class="text-6xl font-black font-mono tracking-tighter text-white drop-shadow-[0_0_20px_rgba(16,185,129,0.3)]">00:00</div>
+                                <div class="w-full bg-white/10 h-2.5 rounded-full overflow-hidden border border-white/5">
+                                    <div id="stage-timer-bar" class="bg-emerald-500 h-full w-full transition-all duration-1000 ease-linear rounded-full shadow-lg shadow-emerald-500/50"></div>
+                                </div>
+                                <p class="text-[10px] text-white/40 uppercase font-bold" data-i18n="As inscrições serão encerradas ao zerar o tempo.">As inscrições serão encerradas ao zerar o tempo.</p>
+                            </div>
+
+                            <!-- Estado 3: Roleta de Sorteio Girando (Animação) -->
+                            <div id="stage-spinning" class="hidden flex-col items-center text-center space-y-4 z-10 w-full">
+                                <span class="text-xs font-black uppercase text-amber-400 tracking-widest animate-pulse" data-i18n="🎲 SORTEANDO O VENCEDOR...">🎲 SORTEANDO O VENCEDOR...</span>
+                                <div class="w-full max-w-md bg-black/60 border-2 border-emerald-500/50 rounded-2xl p-4 shadow-2xl shadow-emerald-500/20 relative overflow-hidden flex items-center justify-center min-h-[90px]">
+                                    <div id="roulette-display" class="flex items-center gap-3 transition-all duration-75">
+                                        <div class="w-12 h-12 rounded-full bg-emerald-500 text-black font-black flex items-center justify-center text-lg" id="roulette-avatar">?</div>
+                                        <div class="text-left">
+                                            <div class="text-xl font-black text-white" id="roulette-name">Sorteando...</div>
+                                            <div class="text-xs text-emerald-400 font-bold" id="roulette-platform">...</div>
+                                        </div>
+                                    </div>
+                                    <div class="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent"></div>
+                                    <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card de Participantes Inscritos -->
+                        <div class="card rounded-3xl p-6 bg-white/[0.02] border border-white/5 flex-1 flex flex-col min-h-[380px]">
+                            <div class="flex justify-between items-center mb-4 flex-none gap-4">
+                                <div class="flex items-center gap-3">
+                                    <h3 class="text-sm font-bold uppercase tracking-widest text-white/60" data-i18n="Participantes Inscritos">Participantes Inscritos</h3>
+                                    <span id="giveaway-count-badge" class="text-xs bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full font-black border border-emerald-500/20">0 Participantes</span>
+                                </div>
+                                <div class="relative w-64">
+                                    <input type="text" id="giveaway-search-input" placeholder="Buscar participante..." class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-1.5 pl-8 pr-3 text-xs focus:outline-none focus:border-emerald-500">
+                                    <svg class="absolute left-2.5 top-2 text-white/20" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                                </div>
+                            </div>
+
+                            <!-- Lista com Scroll -->
+                            <div id="giveaway-participants-container" class="flex-1 overflow-y-auto pr-1 space-y-2 max-h-[380px]">
+                                <!-- Lista vazia (placeholder) -->
+                                <div id="giveaway-empty-state" class="h-48 flex flex-col items-center justify-center text-center space-y-2 text-white/20">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                    <p class="text-xs font-bold" data-i18n="Nenhum participante inscrito ainda.">Nenhum participante inscrito ainda.</p>
+                                    <p class="text-[10px]" data-i18n="giveawayEmptyHelp">As pessoas que digitarem no chat aparecerão aqui automaticamente.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Histórico Recente de Ganhadores -->
+                        <div id="giveaway-history-card" class="card rounded-3xl p-6 bg-white/[0.02] border border-white/5 flex-none hidden">
+                            <div class="flex justify-between items-center mb-3">
+                                <h3 class="text-xs font-black uppercase text-white/40 tracking-widest" data-i18n="Histórico de Ganhadores">Histórico de Ganhadores</h3>
+                                <button id="btn-giveaway-clear-history" class="text-[10px] text-white/30 hover:text-red-400 transition" data-i18n="Limpar Histórico">Limpar Histórico</button>
+                            </div>
+                            <div id="giveaway-history-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <!-- Cards dos vencedores anteriores -->
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -1116,6 +1371,133 @@
                     <span data-i18n="Abrir OBS Studio">Abrir OBS Studio</span>
                 </button>
                 <button id="btn-modal-obs-close" class="w-full bg-white/5 hover:bg-white/10 text-white/60 font-bold py-3 rounded-xl transition text-xs" data-i18n="Entendi e Vou Seguir a Ordem">Entendi e Vou Seguir a Ordem</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Canvas de Confetes do Sorteio -->
+    <canvas id="giveaway-confetti-canvas" class="fixed inset-0 pointer-events-none z-[60] w-full h-full hidden"></canvas>
+
+    <!-- Modal Vencedor do Sorteio -->
+    <div id="modal-giveaway-winner" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-[#161616] border-2 border-emerald-500/50 w-full max-w-lg rounded-3xl p-8 shadow-[0_0_50px_rgba(16,185,129,0.25)] animate-in zoom-in-95 duration-300 relative overflow-hidden">
+            <!-- Brilho de Fundo -->
+            <div class="absolute -top-20 -right-20 w-48 h-48 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-20 -left-20 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="flex justify-between items-center mb-6 relative z-10">
+                <div class="flex items-center gap-2">
+                    <span class="text-2xl">🏆</span>
+                    <h3 class="text-base font-black uppercase tracking-tight text-emerald-400" data-i18n="Temos um Vencedor!">Temos um Vencedor!</h3>
+                </div>
+                <button id="modal-giveaway-close" class="text-white/30 hover:text-white transition p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+
+            <div class="flex flex-col items-center text-center space-y-6 relative z-10">
+                <!-- Avatar & Nome do Vencedor -->
+                <div class="flex flex-col items-center space-y-3">
+                    <div class="relative">
+                        <div id="winner-avatar-container" class="w-24 h-24 rounded-full p-1 ring-4 ring-emerald-500 shadow-xl shadow-emerald-500/30 flex items-center justify-center bg-[#0a0a0a] overflow-hidden">
+                            <img id="winner-avatar-img" src="" class="w-full h-full object-cover rounded-full hidden">
+                            <div id="winner-avatar-placeholder" class="w-full h-full bg-emerald-500 text-black font-black text-3xl flex items-center justify-center rounded-full">?</div>
+                        </div>
+                        <div id="winner-platform-badge" class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-black/80 border border-white/20 flex items-center justify-center shadow-md">
+                            <img id="winner-platform-icon" src="" class="w-4 h-4 object-contain">
+                        </div>
+                    </div>
+
+                    <div>
+                        <h2 id="winner-name" class="text-2xl font-black tracking-tight text-white">Nome do Usuário</h2>
+                        <div class="flex items-center justify-center gap-2 mt-1">
+                            <span id="winner-platform-name" class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Twitch</span>
+                            <span class="text-white/20">•</span>
+                            <span id="winner-draw-time" class="text-xs text-white/40 font-mono">12:34:56</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Mensagem Original de Inscrição -->
+                <div class="w-full bg-white/[0.03] border border-white/5 rounded-2xl p-3 text-left">
+                    <p class="text-[9px] text-white/30 uppercase font-black tracking-wider mb-1" data-i18n="Mensagem de Inscrição">Mensagem de Inscrição</p>
+                    <p id="winner-entry-msg" class="text-xs text-white/80 italic font-mono break-words">"!sorteio"</p>
+                </div>
+
+                <!-- Painel de Monitoramento de Resposta no Chat (TEMPO REAL) -->
+                <div id="winner-response-panel" class="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl p-4 space-y-3">
+                    <!-- Estado 1: Aguardando Resposta -->
+                    <div id="winner-waiting-box" class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping"></span>
+                                <span class="text-xs font-black uppercase text-amber-400 tracking-wider" data-i18n="Aguardando Resposta no Chat...">Aguardando Resposta no Chat...</span>
+                            </div>
+                            <span id="winner-response-timer" class="text-xs font-mono font-bold text-amber-400">60s</span>
+                        </div>
+                        <p class="text-[10px] text-white/40 text-left leading-relaxed" data-i18n="winnerWaitingHelp">Assim que o vencedor comentar qualquer mensagem em qualquer chat ativo, ela aparecerá aqui automaticamente.</p>
+                    </div>
+
+                    <!-- Estado 2: Respondeu no Chat! -->
+                    <div id="winner-responded-box" class="hidden space-y-2 text-left animate-in fade-in zoom-in-95 duration-300">
+                        <div class="flex items-center gap-2 text-emerald-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span class="text-xs font-black uppercase tracking-wider" data-i18n="Ganhador Respondeu no Chat!">Ganhador Respondeu no Chat!</span>
+                        </div>
+                        <div class="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3">
+                            <div class="flex justify-between items-center mb-1">
+                                <span id="winner-response-author" class="text-[11px] font-bold text-emerald-400">Usuário</span>
+                                <span id="winner-response-time" class="text-[9px] text-white/40 font-mono">12:35:10</span>
+                            </div>
+                            <p id="winner-response-text" class="text-sm font-bold text-white break-words">"Estou aqui! GG!!"</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões de Ação do Vencedor -->
+                <div class="grid grid-cols-2 gap-3 w-full pt-2">
+                    <button id="btn-winner-reroll" class="bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 py-3 rounded-2xl text-xs font-bold transition flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M16 21h5v-5"/></svg>
+                        <span data-i18n="Sortear Novamente (Reroll)">Sortear Novamente (Reroll)</span>
+                    </button>
+                    <button id="btn-winner-confirm" class="emerald-btn py-3 rounded-2xl text-xs font-black transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span data-i18n="Confirmar Vencedor">Confirmar Vencedor</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Participante Manual -->
+    <div id="modal-giveaway-add-manual" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-[#161616] border border-white/10 w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-in zoom-in duration-300 space-y-5">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-black uppercase text-emerald-500 tracking-wider" data-i18n="Adicionar Participante">Adicionar Participante</h3>
+                <button id="modal-manual-close" class="text-white/30 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                </button>
+            </div>
+            
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-[10px] uppercase font-black opacity-40 mb-1" data-i18n="Nome do Usuário">Nome do Usuário</label>
+                    <input type="text" id="manual-participant-name" placeholder="Ex: streamer_vip" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-black opacity-40 mb-1" data-i18n="Plataforma">Plataforma</label>
+                    <select id="manual-participant-platform" class="w-full bg-[#0a0a0a] border border-white/10 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:border-emerald-500">
+                        <option value="twitch">Twitch</option>
+                        <option value="youtube">YouTube</option>
+                        <option value="kick">Kick</option>
+                        <option value="tiktok">TikTok</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button id="modal-manual-cancel" class="flex-1 bg-white/5 hover:bg-white/10 text-white/60 py-2.5 rounded-xl text-xs font-bold transition" data-i18n="Cancelar">Cancelar</button>
+                <button id="modal-manual-save" class="flex-1 emerald-btn py-2.5 rounded-xl text-xs font-bold transition shadow-lg shadow-emerald-500/20" data-i18n="Adicionar">Adicionar</button>
             </div>
         </div>
     </div>

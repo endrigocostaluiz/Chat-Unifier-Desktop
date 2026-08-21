@@ -151,7 +151,76 @@ const elements = {
     // OBS Notice Modal
     modalObsNotice: document.getElementById('modal-obs-notice'),
     btnObsOpen: document.getElementById('btn-modal-open-obs'),
-    btnObsClose: document.getElementById('btn-modal-obs-close')
+    btnObsClose: document.getElementById('btn-modal-obs-close'),
+
+    // Giveaway Elements
+    giveawayChatAlert: document.getElementById('giveaway-chat-alert'),
+    btnGiveawayStartChat: document.getElementById('btn-giveaway-start-chat'),
+    giveawayActiveToggle: document.getElementById('giveaway-active-toggle'),
+    giveawayStatusBadge: document.getElementById('giveaway-status-badge'),
+    giveawayModeKeywordBtn: document.getElementById('giveaway-mode-keyword-btn'),
+    giveawayModeAllBtn: document.getElementById('giveaway-mode-all-btn'),
+    giveawayKeywordPanel: document.getElementById('giveaway-keyword-panel'),
+    giveawayKeywordInput: document.getElementById('giveaway-keyword-input'),
+    giveawayCaseInsensitive: document.getElementById('giveaway-case-insensitive'),
+    giveawayUniqueUser: document.getElementById('giveaway-unique-user'),
+    giveawayPlatTwitch: document.getElementById('giveaway-plat-twitch'),
+    giveawayPlatYoutube: document.getElementById('giveaway-plat-youtube'),
+    giveawayPlatKick: document.getElementById('giveaway-plat-kick'),
+    giveawayPlatTiktok: document.getElementById('giveaway-plat-tiktok'),
+    giveawayTypeManualBtn: document.getElementById('giveaway-type-manual-btn'),
+    giveawayTypeTimerBtn: document.getElementById('giveaway-type-timer-btn'),
+    giveawayTimerSettings: document.getElementById('giveaway-timer-settings'),
+    giveawayTimerDisplayVal: document.getElementById('giveaway-timer-display-val'),
+    giveawayTimerSlider: document.getElementById('giveaway-timer-slider'),
+    btnGiveawayDraw: document.getElementById('btn-giveaway-draw'),
+    btnGiveawayDrawLabel: document.getElementById('btn-giveaway-draw-label'),
+    btnGiveawayCancelTimer: document.getElementById('btn-giveaway-cancel-timer'),
+    btnGiveawayAddManual: document.getElementById('btn-giveaway-add-manual'),
+    btnGiveawayClear: document.getElementById('btn-giveaway-clear'),
+    stageStandby: document.getElementById('stage-standby'),
+    stageTimer: document.getElementById('stage-timer'),
+    stageTimerClock: document.getElementById('stage-timer-clock'),
+    stageTimerBar: document.getElementById('stage-timer-bar'),
+    stageSpinning: document.getElementById('stage-spinning'),
+    rouletteDisplay: document.getElementById('roulette-display'),
+    rouletteAvatar: document.getElementById('roulette-avatar'),
+    rouletteName: document.getElementById('roulette-name'),
+    roulettePlatform: document.getElementById('roulette-platform'),
+    giveawayCountBadge: document.getElementById('giveaway-count-badge'),
+    giveawaySearchInput: document.getElementById('giveaway-search-input'),
+    giveawayParticipantsContainer: document.getElementById('giveaway-participants-container'),
+    giveawayEmptyState: document.getElementById('giveaway-empty-state'),
+    giveawayHistoryCard: document.getElementById('giveaway-history-card'),
+    giveawayHistoryList: document.getElementById('giveaway-history-list'),
+    btnGiveawayClearHistory: document.getElementById('btn-giveaway-clear-history'),
+
+    // Giveaway Winner Modal
+    modalGiveawayWinner: document.getElementById('modal-giveaway-winner'),
+    modalGiveawayClose: document.getElementById('modal-giveaway-close'),
+    winnerAvatarImg: document.getElementById('winner-avatar-img'),
+    winnerAvatarPlaceholder: document.getElementById('winner-avatar-placeholder'),
+    winnerPlatformIcon: document.getElementById('winner-platform-icon'),
+    winnerPlatformName: document.getElementById('winner-platform-name'),
+    winnerName: document.getElementById('winner-name'),
+    winnerDrawTime: document.getElementById('winner-draw-time'),
+    winnerEntryMsg: document.getElementById('winner-entry-msg'),
+    winnerWaitingBox: document.getElementById('winner-waiting-box'),
+    winnerResponseTimer: document.getElementById('winner-response-timer'),
+    winnerRespondedBox: document.getElementById('winner-responded-box'),
+    winnerResponseAuthor: document.getElementById('winner-response-author'),
+    winnerResponseTime: document.getElementById('winner-response-time'),
+    winnerResponseText: document.getElementById('winner-response-text'),
+    btnWinnerReroll: document.getElementById('btn-winner-reroll'),
+    btnWinnerConfirm: document.getElementById('btn-winner-confirm'),
+
+    // Giveaway Manual Modal
+    modalGiveawayAddManual: document.getElementById('modal-giveaway-add-manual'),
+    modalManualClose: document.getElementById('modal-manual-close'),
+    modalManualCancel: document.getElementById('modal-manual-cancel'),
+    modalManualSave: document.getElementById('modal-manual-save'),
+    manualParticipantName: document.getElementById('manual-participant-name'),
+    manualParticipantPlatform: document.getElementById('manual-participant-platform')
 };
 
 // Dicionário de Traduções
@@ -159,9 +228,60 @@ const i18n = {
     pt: {
         "obsNoticeDesc": "Para que seus overlays e chats carreguem corretamente no OBS, lembre-se de abrir primeiro este aplicativo e somente depois abrir o OBS Studio.",
         "obsNoticeWhyTitle": "💡 Por que isso é necessário?",
-        "obsNoticeWhyDesc": "Este aplicativo cria um servidor de chat local. Se o OBS for aberto antes dele, as fontes de navegador do OBS tentarão se conectar e podem falhar (tela em branco), exigindo que você atualize as fontes manualmente."
+        "obsNoticeWhyDesc": "Este aplicativo cria um servidor de chat local. Se o OBS for aberto antes dele, as fontes de navegador do OBS tentarão se conectar e podem falhar (tela em branco), exigindo que você atualize as fontes manualmente.",
+        "giveawayChatAlertDesc": "A captura do chat está pausada. Inicie o chat para receber mensagens e coletar os participantes do sorteio.",
+        "giveawayKeywordHelp": "Quem digitar esta palavra em qualquer chat ativo entra no sorteio.",
+        "giveawayStandbyDesc": "Os espectadores que enviarem mensagens ou a palavra-chave entrarão na lista abaixo em tempo real.",
+        "giveawayEmptyHelp": "As pessoas que digitarem no chat aparecerão aqui automaticamente.",
+        "winnerWaitingHelp": "Assim que o vencedor comentar qualquer mensagem em qualquer chat ativo, ela aparecerá aqui automaticamente."
     },
     en: {
+        "Sorteio": "Giveaway",
+        "Chat Não Conectado": "Chat Not Connected",
+        "giveawayChatAlertDesc": "Chat capture is paused. Start the chat to receive messages and collect giveaway entries.",
+        "Iniciar Chat Agora": "Start Chat Now",
+        "Regras do Sorteio": "Giveaway Rules",
+        "Inscrições Abertas": "Entries Open",
+        "Inscrições Pausadas": "Entries Paused",
+        "Como Participar": "How to Enter",
+        "Palavra-Chave": "Keyword",
+        "Qualquer Mensagem": "Any Message",
+        "Palavra ou Comando de Entrada": "Entry Keyword or Command",
+        "giveawayKeywordHelp": "Anyone who types this keyword in any active chat enters the giveaway.",
+        "Ignorar Maiúsculas/Minúsculas": "Ignore Case",
+        "Apenas 1 Inscrição por Usuário": "Only 1 Entry per User",
+        "Plataformas Permitidas": "Allowed Platforms",
+        "Execução do Sorteio": "Giveaway Execution",
+        "Tipo de Sorteio": "Giveaway Type",
+        "Manual": "Manual",
+        "Com Timer": "With Timer",
+        "Duração do Timer": "Timer Duration",
+        "Realizar Sorteio Agora": "Draw Winner Now",
+        "Iniciar Contagem Regressiva": "Start Countdown",
+        "Cancelar Timer": "Cancel Timer",
+        "Adicionar Manual": "+ Participant",
+        "Limpar": "Clear",
+        "Módulo de Sorteio Ativo": "Giveaway Module Active",
+        "giveawayStandbyDesc": "Viewers sending messages or the entry keyword will appear in the list below in real time.",
+        "Sorteio em Andamento...": "Giveaway in Progress...",
+        "As inscrições serão encerradas ao zerar o tempo.": "Entries will close when the countdown reaches zero.",
+        "🎲 SORTEANDO O VENCEDOR...": "🎲 DRAWING WINNER...",
+        "Participantes Inscritos": "Registered Participants",
+        "Buscar participante...": "Search participant...",
+        "Nenhum participante inscrito ainda.": "No participants registered yet.",
+        "giveawayEmptyHelp": "People who type in chat will appear here automatically.",
+        "Histórico de Ganhadores": "Winner History",
+        "Limpar Histórico": "Clear History",
+        "Temos um Vencedor!": "We Have a Winner!",
+        "Mensagem de Inscrição": "Entry Message",
+        "Aguardando Resposta no Chat...": "Waiting for Response in Chat...",
+        "winnerWaitingHelp": "As soon as the winner comments any message in any active chat, it will appear here automatically.",
+        "Ganhador Respondeu no Chat!": "Winner Responded in Chat!",
+        "Sortear Novamente (Reroll)": "Reroll Winner",
+        "Confirmar Vencedor": "Confirm Winner",
+        "Adicionar Participante": "Add Participant",
+        "Nome do Usuário": "User Name",
+        "Adicionar": "Add",
         "Pesquisar canais...": "Search channels...",
         "Canais do Contador": "Counter Channels",
         "Iniciar Chat": "Start Chat",
@@ -933,6 +1053,7 @@ if (elements.btnStart) {
         elements.statusBadge.innerText = 'CONECTADO';
         elements.statusBadge.classList.replace('bg-white/5', 'bg-emerald-500/10');
         elements.statusBadge.classList.replace('text-white/40', 'text-emerald-500');
+        if (typeof updateGiveawayChatAlert === 'function') updateGiveawayChatAlert();
     };
 }
 
@@ -944,6 +1065,7 @@ if (elements.btnStop) {
         elements.statusBadge.innerText = 'DESCONECTADO';
         elements.statusBadge.classList.replace('bg-emerald-500/10', 'bg-white/5');
         elements.statusBadge.classList.replace('text-emerald-500', 'text-white/40');
+        if (typeof updateGiveawayChatAlert === 'function') updateGiveawayChatAlert();
     };
 }
 
@@ -1349,6 +1471,10 @@ document.querySelectorAll('.sidebar-item').forEach(item => {
             }
         }
 
+        if (tab === 'giveaway' && typeof updateGiveawayChatAlert === 'function') {
+            updateGiveawayChatAlert();
+        }
+
         // Title
         if (elements.tabTitle) {
             const tabName = item.querySelector('div').innerText;
@@ -1500,8 +1626,16 @@ if (elements.vBtnCopy) {
     };
 }
 
-// Preview Listener
+// Preview Listener & Sorteio
 api.onPreviewMessage((msg) => {
+    // Processa inscrições de sorteio e monitoramento de resposta do vencedor
+    if (typeof processGiveawayMessage === 'function') {
+        try { processGiveawayMessage(msg); } catch (e) { console.error('Erro no sorteio:', e); }
+    }
+    if (typeof checkWinnerResponse === 'function') {
+        try { checkWinnerResponse(msg); } catch (e) { console.error('Erro ao verificar resposta do vencedor:', e); }
+    }
+
     // Otimização: se a janela estiver minimizada/escondida, não processa o preview
     if (document.hidden) return;
 
@@ -1675,4 +1809,726 @@ function setupViewerDragAndDrop() {
             list.appendChild(draggingItem);
         }
     });
+}
+
+/* ==========================================================================
+   MÓDULO DE SORTEIO (GIVEAWAYS)
+   ========================================================================== */
+
+let giveawayState = {
+    isOpen: true,
+    mode: 'keyword', // 'keyword' ou 'all'
+    keyword: '!sorteio',
+    caseInsensitive: true,
+    uniqueUser: true,
+    platforms: {
+        twitch: true,
+        youtube: true,
+        kick: true,
+        tiktok: true
+    },
+    type: 'manual', // 'manual' ou 'timer'
+    timerDuration: 60, // em segundos
+    timerRemaining: 60,
+    timerInterval: null,
+    participants: [],
+    currentWinner: null,
+    winnerToleranceSeconds: 60,
+    winnerTimerInterval: null,
+    history: [],
+    isDrawing: false
+};
+
+// Sincroniza o alerta de chat ativo
+function updateGiveawayChatAlert() {
+    if (!elements.giveawayChatAlert) return;
+    const isChatActive = elements.btnStop && !elements.btnStop.classList.contains('hidden');
+    elements.giveawayChatAlert.classList.toggle('hidden', isChatActive);
+}
+
+if (elements.btnGiveawayStartChat) {
+    elements.btnGiveawayStartChat.onclick = () => {
+        if (elements.btnStart) elements.btnStart.click();
+    };
+}
+
+// Alternância de Status de Inscrições
+if (elements.giveawayActiveToggle) {
+    elements.giveawayActiveToggle.onchange = () => {
+        giveawayState.isOpen = elements.giveawayActiveToggle.checked;
+        if (elements.giveawayStatusBadge) {
+            if (giveawayState.isOpen) {
+                elements.giveawayStatusBadge.innerText = appConfig.lang === 'en' ? 'Entries Open' : 'Inscrições Abertas';
+                elements.giveawayStatusBadge.className = 'text-[9px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full font-black uppercase tracking-wider';
+            } else {
+                elements.giveawayStatusBadge.innerText = appConfig.lang === 'en' ? 'Entries Paused' : 'Inscrições Pausadas';
+                elements.giveawayStatusBadge.className = 'text-[9px] bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded-full font-black uppercase tracking-wider';
+            }
+        }
+    };
+}
+
+// Alternância de Modo (Palavra-chave vs Qualquer Mensagem)
+function setGiveawayMode(mode) {
+    giveawayState.mode = mode;
+    if (mode === 'keyword') {
+        elements.giveawayModeKeywordBtn.className = 'p-2.5 rounded-xl text-xs font-bold border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 transition flex items-center justify-center gap-2';
+        elements.giveawayModeAllBtn.className = 'p-2.5 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-white/40 hover:text-white transition flex items-center justify-center gap-2';
+        if (elements.giveawayKeywordPanel) elements.giveawayKeywordPanel.classList.remove('hidden');
+    } else {
+        elements.giveawayModeAllBtn.className = 'p-2.5 rounded-xl text-xs font-bold border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 transition flex items-center justify-center gap-2';
+        elements.giveawayModeKeywordBtn.className = 'p-2.5 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-white/40 hover:text-white transition flex items-center justify-center gap-2';
+        if (elements.giveawayKeywordPanel) elements.giveawayKeywordPanel.classList.add('hidden');
+    }
+}
+
+if (elements.giveawayModeKeywordBtn) elements.giveawayModeKeywordBtn.onclick = () => setGiveawayMode('keyword');
+if (elements.giveawayModeAllBtn) elements.giveawayModeAllBtn.onclick = () => setGiveawayMode('all');
+
+if (elements.giveawayKeywordInput) {
+    elements.giveawayKeywordInput.oninput = () => {
+        giveawayState.keyword = elements.giveawayKeywordInput.value.trim();
+    };
+}
+
+if (elements.giveawayCaseInsensitive) {
+    elements.giveawayCaseInsensitive.onchange = () => {
+        giveawayState.caseInsensitive = elements.giveawayCaseInsensitive.checked;
+    };
+}
+
+if (elements.giveawayUniqueUser) {
+    elements.giveawayUniqueUser.onchange = () => {
+        giveawayState.uniqueUser = elements.giveawayUniqueUser.checked;
+    };
+}
+
+// Filtros de Plataforma
+const platCheckboxes = [
+    { el: elements.giveawayPlatTwitch, key: 'twitch' },
+    { el: elements.giveawayPlatYoutube, key: 'youtube' },
+    { el: elements.giveawayPlatKick, key: 'kick' },
+    { el: elements.giveawayPlatTiktok, key: 'tiktok' }
+];
+
+platCheckboxes.forEach(({ el, key }) => {
+    if (el) {
+        el.onchange = () => {
+            giveawayState.platforms[key] = el.checked;
+        };
+    }
+});
+
+// Alternância de Tipo de Sorteio (Manual vs Timer)
+function setGiveawayType(type) {
+    giveawayState.type = type;
+    if (type === 'manual') {
+        elements.giveawayTypeManualBtn.className = 'p-2.5 rounded-xl text-xs font-bold border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 transition flex items-center justify-center gap-2';
+        elements.giveawayTypeTimerBtn.className = 'p-2.5 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-white/40 hover:text-white transition flex items-center justify-center gap-2';
+        if (elements.giveawayTimerSettings) elements.giveawayTimerSettings.classList.add('hidden');
+        if (elements.btnGiveawayDrawLabel) elements.btnGiveawayDrawLabel.innerText = appConfig.lang === 'en' ? 'Draw Winner Now' : 'Realizar Sorteio Agora';
+        stopGiveawayTimer();
+    } else {
+        elements.giveawayTypeTimerBtn.className = 'p-2.5 rounded-xl text-xs font-bold border border-emerald-500/50 bg-emerald-500/10 text-emerald-400 transition flex items-center justify-center gap-2';
+        elements.giveawayTypeManualBtn.className = 'p-2.5 rounded-xl text-xs font-bold border border-white/5 bg-white/5 text-white/40 hover:text-white transition flex items-center justify-center gap-2';
+        if (elements.giveawayTimerSettings) elements.giveawayTimerSettings.classList.remove('hidden');
+        if (elements.btnGiveawayDrawLabel) elements.btnGiveawayDrawLabel.innerText = appConfig.lang === 'en' ? 'Start Countdown' : 'Iniciar Contagem Regressiva';
+    }
+}
+
+if (elements.giveawayTypeManualBtn) elements.giveawayTypeManualBtn.onclick = () => setGiveawayType('manual');
+if (elements.giveawayTypeTimerBtn) elements.giveawayTypeTimerBtn.onclick = () => setGiveawayType('timer');
+
+// Slider & Presets de Timer
+function updateTimerDisplay(seconds) {
+    giveawayState.timerDuration = seconds;
+    giveawayState.timerRemaining = seconds;
+    if (elements.giveawayTimerSlider) elements.giveawayTimerSlider.value = seconds;
+    if (elements.giveawayTimerDisplayVal) {
+        if (seconds >= 60) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            elements.giveawayTimerDisplayVal.innerText = s > 0 ? `${m}m ${s}s` : `${m}m`;
+        } else {
+            elements.giveawayTimerDisplayVal.innerText = `${seconds}s`;
+        }
+    }
+}
+
+if (elements.giveawayTimerSlider) {
+    elements.giveawayTimerSlider.oninput = () => {
+        updateTimerDisplay(parseInt(elements.giveawayTimerSlider.value));
+    };
+}
+
+document.querySelectorAll('.btn-timer-preset').forEach(btn => {
+    btn.onclick = () => {
+        const secs = parseInt(btn.getAttribute('data-seconds'));
+        if (secs) updateTimerDisplay(secs);
+    };
+});
+
+// Processamento de Mensagens Recebidas no Chat para o Sorteio
+function processGiveawayMessage(msg) {
+    if (!msg || !msg.author || !giveawayState.isOpen || giveawayState.isDrawing) return;
+
+    // Checagem de plataforma
+    const plat = (msg.platform || 'other').toLowerCase();
+    if (giveawayState.platforms[plat] === false) return;
+
+    // Checagem de critério (palavra-chave vs qualquer mensagem)
+    if (giveawayState.mode === 'keyword') {
+        const kw = giveawayState.keyword ? giveawayState.keyword.trim() : '';
+        if (!kw) return;
+        
+        const rawText = msg.message || '';
+        const hasKeyword = giveawayState.caseInsensitive ?
+            rawText.toLowerCase().includes(kw.toLowerCase()) :
+            rawText.includes(kw);
+
+        if (!hasKeyword) return;
+    }
+
+    // Checagem de usuário único
+    if (giveawayState.uniqueUser) {
+        const alreadyIn = giveawayState.participants.some(p => 
+            p.author.toLowerCase() === msg.author.toLowerCase() && p.platform === plat
+        );
+        if (alreadyIn) return;
+    }
+
+    // Adiciona participante
+    const participant = {
+        id: 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+        author: msg.author,
+        platform: plat,
+        avatar: msg.avatar || '',
+        color: msg.color || '#ffffff',
+        message: msg.message || '',
+        timestamp: new Date().toLocaleTimeString()
+    };
+
+    giveawayState.participants.unshift(participant);
+    renderGiveawayParticipants(elements.giveawaySearchInput ? elements.giveawaySearchInput.value : '');
+}
+
+// Renderização da Lista de Participantes
+function renderGiveawayParticipants(filter = '') {
+    if (!elements.giveawayParticipantsContainer) return;
+    
+    const count = giveawayState.participants.length;
+    if (elements.giveawayCountBadge) {
+        elements.giveawayCountBadge.innerText = `${count} ${count === 1 ? (appConfig.lang === 'en' ? 'Participant' : 'Participante') : (appConfig.lang === 'en' ? 'Participants' : 'Participantes')}`;
+    }
+
+    const query = (filter || '').toLowerCase().trim();
+    const filtered = query ? 
+        giveawayState.participants.filter(p => p.author.toLowerCase().includes(query) || (p.message && p.message.toLowerCase().includes(query))) : 
+        giveawayState.participants;
+
+    if (filtered.length === 0) {
+        elements.giveawayParticipantsContainer.innerHTML = `
+            <div class="h-48 flex flex-col items-center justify-center text-center space-y-2 text-white/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                <p class="text-xs font-bold">${count === 0 ? (appConfig.lang === 'en' ? 'No participants registered yet.' : 'Nenhum participante inscrito ainda.') : (appConfig.lang === 'en' ? 'No participant found.' : 'Nenhum participante encontrado.')}</p>
+                <p class="text-[10px]">${appConfig.lang === 'en' ? 'People who type in chat will appear here automatically.' : 'As pessoas que digitarem no chat aparecerão aqui automaticamente.'}</p>
+            </div>
+        `;
+        return;
+    }
+
+    const platformIcons = {
+        twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
+        youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
+        kick: 'https://cdn.simpleicons.org/kick/53FC18',
+        tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
+    };
+
+    elements.giveawayParticipantsContainer.innerHTML = filtered.map(p => {
+        const platIcon = platformIcons[p.platform] || '';
+        const initial = (p.author || '?').charAt(0).toUpperCase();
+        return `
+            <div class="card p-3 rounded-2xl flex items-center justify-between group bg-white/[0.02] border border-white/5 hover:border-white/10 transition animate-in fade-in duration-200" data-id="${p.id}">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div class="relative flex-none">
+                        ${p.avatar ? 
+                            `<img src="${p.avatar}" class="w-9 h-9 rounded-full object-cover" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                             <div class="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 font-black text-xs items-center justify-center hidden">${initial}</div>` : 
+                            `<div class="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-400 font-black text-xs flex items-center justify-center">${initial}</div>`
+                        }
+                        ${platIcon ? `<img src="${platIcon}" class="w-3.5 h-3.5 absolute -bottom-0.5 -right-0.5 rounded-full bg-black/80 p-0.5 border border-white/20">` : ''}
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-bold truncate text-white" style="color: ${p.color || '#fff'}">${p.author}</span>
+                            <span class="text-[9px] uppercase font-bold text-white/30 tracking-wider">${p.platform}</span>
+                        </div>
+                        <p class="text-[11px] text-white/50 truncate italic">${p.message ? `"${p.message}"` : ''}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-none">
+                    <span class="text-[9px] text-white/20 font-mono">${p.timestamp || ''}</span>
+                    <button onclick="removeGiveawayParticipant('${p.id}')" class="opacity-0 group-hover:opacity-100 text-white/20 hover:text-red-400 transition p-1.5 rounded-lg hover:bg-white/5" title="Remover">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Busca de Participantes
+if (elements.giveawaySearchInput) {
+    elements.giveawaySearchInput.oninput = () => {
+        renderGiveawayParticipants(elements.giveawaySearchInput.value);
+    };
+}
+
+// Remover Participante
+window.removeGiveawayParticipant = (id) => {
+    giveawayState.participants = giveawayState.participants.filter(p => p.id !== id);
+    renderGiveawayParticipants(elements.giveawaySearchInput ? elements.giveawaySearchInput.value : '');
+};
+
+// Limpar Lista
+if (elements.btnGiveawayClear) {
+    elements.btnGiveawayClear.onclick = () => {
+        if (giveawayState.participants.length === 0) return;
+        const msg = appConfig.lang === 'en' ? 'Do you really want to clear all participants?' : 'Deseja realmente limpar todos os participantes inscritos?';
+        if (confirm(msg)) {
+            giveawayState.participants = [];
+            renderGiveawayParticipants();
+            showToast(appConfig.lang === 'en' ? 'Participant list cleared.' : 'Lista de participantes limpa.', 'info');
+        }
+    };
+}
+
+// Adição Manual de Participante
+if (elements.btnGiveawayAddManual) {
+    elements.btnGiveawayAddManual.onclick = () => {
+        if (elements.manualParticipantName) elements.manualParticipantName.value = '';
+        if (elements.modalGiveawayAddManual) elements.modalGiveawayAddManual.classList.remove('hidden');
+    };
+}
+
+if (elements.modalManualClose) elements.modalManualClose.onclick = () => elements.modalGiveawayAddManual.classList.add('hidden');
+if (elements.modalManualCancel) elements.modalManualCancel.onclick = () => elements.modalGiveawayAddManual.classList.add('hidden');
+
+if (elements.modalManualSave) {
+    elements.modalManualSave.onclick = () => {
+        const name = elements.manualParticipantName ? elements.manualParticipantName.value.trim() : '';
+        const plat = elements.manualParticipantPlatform ? elements.manualParticipantPlatform.value : 'twitch';
+        if (!name) {
+            showToast(appConfig.lang === 'en' ? 'Please enter a username.' : 'Por favor, digite o nome do usuário.', 'error');
+            return;
+        }
+
+        const participant = {
+            id: 'manual_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+            author: name,
+            platform: plat,
+            avatar: '',
+            color: '#10b981',
+            message: appConfig.lang === 'en' ? '[Manual Entry]' : '[Inscrição Manual]',
+            timestamp: new Date().toLocaleTimeString()
+        };
+
+        giveawayState.participants.unshift(participant);
+        renderGiveawayParticipants();
+        elements.modalGiveawayAddManual.classList.add('hidden');
+        showToast(appConfig.lang === 'en' ? 'Participant added!' : 'Participante adicionado com sucesso!', 'success');
+    };
+}
+
+// Controle do Timer Regressivo
+function startGiveawayTimer() {
+    if (giveawayState.participants.length === 0) {
+        showToast(appConfig.lang === 'en' ? 'No participants registered to start the giveaway.' : 'Nenhum participante inscrito para iniciar o sorteio.', 'error');
+        return;
+    }
+
+    giveawayState.timerRemaining = giveawayState.timerDuration || 60;
+    
+    // UI dos estados
+    if (elements.stageStandby) elements.stageStandby.classList.add('hidden');
+    if (elements.stageSpinning) elements.stageSpinning.classList.add('hidden');
+    if (elements.stageTimer) elements.stageTimer.classList.remove('hidden');
+    if (elements.btnGiveawayCancelTimer) elements.btnGiveawayCancelTimer.classList.remove('hidden');
+    if (elements.btnGiveawayDraw) elements.btnGiveawayDraw.classList.add('hidden');
+
+    const updateTimerUI = () => {
+        const total = giveawayState.timerDuration;
+        const current = giveawayState.timerRemaining;
+        const mins = Math.floor(current / 60).toString().padStart(2, '0');
+        const secs = (current % 60).toString().padStart(2, '0');
+        if (elements.stageTimerClock) elements.stageTimerClock.innerText = `${mins}:${secs}`;
+        if (elements.stageTimerBar) {
+            const pct = Math.max(0, Math.min(100, (current / total) * 100));
+            elements.stageTimerBar.style.width = `${pct}%`;
+        }
+    };
+
+    updateTimerUI();
+
+    clearInterval(giveawayState.timerInterval);
+    giveawayState.timerInterval = setInterval(() => {
+        giveawayState.timerRemaining--;
+        updateTimerUI();
+
+        if (giveawayState.timerRemaining <= 0) {
+            clearInterval(giveawayState.timerInterval);
+            giveawayState.timerInterval = null;
+            // Executa sorteio
+            drawGiveawayWinner();
+        }
+    }, 1000);
+}
+
+function stopGiveawayTimer() {
+    if (giveawayState.timerInterval) {
+        clearInterval(giveawayState.timerInterval);
+        giveawayState.timerInterval = null;
+    }
+    if (elements.stageTimer) elements.stageTimer.classList.add('hidden');
+    if (elements.stageStandby) elements.stageStandby.classList.remove('hidden');
+    if (elements.stageSpinning) elements.stageSpinning.classList.add('hidden');
+    if (elements.btnGiveawayCancelTimer) elements.btnGiveawayCancelTimer.classList.add('hidden');
+    if (elements.btnGiveawayDraw) elements.btnGiveawayDraw.classList.remove('hidden');
+}
+
+if (elements.btnGiveawayCancelTimer) {
+    elements.btnGiveawayCancelTimer.onclick = () => {
+        stopGiveawayTimer();
+        showToast(appConfig.lang === 'en' ? 'Giveaway timer cancelled.' : 'Temporizador do sorteio cancelado.', 'info');
+    };
+}
+
+// Botão Principal de Sortear
+if (elements.btnGiveawayDraw) {
+    elements.btnGiveawayDraw.onclick = () => {
+        if (giveawayState.type === 'timer') {
+            startGiveawayTimer();
+        } else {
+            drawGiveawayWinner();
+        }
+    };
+}
+
+// Execução do Sorteio & Roleta
+function drawGiveawayWinner() {
+    if (giveawayState.participants.length === 0) {
+        showToast(appConfig.lang === 'en' ? 'No eligible participants to draw.' : 'Nenhum participante inscrito para sortear.', 'error');
+        stopGiveawayTimer();
+        return;
+    }
+
+    giveawayState.isDrawing = true;
+
+    // Transição de UI para Roleta
+    if (elements.stageStandby) elements.stageStandby.classList.add('hidden');
+    if (elements.stageTimer) elements.stageTimer.classList.add('hidden');
+    if (elements.btnGiveawayCancelTimer) elements.btnGiveawayCancelTimer.classList.add('hidden');
+    if (elements.stageSpinning) elements.stageSpinning.classList.remove('hidden');
+
+    const participants = [...giveawayState.participants];
+    // Escolhe o vencedor aleatoriamente
+    const winnerIndex = Math.floor(Math.random() * participants.length);
+    const chosenWinner = participants[winnerIndex];
+
+    spinRoulette(participants, chosenWinner, (winner) => {
+        giveawayState.isDrawing = false;
+        if (elements.stageSpinning) elements.stageSpinning.classList.add('hidden');
+        if (elements.stageStandby) elements.stageStandby.classList.remove('hidden');
+        if (elements.btnGiveawayDraw) elements.btnGiveawayDraw.classList.remove('hidden');
+
+        openWinnerModal(winner);
+    });
+}
+
+function spinRoulette(list, targetWinner, onComplete) {
+    let speed = 50; // ms
+    let iterations = 0;
+    const maxIterations = 35;
+
+    const platformIcons = {
+        twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
+        youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
+        kick: 'https://cdn.simpleicons.org/kick/53FC18',
+        tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
+    };
+
+    function step() {
+        iterations++;
+        const currentItem = (iterations >= maxIterations) ? targetWinner : list[Math.floor(Math.random() * list.length)];
+
+        if (elements.rouletteName) elements.rouletteName.innerText = currentItem.author;
+        if (elements.roulettePlatform) elements.roulettePlatform.innerText = currentItem.platform.toUpperCase();
+        if (elements.rouletteAvatar) {
+            const initial = (currentItem.author || '?').charAt(0).toUpperCase();
+            if (currentItem.avatar) {
+                elements.rouletteAvatar.innerHTML = `<img src="${currentItem.avatar}" class="w-full h-full rounded-full object-cover" onerror="this.outerHTML='${initial}'">`;
+            } else {
+                elements.rouletteAvatar.innerText = initial;
+            }
+        }
+
+        if (iterations < maxIterations) {
+            speed += 8; // Desacelera gradualmente
+            setTimeout(step, speed);
+        } else {
+            setTimeout(() => {
+                onComplete(targetWinner);
+            }, 600);
+        }
+    }
+
+    step();
+}
+
+// Modal do Vencedor & Monitoramento de Resposta
+function openWinnerModal(winner) {
+    giveawayState.currentWinner = {
+        ...winner,
+        drawTime: new Date().toLocaleTimeString(),
+        hasResponded: false,
+        responseMsg: '',
+        responseTime: ''
+    };
+
+    const platformIcons = {
+        twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
+        youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
+        kick: 'https://cdn.simpleicons.org/kick/53FC18',
+        tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
+    };
+
+    if (elements.winnerName) elements.winnerName.innerText = winner.author;
+    if (elements.winnerPlatformName) elements.winnerPlatformName.innerText = winner.platform.toUpperCase();
+    if (elements.winnerDrawTime) elements.winnerDrawTime.innerText = giveawayState.currentWinner.drawTime;
+    if (elements.winnerEntryMsg) elements.winnerEntryMsg.innerText = winner.message ? `"${winner.message}"` : (appConfig.lang === 'en' ? 'Entry via active chat' : 'Inscrição via chat ativo');
+    
+    if (elements.winnerPlatformIcon) {
+        elements.winnerPlatformIcon.src = platformIcons[winner.platform] || '';
+    }
+
+    const initial = (winner.author || '?').charAt(0).toUpperCase();
+    if (elements.winnerAvatarImg && elements.winnerAvatarPlaceholder) {
+        if (winner.avatar) {
+            elements.winnerAvatarImg.src = winner.avatar;
+            elements.winnerAvatarImg.classList.remove('hidden');
+            elements.winnerAvatarPlaceholder.classList.add('hidden');
+            elements.winnerAvatarImg.onerror = () => {
+                elements.winnerAvatarImg.classList.add('hidden');
+                elements.winnerAvatarPlaceholder.classList.remove('hidden');
+                elements.winnerAvatarPlaceholder.innerText = initial;
+            };
+        } else {
+            elements.winnerAvatarImg.classList.add('hidden');
+            elements.winnerAvatarPlaceholder.classList.remove('hidden');
+            elements.winnerAvatarPlaceholder.innerText = initial;
+        }
+    }
+
+    // Reseta estado de resposta no modal
+    if (elements.winnerWaitingBox) elements.winnerWaitingBox.classList.remove('hidden');
+    if (elements.winnerRespondedBox) elements.winnerRespondedBox.classList.add('hidden');
+    
+    // Inicia contagem regressiva de tolerância de resposta (60s)
+    let remainingTolerance = giveawayState.winnerToleranceSeconds || 60;
+    if (elements.winnerResponseTimer) elements.winnerResponseTimer.innerText = `${remainingTolerance}s`;
+
+    clearInterval(giveawayState.winnerTimerInterval);
+    giveawayState.winnerTimerInterval = setInterval(() => {
+        remainingTolerance--;
+        if (elements.winnerResponseTimer) {
+            elements.winnerResponseTimer.innerText = `${Math.max(0, remainingTolerance)}s`;
+        }
+        if (remainingTolerance <= 0) {
+            clearInterval(giveawayState.winnerTimerInterval);
+            giveawayState.winnerTimerInterval = null;
+            if (elements.winnerResponseTimer) {
+                elements.winnerResponseTimer.innerText = appConfig.lang === 'en' ? 'Time is up' : 'Tempo esgotado';
+            }
+        }
+    }, 1000);
+
+    // Abre o modal
+    if (elements.modalGiveawayWinner) {
+        elements.modalGiveawayWinner.classList.remove('hidden');
+    }
+
+    // Dispara chuva de confetes comemorativa!
+    launchConfetti();
+}
+
+// Verificação em Tempo Real da Resposta do Vencedor no Chat
+function checkWinnerResponse(msg) {
+    if (!msg || !msg.author || !giveawayState.currentWinner || giveawayState.currentWinner.hasResponded) return;
+    if (elements.modalGiveawayWinner && elements.modalGiveawayWinner.classList.contains('hidden')) return;
+
+    const winnerName = (giveawayState.currentWinner.author || '').toLowerCase().trim();
+    const senderName = (msg.author || '').toLowerCase().trim();
+
+    if (winnerName === senderName) {
+        giveawayState.currentWinner.hasResponded = true;
+        giveawayState.currentWinner.responseMsg = msg.message || '';
+        giveawayState.currentWinner.responseTime = new Date().toLocaleTimeString();
+
+        clearInterval(giveawayState.winnerTimerInterval);
+        giveawayState.winnerTimerInterval = null;
+
+        // Atualiza a UI do modal
+        if (elements.winnerWaitingBox) elements.winnerWaitingBox.classList.add('hidden');
+        if (elements.winnerRespondedBox) {
+            elements.winnerRespondedBox.classList.remove('hidden');
+            if (elements.winnerResponseAuthor) elements.winnerResponseAuthor.innerText = msg.author;
+            if (elements.winnerResponseTime) elements.winnerResponseTime.innerText = giveawayState.currentWinner.responseTime;
+            if (elements.winnerResponseText) elements.winnerResponseText.innerText = `"${msg.message || ''}"`;
+        }
+
+        // Lança confetes novamente
+        launchConfetti();
+        showToast(appConfig.lang === 'en' ? `🎉 Winner ${msg.author} responded in chat!` : `🎉 O ganhador ${msg.author} respondeu no chat!`, 'success');
+    }
+}
+
+// Reroll (Sortear Novamente)
+if (elements.btnWinnerReroll) {
+    elements.btnWinnerReroll.onclick = () => {
+        clearInterval(giveawayState.winnerTimerInterval);
+        if (elements.modalGiveawayWinner) elements.modalGiveawayWinner.classList.add('hidden');
+        drawGiveawayWinner();
+    };
+}
+
+// Confirmar Vencedor
+if (elements.btnWinnerConfirm) {
+    elements.btnWinnerConfirm.onclick = () => {
+        if (!giveawayState.currentWinner) return;
+        clearInterval(giveawayState.winnerTimerInterval);
+        
+        giveawayState.history.unshift({ ...giveawayState.currentWinner });
+        renderGiveawayHistory();
+
+        if (elements.modalGiveawayWinner) elements.modalGiveawayWinner.classList.add('hidden');
+        showToast(appConfig.lang === 'en' ? 'Winner confirmed and added to history!' : 'Vencedor confirmado e salvo no histórico!', 'success');
+    };
+}
+
+if (elements.modalGiveawayClose) {
+    elements.modalGiveawayClose.onclick = () => {
+        clearInterval(giveawayState.winnerTimerInterval);
+        if (elements.modalGiveawayWinner) elements.modalGiveawayWinner.classList.add('hidden');
+    };
+}
+
+// Renderização do Histórico de Ganhadores
+function renderGiveawayHistory() {
+    if (!elements.giveawayHistoryList || !elements.giveawayHistoryCard) return;
+
+    if (giveawayState.history.length === 0) {
+        elements.giveawayHistoryCard.classList.add('hidden');
+        return;
+    }
+
+    elements.giveawayHistoryCard.classList.remove('hidden');
+
+    const platformIcons = {
+        twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
+        youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
+        kick: 'https://cdn.simpleicons.org/kick/53FC18',
+        tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
+    };
+
+    elements.giveawayHistoryList.innerHTML = giveawayState.history.map(w => {
+        const initial = (w.author || '?').charAt(0).toUpperCase();
+        return `
+            <div class="bg-black/40 border border-white/5 rounded-2xl p-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="relative">
+                        ${w.avatar ? 
+                            `<img src="${w.avatar}" class="w-8 h-8 rounded-full object-cover" onerror="this.outerHTML='<div class=\'w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center\'>${initial}</div>'">` : 
+                            `<div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center justify-center">${initial}</div>`
+                        }
+                        <img src="${platformIcons[w.platform] || ''}" class="w-3 h-3 absolute -bottom-0.5 -right-0.5 rounded-full bg-black">
+                    </div>
+                    <div>
+                        <p class="text-xs font-bold text-white">${w.author}</p>
+                        <p class="text-[9px] text-white/40 font-mono">${w.drawTime} • ${w.hasResponded ? '🟢 Respondeu' : '⏳ Sem resposta'}</p>
+                    </div>
+                </div>
+                <span class="text-[10px] bg-emerald-500/10 text-emerald-400 font-bold px-2 py-0.5 rounded-full">🏆 Vencedor</span>
+            </div>
+        `;
+    }).join('');
+}
+
+if (elements.btnGiveawayClearHistory) {
+    elements.btnGiveawayClearHistory.onclick = () => {
+        giveawayState.history = [];
+        renderGiveawayHistory();
+    };
+}
+
+// Efeito de Confetes em Canvas Nativo
+function launchConfetti() {
+    const canvas = document.getElementById('giveaway-confetti-canvas');
+    if (!canvas) return;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    canvas.classList.remove('hidden');
+
+    const ctx = canvas.getContext('2d');
+    const pieces = [];
+    const colors = ['#10b981', '#34d399', '#f59e0b', '#ef4444', '#8b5cf6', '#3b82f6', '#ec4899', '#ffffff'];
+
+    for (let i = 0; i < 150; i++) {
+        pieces.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * -canvas.height * 0.5,
+            w: Math.random() * 10 + 5,
+            h: Math.random() * 6 + 3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            vx: (Math.random() - 0.5) * 4,
+            vy: Math.random() * 5 + 3,
+            rot: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 10
+        });
+    }
+
+    let animationFrame;
+    let startTime = Date.now();
+
+    function render() {
+        const elapsed = Date.now() - startTime;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        let active = 0;
+        pieces.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.rot += p.rotSpeed;
+
+            if (p.y < canvas.height + 20) {
+                active++;
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate((p.rot * Math.PI) / 180);
+                ctx.fillStyle = p.color;
+                ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+                ctx.restore();
+            }
+        });
+
+        if (active > 0 && elapsed < 4000) {
+            animationFrame = requestAnimationFrame(render);
+        } else {
+            cancelAnimationFrame(animationFrame);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.classList.add('hidden');
+        }
+    }
+
+    render();
 }
