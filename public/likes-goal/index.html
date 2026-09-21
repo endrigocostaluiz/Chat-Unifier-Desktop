@@ -18,9 +18,34 @@
         #goal-wrapper {
             position: relative;
             width: fit-content;
+            box-sizing: border-box;
             display: inline-flex;
             flex-direction: column;
-            transition: all 0.3s ease;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Numerais tabulares para prevenir qualquer flick/salto em todos os layouts */
+        .goal-numbers, .current-count, .target-count, .percent-val, .percent-badge, .badge-percent {
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1, "cv05" 1;
+            white-space: nowrap;
+        }
+        .current-count {
+            display: inline-block;
+            text-align: right;
+        }
+        .percent-val {
+            display: inline-block;
+            text-align: left;
+            white-space: nowrap;
+        }
+        .percent-badge, .badge-percent {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-sizing: border-box;
+            white-space: nowrap;
         }
 
         /* Animação suave de pulso ao receber like */
@@ -74,7 +99,6 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-width: 280px;
             backdrop-filter: blur(8px);
         }
         .layout-bar .goal-header {
@@ -126,7 +150,6 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            min-width: 300px;
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.08);
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -239,7 +262,6 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-width: 290px;
             background: rgba(10, 10, 15, 0.9);
             border: 1px solid rgba(255, 40, 40, 0.35);
             box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
@@ -333,7 +355,6 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 320px;
             position: relative;
             overflow: hidden;
             border: 1px solid rgba(255, 255, 255, 0.12);
@@ -449,9 +470,6 @@
             display: inline-flex;
             align-items: center;
             gap: 14px;
-            width: 260px;
-            min-width: 260px;
-            max-width: 260px;
             box-sizing: border-box;
             flex-shrink: 0;
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -647,12 +665,58 @@
             setTimeout(() => indicator.remove(), 1000);
         }
 
+        function computeDynamicCardWidth(layout, title, digitsCount, fontSize, showPercent) {
+            const titleLen = (title || '').length;
+            const titleWidth = Math.ceil(titleLen * fontSize * 0.58);
+            const numCharWidth = fontSize * 0.62;
+            const numbersWidth = Math.ceil((digitsCount * 2 + 3 + (showPercent ? 6.5 : 0)) * numCharWidth);
+            const compactNumsWidth = Math.ceil((digitsCount * 2 + 1) * numCharWidth);
+            const iconSize = Math.round(fontSize * 1.2);
+
+            switch (layout) {
+                case 'bar':
+                    return Math.max(180, Math.ceil(36 + (iconSize + 8) + titleWidth + 20 + numbersWidth));
+                case 'card': {
+                    const cardHeaderW = 40 + (iconSize + 8) + titleWidth + 24 + 48;
+                    const cardFooterW = 40 + Math.ceil(((digitsCount + 6) + (digitsCount + 6)) * numCharWidth) + 24;
+                    return Math.max(200, Math.ceil(Math.max(cardHeaderW, cardFooterW)));
+                }
+                case 'pill':
+                    return Math.max(160, Math.ceil(32 + (iconSize + 6) + titleWidth + 14 + 80 + 14 + compactNumsWidth));
+                case 'neon':
+                    return Math.max(190, Math.ceil(40 + (iconSize + 8) + titleWidth + 20 + Math.ceil((digitsCount * 2 + 3) * numCharWidth)));
+                case 'minimalist':
+                    return Math.max(150, Math.ceil(28 + (iconSize + 8) + titleWidth + 12 + 65 + 12 + compactNumsWidth));
+                case 'bg-fill': {
+                    const bgBadgeW = showPercent ? 48 : 0;
+                    return Math.max(180, Math.ceil(48 + (iconSize + 10) + titleWidth + 14 + 6 + 14 + Math.ceil((digitsCount * 2 + 3) * numCharWidth) + (bgBadgeW ? 14 + bgBadgeW : 0)));
+                }
+                case 'badge': {
+                    const bBadgeW = showPercent ? 44 : 0;
+                    return Math.max(130, Math.ceil(36 + (iconSize + 8) + titleWidth + 12 + 2 + 12 + Math.ceil((digitsCount * 2 + 3) * numCharWidth) + (bBadgeW ? 12 + bBadgeW : 0)));
+                }
+                case 'circular': {
+                    const circContentW = Math.max(titleWidth, numbersWidth);
+                    return Math.max(170, Math.ceil(36 + 44 + 14 + circContentW + 10));
+                }
+                case 'clean-inline':
+                    return Math.max(120, Math.ceil(28 + (iconSize + 8) + titleWidth + 12 + numbersWidth));
+                default:
+                    return Math.max(180, Math.ceil(36 + titleWidth + numbersWidth));
+            }
+        }
+
         function render(hasIncreased = false) {
             const layout = currentConfig.layout || 'bar';
             const title = currentConfig.title || 'Meta de Likes';
             const target = Math.max(1, parseInt(currentConfig.target) || 100);
             const likes = currentLikes;
             const percentage = Math.min(100, Math.round((likes / target) * 100));
+
+            const targetFormatted = formatCount(target);
+            const currentFormatted = formatCount(likes);
+            const digitsCount = Math.max(targetFormatted.length, currentFormatted.length);
+            const showPercent = currentConfig.showPercentage !== false;
 
             const bgColor = currentConfig.bgColor || '#111111';
             const fontColor = currentConfig.fontColor || '#ffffff';
@@ -667,7 +731,9 @@
             const fontSize = currentConfig.fontSize || 14;
             const iconSize = Math.round(fontSize * 1.2);
 
-            const structureKey = `${layout}|${title}|${target}|${bgColor}|${opacity}|${fontColor}|${fontSize}|${barColor}|${barGradient}|${useGradient}`;
+            const dynamicMinWidth = computeDynamicCardWidth(layout, title, digitsCount, fontSize, showPercent);
+
+            const structureKey = `${layout}|${title}|${target}|${bgColor}|${opacity}|${fontColor}|${fontSize}|${barColor}|${barGradient}|${useGradient}|${showPercent}`;
             const needsRebuild = !wrapper._structureKey || wrapper._structureKey !== structureKey;
 
             if (needsRebuild) {
@@ -676,6 +742,8 @@
                 wrapper.style.background = `rgba(${br}, ${bg}, ${bb}, ${opacity})`;
                 wrapper.style.color = fontColor;
                 wrapper.style.fontSize = `${fontSize}px`;
+                wrapper.style.minWidth = `${dynamicMinWidth}px`;
+                wrapper.style.width = 'fit-content';
 
                 let html = '';
 
@@ -689,8 +757,8 @@
                                 <span class="goal-title">${title}</span>
                             </div>
                             <div class="goal-numbers">
-                                <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
-                                ${currentConfig.showPercentage ? `<span class="percent-val" style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                                <span class="current-count" style="min-width: ${digitsCount}ch;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
+                                ${showPercent ? `<span class="percent-val" style="min-width: 5.5ch; opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
                             </div>
                         </div>
                         <div class="bar-track">
@@ -706,14 +774,14 @@
                                 </div>
                                 <span class="goal-title">${title}</span>
                             </div>
-                            <span class="percent-badge" style="color: ${barColor};">${percentage}%</span>
+                            <span class="percent-badge" style="min-width: 4.2ch; color: ${barColor};">${percentage}%</span>
                         </div>
                         <div class="bar-track">
                             <div class="bar-fill" style="width: ${percentage}%; ${fillStyle}"></div>
                         </div>
                         <div class="stats-footer">
-                            <span><strong class="current-count" style="font-size: ${Math.round(fontSize * 1.15)}px; color: ${fontColor};">${formatCount(likes)}</strong> likes</span>
-                            <span>Meta: <strong class="target-count" style="color: ${fontColor};">${formatCount(target)}</strong></span>
+                            <span><strong class="current-count" style="min-width: ${digitsCount}ch; font-size: ${Math.round(fontSize * 1.15)}px; color: ${fontColor};">${currentFormatted}</strong> likes</span>
+                            <span>Meta: <strong class="target-count" style="color: ${fontColor};">${targetFormatted}</strong></span>
                         </div>
                     `;
                 } else if (layout === 'pill') {
@@ -728,7 +796,7 @@
                             <div class="bar-fill" style="width: ${percentage}%; ${fillStyle}"></div>
                         </div>
                         <div class="goal-numbers">
-                            <span class="current-count">${formatCount(likes)}</span>/<span class="target-count">${formatCount(target)}</span>
+                            <span class="current-count" style="min-width: ${digitsCount}ch;">${currentFormatted}</span>/<span class="target-count">${targetFormatted}</span>
                         </div>
                     `;
                 } else if (layout === 'neon') {
@@ -741,7 +809,7 @@
                                 <span class="goal-title">${title}</span>
                             </div>
                             <div class="goal-numbers" style="color: #FF3B30;">
-                                <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
+                                <span class="current-count" style="min-width: ${digitsCount}ch;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
                             </div>
                         </div>
                         <div class="bar-track">
@@ -758,7 +826,7 @@
                             <div class="bar-fill" style="width: ${percentage}%; ${fillStyle}"></div>
                         </div>
                         <div class="goal-numbers">
-                            <span class="current-count">${formatCount(likes)}</span>/<span class="target-count">${formatCount(target)}</span>
+                            <span class="current-count" style="min-width: ${digitsCount}ch;">${currentFormatted}</span>/<span class="target-count">${targetFormatted}</span>
                         </div>
                     `;
                 } else if (layout === 'bg-fill') {
@@ -771,9 +839,9 @@
                             <span class="goal-title">${title}</span>
                             <div class="divider-dot"></div>
                             <div class="goal-numbers">
-                                <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
+                                <span class="current-count" style="min-width: ${digitsCount}ch;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
                             </div>
-                            ${currentConfig.showPercentage ? `<span class="percent-badge" style="color: ${barColor}; font-size: ${Math.round(fontSize * 0.85)}px;">${percentage}%</span>` : ''}
+                            ${showPercent ? `<span class="percent-badge" style="min-width: 4.2ch; color: ${barColor}; font-size: ${Math.round(fontSize * 0.85)}px;">${percentage}%</span>` : ''}
                         </div>
                     `;
                 } else if (layout === 'badge') {
@@ -784,9 +852,9 @@
                         <span class="goal-title">${title}</span>
                         <div class="divider"></div>
                         <div class="goal-numbers">
-                            <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
+                            <span class="current-count" style="min-width: ${digitsCount}ch;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
                         </div>
-                        ${currentConfig.showPercentage ? `<span class="badge-percent percent-badge" style="color: ${barColor};">${percentage}%</span>` : ''}
+                        ${showPercent ? `<span class="badge-percent percent-badge" style="min-width: 4.2ch; color: ${barColor};">${percentage}%</span>` : ''}
                     `;
                 } else if (layout === 'circular') {
                     const radius = 18;
@@ -807,8 +875,8 @@
                         <div class="info-group">
                             <span class="goal-title">${title}</span>
                             <div class="goal-numbers">
-                                <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
-                                ${currentConfig.showPercentage ? `<span class="percent-val" style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                                <span class="current-count" style="min-width: ${digitsCount}ch;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
+                                ${showPercent ? `<span class="percent-val" style="min-width: 5.5ch; opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
                             </div>
                         </div>
                     `;
@@ -819,8 +887,8 @@
                         </div>
                         <span class="goal-title">${title}:</span>
                         <div class="goal-numbers">
-                            <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
-                            ${currentConfig.showPercentage ? `<span class="percent-val" style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                            <span class="current-count" style="min-width: ${digitsCount}ch;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
+                            ${showPercent ? `<span class="percent-val" style="min-width: 5.5ch; opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
                         </div>
                     `;
                 }
@@ -828,17 +896,22 @@
                 wrapper.innerHTML = html;
 
             } else {
-                // Atualização rápida de valores e barra
+                // Atualização rápida de valores, larguras e barra
+                wrapper.style.minWidth = `${dynamicMinWidth}px`;
+
                 const currentEl = wrapper.querySelector('.current-count');
                 const targetEl = wrapper.querySelector('.target-count');
                 const percentEl = wrapper.querySelector('.percent-val');
-                const percentBadge = wrapper.querySelector('.percent-badge');
+                const percentBadge = wrapper.querySelector('.percent-badge, .badge-percent');
                 const barFill = wrapper.querySelector('.bar-fill');
                 const bgFillLayer = wrapper.querySelector('.bg-fill-layer');
                 const circleProgress = wrapper.querySelector('.circle-progress');
 
-                if (currentEl) currentEl.textContent = formatCount(likes);
-                if (targetEl) targetEl.textContent = formatCount(target);
+                if (currentEl) {
+                    currentEl.textContent = currentFormatted;
+                    currentEl.style.minWidth = `${digitsCount}ch`;
+                }
+                if (targetEl) targetEl.textContent = targetFormatted;
                 if (percentEl) percentEl.textContent = `(${percentage}%)`;
                 if (percentBadge) percentBadge.textContent = `${percentage}%`;
                 if (barFill) barFill.style.width = `${percentage}%`;

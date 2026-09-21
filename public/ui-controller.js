@@ -1745,6 +1745,47 @@ function triggerPreviewLikePulse() {
     setTimeout(() => indicator.remove(), 1000);
 }
 
+function computeDynamicLikesCardWidth(layout, title, digitsCount, fontSize, showPercent) {
+    const titleLen = (title || '').length;
+    const titleWidth = Math.ceil(titleLen * fontSize * 0.58);
+    const numCharWidth = fontSize * 0.62;
+    const numbersWidth = Math.ceil((digitsCount * 2 + 3 + (showPercent ? 6.5 : 0)) * numCharWidth);
+    const compactNumsWidth = Math.ceil((digitsCount * 2 + 1) * numCharWidth);
+    const iconSize = Math.round(fontSize * 1.2);
+
+    switch (layout) {
+        case 'bar':
+            return Math.max(180, Math.ceil(36 + (iconSize + 8) + titleWidth + 20 + numbersWidth));
+        case 'card': {
+            const cardHeaderW = 40 + (iconSize + 8) + titleWidth + 24 + 48;
+            const cardFooterW = 40 + Math.ceil(((digitsCount + 6) + (digitsCount + 6)) * numCharWidth) + 24;
+            return Math.max(200, Math.ceil(Math.max(cardHeaderW, cardFooterW)));
+        }
+        case 'pill':
+            return Math.max(160, Math.ceil(32 + (iconSize + 6) + titleWidth + 14 + 80 + 14 + compactNumsWidth));
+        case 'neon':
+            return Math.max(190, Math.ceil(40 + (iconSize + 8) + titleWidth + 20 + Math.ceil((digitsCount * 2 + 3) * numCharWidth)));
+        case 'minimalist':
+            return Math.max(150, Math.ceil(28 + (iconSize + 8) + titleWidth + 12 + 65 + 12 + compactNumsWidth));
+        case 'bg-fill': {
+            const bgBadgeW = showPercent ? 48 : 0;
+            return Math.max(180, Math.ceil(48 + (iconSize + 10) + titleWidth + 14 + 6 + 14 + Math.ceil((digitsCount * 2 + 3) * numCharWidth) + (bgBadgeW ? 14 + bgBadgeW : 0)));
+        }
+        case 'badge': {
+            const bBadgeW = showPercent ? 44 : 0;
+            return Math.max(130, Math.ceil(36 + (iconSize + 8) + titleWidth + 12 + 2 + 12 + Math.ceil((digitsCount * 2 + 3) * numCharWidth) + (bBadgeW ? 12 + bBadgeW : 0)));
+        }
+        case 'circular': {
+            const circContentW = Math.max(titleWidth, numbersWidth);
+            return Math.max(170, Math.ceil(36 + 44 + 14 + circContentW + 10));
+        }
+        case 'clean-inline':
+            return Math.max(120, Math.ceil(28 + (iconSize + 8) + titleWidth + 12 + numbersWidth));
+        default:
+            return Math.max(180, Math.ceil(36 + titleWidth + numbersWidth));
+    }
+}
+
 function updateLikesPreview(hasIncreased = false) {
     if (!elements.lPreviewContainer) return;
 
@@ -1755,8 +1796,12 @@ function updateLikesPreview(hasIncreased = false) {
     const likes = likesPreviewCount;
     const percentage = Math.min(100, Math.round((likes / target) * 100));
 
+    const targetFormatted = formatLikesNum(target);
+    const currentFormatted = formatLikesNum(likes);
+    const digitsCount = Math.max(targetFormatted.length, currentFormatted.length);
+
     if (elements.lCurrentLikesDisplay) {
-        elements.lCurrentLikesDisplay.innerText = formatLikesNum(likes);
+        elements.lCurrentLikesDisplay.innerText = currentFormatted;
     }
 
     const bgColor = (elements.lBgColor && elements.lBgColor.value) ? elements.lBgColor.value : (lk.bgColor || '#111111');
@@ -1774,6 +1819,7 @@ function updateLikesPreview(hasIncreased = false) {
     const fillStyle = `background: linear-gradient(90deg, ${barColor}, ${barGradient});`;
 
     const showPercent = elements.lShowPercent ? elements.lShowPercent.checked : true;
+    const dynamicMinWidth = computeDynamicLikesCardWidth(layout, title, digitsCount, fontSize, showPercent);
 
     // CSS Customizado se habilitado
     let customCssText = '';
@@ -1787,7 +1833,7 @@ function updateLikesPreview(hasIncreased = false) {
 
     if (layout === 'bar') {
         contentHtml = `
-            <div class="likes-layout-bar" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+            <div class="likes-layout-bar" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px; min-width: ${dynamicMinWidth}px; width: fit-content;">
                 <div class="flex items-center justify-between gap-4" style="line-height: 1;">
                     <div class="inline-flex items-center gap-2" style="line-height: 1;">
                         <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
@@ -1795,9 +1841,9 @@ function updateLikesPreview(hasIncreased = false) {
                         </div>
                         <span class="font-extrabold uppercase tracking-wide" style="transform: translateY(-0.06em);">${title}</span>
                     </div>
-                    <div class="font-black" style="line-height: 1; transform: translateY(-0.06em);">
-                        <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
-                        ${showPercent ? `<span style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                    <div class="font-black" style="line-height: 1; transform: translateY(-0.06em); font-variant-numeric: tabular-nums;">
+                        <span class="current-count" style="display: inline-block; min-width: ${digitsCount}ch; text-align: right;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
+                        ${showPercent ? `<span class="percent-val" style="display: inline-block; min-width: 5.5ch; text-align: left; opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
                     </div>
                 </div>
                 <div class="w-full h-2.5 rounded-full bg-white/10 overflow-hidden mt-2 relative">
@@ -1807,7 +1853,7 @@ function updateLikesPreview(hasIncreased = false) {
         `;
     } else if (layout === 'card') {
         contentHtml = `
-            <div class="likes-layout-card" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+            <div class="likes-layout-card" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px; min-width: ${dynamicMinWidth}px; width: fit-content;">
                 <div class="flex items-center justify-between" style="line-height: 1;">
                     <div class="inline-flex items-center gap-2" style="line-height: 1;">
                         <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
@@ -1815,20 +1861,20 @@ function updateLikesPreview(hasIncreased = false) {
                         </div>
                         <span class="font-extrabold uppercase text-[12px] opacity-80 tracking-wider" style="transform: translateY(-0.06em);">${title}</span>
                     </div>
-                    <span class="font-black text-[11px] px-2 py-0.5 rounded-full bg-white/10" style="color: ${barColor};">${percentage}%</span>
+                    <span class="percent-badge font-black text-[11px] px-2 py-0.5 rounded-full bg-white/10" style="display: inline-flex; align-items: center; justify-content: center; min-width: 4.2ch; text-align: center; color: ${barColor};">${percentage}%</span>
                 </div>
                 <div class="w-full h-3 rounded-lg bg-white/10 overflow-hidden my-2">
                     <div class="h-full rounded-lg transition-all duration-500" style="width: ${percentage}%; ${fillStyle}"></div>
                 </div>
                 <div class="flex items-center justify-between text-xs opacity-70 font-bold" style="line-height: 1;">
-                    <span><strong style="font-size: ${Math.round(fontSize * 1.15)}px; color: ${fontColor};">${formatLikesNum(likes)}</strong> likes</span>
-                    <span>Meta: <strong style="color: ${fontColor};">${formatLikesNum(target)}</strong></span>
+                    <span><strong class="current-count" style="display: inline-block; min-width: ${digitsCount}ch; text-align: right; font-size: ${Math.round(fontSize * 1.15)}px; color: ${fontColor};">${currentFormatted}</strong> likes</span>
+                    <span>Meta: <strong class="target-count" style="display: inline-block; min-width: ${targetFormatted.length}ch; text-align: right; color: ${fontColor};">${targetFormatted}</strong></span>
                 </div>
             </div>
         `;
     } else if (layout === 'pill') {
         contentHtml = `
-            <div class="likes-layout-pill" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+            <div class="likes-layout-pill" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px; min-width: ${dynamicMinWidth}px; width: fit-content;">
                 <div class="inline-flex items-center gap-1.5" style="line-height: 1;">
                     <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
                         ${likesThumbsUpSvg}
@@ -1838,14 +1884,14 @@ function updateLikesPreview(hasIncreased = false) {
                 <div class="w-20 h-2 rounded-full bg-white/15 overflow-hidden">
                     <div class="h-full rounded-full transition-all duration-500" style="width: ${percentage}%; ${fillStyle}"></div>
                 </div>
-                <div class="font-black text-xs" style="line-height: 1; transform: translateY(-0.06em);">
-                    <span>${formatLikesNum(likes)}</span>/<span>${formatLikesNum(target)}</span>
+                <div class="font-black text-xs" style="line-height: 1; transform: translateY(-0.06em); font-variant-numeric: tabular-nums;">
+                    <span class="current-count" style="display: inline-block; min-width: ${digitsCount}ch; text-align: right;">${currentFormatted}</span>/<span class="target-count">${targetFormatted}</span>
                 </div>
             </div>
         `;
     } else if (layout === 'neon') {
         contentHtml = `
-            <div class="likes-layout-neon" style="color: ${fontColor}; font-size: ${fontSize}px;">
+            <div class="likes-layout-neon" style="color: ${fontColor}; font-size: ${fontSize}px; min-width: ${dynamicMinWidth}px; width: fit-content;">
                 <div class="flex items-center justify-between gap-4" style="line-height: 1;">
                     <div class="inline-flex items-center gap-2" style="line-height: 1;">
                         <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: #FF3B30;">
@@ -1853,8 +1899,8 @@ function updateLikesPreview(hasIncreased = false) {
                         </div>
                         <span class="font-black uppercase tracking-widest text-[#FF3B30]" style="text-shadow: 0 0 10px rgba(255, 59, 48, 0.5); transform: translateY(-0.06em);">${title}</span>
                     </div>
-                    <div class="font-black text-[#FF3B30]" style="line-height: 1; transform: translateY(-0.06em);">
-                        <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
+                    <div class="font-black text-[#FF3B30]" style="line-height: 1; transform: translateY(-0.06em); font-variant-numeric: tabular-nums;">
+                        <span class="current-count" style="display: inline-block; min-width: ${digitsCount}ch; text-align: right;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
                     </div>
                 </div>
                 <div class="w-full h-2 rounded bg-white/10 overflow-hidden mt-2">
@@ -1864,7 +1910,7 @@ function updateLikesPreview(hasIncreased = false) {
         `;
     } else if (layout === 'minimalist') {
         contentHtml = `
-            <div class="likes-layout-minimalist" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+            <div class="likes-layout-minimalist" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px; min-width: ${dynamicMinWidth}px; width: fit-content;">
                 <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
                     ${likesThumbsUpSvg}
                 </div>
@@ -1872,14 +1918,14 @@ function updateLikesPreview(hasIncreased = false) {
                 <div class="w-16 h-1 rounded-sm bg-white/15 overflow-hidden">
                     <div class="h-full rounded-sm transition-all duration-500" style="width: ${percentage}%; ${fillStyle}"></div>
                 </div>
-                <div class="font-black" style="line-height: 1; transform: translateY(-0.06em);">
-                    <span>${formatLikesNum(likes)}</span>/<span>${formatLikesNum(target)}</span>
+                <div class="font-black" style="line-height: 1; transform: translateY(-0.06em); font-variant-numeric: tabular-nums;">
+                    <span class="current-count" style="display: inline-block; min-width: ${digitsCount}ch; text-align: right;">${currentFormatted}</span>/<span class="target-count">${targetFormatted}</span>
                 </div>
             </div>
         `;
     } else if (layout === 'bg-fill') {
         contentHtml = `
-            <div class="likes-layout-bg-fill" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+            <div class="likes-layout-bg-fill" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px; min-width: ${dynamicMinWidth}px; width: fit-content;">
                 <div class="bg-fill-layer" style="width: ${percentage}%; ${fillStyle}"></div>
                 <div class="content-z">
                     <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
@@ -1888,24 +1934,24 @@ function updateLikesPreview(hasIncreased = false) {
                     <span class="font-extrabold uppercase tracking-wide whitespace-nowrap">${title}</span>
                     <div class="divider-dot"></div>
                     <div class="font-black whitespace-nowrap" style="font-variant-numeric: tabular-nums;">
-                        <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
+                        <span class="current-count" style="display: inline-block; min-width: ${digitsCount}ch; text-align: right;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
                     </div>
-                    ${showPercent ? `<span class="percent-badge font-black" style="color: ${barColor}; font-size: ${Math.round(fontSize * 0.85)}px;">${percentage}%</span>` : ''}
+                    ${showPercent ? `<span class="percent-badge font-black" style="display: inline-flex; align-items: center; justify-content: center; min-width: 4.2ch; text-align: center; color: ${barColor}; font-size: ${Math.round(fontSize * 0.85)}px;">${percentage}%</span>` : ''}
                 </div>
             </div>
         `;
     } else if (layout === 'badge') {
         contentHtml = `
-            <div class="likes-layout-badge" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+            <div class="likes-layout-badge" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px; min-width: ${dynamicMinWidth}px; width: fit-content;">
                 <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
                     ${likesThumbsUpSvg}
                 </div>
                 <span class="font-extrabold uppercase text-[11px] opacity-80" style="transform: translateY(-0.06em);">${title}</span>
                 <div class="w-[1px] h-3.5 bg-white/20"></div>
-                <div class="font-black" style="line-height: 1; transform: translateY(-0.06em);">
-                    <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
+                <div class="font-black" style="line-height: 1; transform: translateY(-0.06em); font-variant-numeric: tabular-nums;">
+                    <span class="current-count" style="display: inline-block; min-width: ${digitsCount}ch; text-align: right;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
                 </div>
-                ${showPercent ? `<span class="font-black text-[10px] px-2 py-0.5 rounded-full bg-white/10" style="color: ${barColor}; line-height: 1;">${percentage}%</span>` : ''}
+                ${showPercent ? `<span class="badge-percent font-black text-[10px] px-2 py-0.5 rounded-full bg-white/10" style="display: inline-flex; align-items: center; justify-content: center; min-width: 4.2ch; text-align: center; color: ${barColor}; line-height: 1;">${percentage}%</span>` : ''}
             </div>
         `;
     } else if (layout === 'circular') {
@@ -1913,7 +1959,7 @@ function updateLikesPreview(hasIncreased = false) {
         const circ = 2 * Math.PI * radius;
         const strokeOffset = circ - (circ * percentage / 100);
         contentHtml = `
-            <div class="likes-layout-circular" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+            <div class="likes-layout-circular" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px; min-width: ${dynamicMinWidth}px; width: fit-content;">
                 <div class="relative inline-flex items-center justify-center flex-shrink-0 w-11 h-11">
                     <svg class="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
                         <circle class="fill-none stroke-white/10 stroke-[3.5]" cx="22" cy="22" r="${radius}"></circle>
@@ -1925,25 +1971,25 @@ function updateLikesPreview(hasIncreased = false) {
                         </div>
                     </div>
                 </div>
-                <div class="flex flex-col gap-1 text-left flex-1 min-w-0 overflow-hidden" style="line-height: 1;">
-                    <span class="font-extrabold uppercase text-[11px] opacity-70 tracking-wider whitespace-nowrap truncate">${title}</span>
+                <div class="flex flex-col gap-1 text-left flex-1 min-w-0" style="line-height: 1;">
+                    <span class="font-extrabold uppercase text-[11px] opacity-70 tracking-wider whitespace-nowrap">${title}</span>
                     <div class="font-black whitespace-nowrap" style="font-variant-numeric: tabular-nums;">
-                        <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
-                        ${showPercent ? `<span style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                        <span class="current-count" style="display: inline-block; min-width: ${digitsCount}ch; text-align: right;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
+                        ${showPercent ? `<span class="percent-val" style="display: inline-block; min-width: 5.5ch; text-align: left; opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
                     </div>
                 </div>
             </div>
         `;
     } else if (layout === 'clean-inline') {
         contentHtml = `
-            <div class="likes-layout-clean-inline" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+            <div class="likes-layout-clean-inline" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px; min-width: ${dynamicMinWidth}px; width: fit-content;">
                 <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
                     ${likesThumbsUpSvg}
                 </div>
                 <span class="font-extrabold opacity-75" style="transform: translateY(-0.06em);">${title}:</span>
-                <div class="font-black" style="line-height: 1; transform: translateY(-0.06em);">
-                    <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
-                    ${showPercent ? `<span style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                <div class="font-black" style="line-height: 1; transform: translateY(-0.06em); font-variant-numeric: tabular-nums;">
+                    <span class="current-count" style="display: inline-block; min-width: ${digitsCount}ch; text-align: right;">${currentFormatted}</span> / <span class="target-count">${targetFormatted}</span>
+                    ${showPercent ? `<span class="percent-val" style="display: inline-block; min-width: 5.5ch; text-align: left; opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
                 </div>
             </div>
         `;
@@ -1951,21 +1997,30 @@ function updateLikesPreview(hasIncreased = false) {
 
     elements.lPreviewContainer.innerHTML = `
         <style>
-            .likes-layout-bar { padding: 12px 18px; border-radius: 16px; min-width: 280px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
-            .likes-layout-card { padding: 16px 20px; border-radius: 20px; min-width: 300px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+            .likes-layout-bar, .likes-layout-card, .likes-layout-pill, .likes-layout-neon, .likes-layout-minimalist, .likes-layout-bg-fill, .likes-layout-badge, .likes-layout-circular, .likes-layout-clean-inline {
+                box-sizing: border-box;
+                width: fit-content;
+            }
+            .likes-layout-bar { padding: 12px 18px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+            .likes-layout-card { padding: 16px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
             .likes-layout-pill { padding: 8px 16px; border-radius: 999px; display: inline-flex; align-items: center; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.25); }
-            .likes-layout-neon { padding: 14px 20px; border-radius: 12px; min-width: 290px; background: rgba(10, 10, 15, 0.9); border: 1px solid rgba(255, 40, 40, 0.35); box-shadow: 0 0 20px rgba(255, 0, 0, 0.2); }
+            .likes-layout-neon { padding: 14px 20px; border-radius: 12px; background: rgba(10, 10, 15, 0.9); border: 1px solid rgba(255, 40, 40, 0.35); box-shadow: 0 0 20px rgba(255, 0, 0, 0.2); }
             .likes-layout-minimalist { padding: 8px 14px; border-radius: 10px; display: inline-flex; align-items: center; gap: 10px; }
-            .likes-layout-bg-fill { padding: 12px 24px; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; min-width: 320px; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); box-sizing: border-box; }
+            .likes-layout-bg-fill { padding: 12px 24px; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); }
             .likes-layout-bg-fill .bg-fill-layer { position: absolute; top: 0; left: 0; bottom: 0; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.38; z-index: 0; border-right: 2px solid rgba(255, 255, 255, 0.4); }
             .likes-layout-bg-fill .content-z { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 12px; width: 100%; line-height: 1; }
             .likes-layout-bg-fill .divider-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 255, 255, 0.35); flex-shrink: 0; }
             .likes-layout-bg-fill .percent-badge { font-weight: 900; padding: 3px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); line-height: 1; flex-shrink: 0; }
             .likes-layout-badge { padding: 8px 18px; border-radius: 999px; display: inline-flex; align-items: center; gap: 10px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35); line-height: 1; }
-            .likes-layout-circular { padding: 12px 18px; border-radius: 18px; display: inline-flex; align-items: center; gap: 14px; width: 260px; min-width: 260px; max-width: 260px; box-sizing: border-box; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); line-height: 1; }
+            .likes-layout-circular { padding: 12px 18px; border-radius: 18px; display: inline-flex; align-items: center; gap: 14px; box-sizing: border-box; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); line-height: 1; }
             .likes-layout-clean-inline { padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; line-height: 1; }
             .like-icon-box { display: inline-flex; align-items: center; justify-content: center; line-height: 0; flex-shrink: 0; }
             .like-icon-box svg { display: block; width: 100%; height: 100%; }
+            .current-count, .target-count, .percent-val, .percent-badge, .badge-percent {
+                font-variant-numeric: tabular-nums;
+                font-feature-settings: "tnum" 1, "cv05" 1;
+                white-space: nowrap;
+            }
             @keyframes likePulse {
                 0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 0, 0, 0)); }
                 35% { transform: scale(1.25); filter: drop-shadow(0 0 10px rgba(255, 60, 60, 0.7)); }
