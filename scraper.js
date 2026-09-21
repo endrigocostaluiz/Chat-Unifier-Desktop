@@ -450,6 +450,60 @@ const fetchViewers = async () => {
             }
           }
         }
+
+        // ==========================================
+        // Captura de Likes do YouTube (Meta de Likes)
+        // ==========================================
+        try {
+          let likeCount = null;
+
+          // 1. Botão de Like no DOM (Interface nova e clássica do YouTube)
+          const likeBtn = document.querySelector('like-button-view-model button, segmented-like-dislike-button-view-model button, #segmented-like-button button, button[aria-label*="gostei" i], button[aria-label*="like" i], ytd-toggle-button-renderer[is-icon-button] button');
+          if (likeBtn) {
+            const aria = likeBtn.getAttribute('aria-label') || '';
+            // Tenta extrair dígitos do aria-label (ex: "gostei deste vídeo com outras 1.450 pessoas" ou "1.450 marcações")
+            const numMatches = aria.match(/([\d.,\s]+)/g);
+            if (numMatches) {
+              for (const nm of numMatches) {
+                const parsed = extractCount(nm);
+                if (parsed && parsed !== '0') {
+                  likeCount = parsed;
+                  break;
+                }
+              }
+            }
+            // Se o aria não deu certo, tenta o texto visível do botão
+            if (!likeCount || likeCount === '0') {
+              const textEl = likeBtn.querySelector('.yt-spec-button-shape-next__button-text-content, .yt-core-attributed-string, span');
+              if (textEl && textEl.innerText) {
+                const parsed = extractCount(textEl.innerText);
+                if (parsed && parsed !== '0') likeCount = parsed;
+              }
+            }
+          }
+
+          // 2. Fallback no updated_metadata ou ytInitialData
+          if (!likeCount || likeCount === '0') {
+            try {
+              if (window.ytInitialData) {
+                const dataStr = JSON.stringify(window.ytInitialData);
+                const match = dataStr.match(/likeCount["']?\s*:\s*["']?(\d+)/i) || 
+                              dataStr.match(/([\d.,]+)\s*marcações como gostei/i) || 
+                              dataStr.match(/with\s*([\d.,]+)\s*other\s*people/i);
+                if (match && match[1]) {
+                  likeCount = extractCount(match[1]);
+                }
+              }
+            } catch(e) {}
+          }
+
+          if (likeCount && likeCount !== '0') {
+            console.log(`[YouTube Scraper] Likes detectados: ${likeCount}`);
+            ipcRenderer.send('youtube-likes-count', { likes: likeCount, videoId: v });
+          }
+        } catch(errLikes) {
+          console.error('[YouTube Scraper] Erro ao capturar likes:', errLikes);
+        }
       }
     } else if (window.location.href.includes('kick.com')) {
       platform = 'kick';

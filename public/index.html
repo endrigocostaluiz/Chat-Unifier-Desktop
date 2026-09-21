@@ -116,6 +116,12 @@
                     Sorteio
                 </div>
             </div>
+            <div class="sidebar-item group relative flex items-center justify-center w-10 h-10 rounded-xl hover:bg-white/5 cursor-pointer transition-all opacity-40 hover:opacity-100" data-tab="likes">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-thumbs-up"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h3"/><path d="M14 10V4.5a2.5 2.5 0 0 0-5 0V10"/></svg>
+                <div class="absolute left-14 bg-[#161616] border border-white/10 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50 shadow-xl" data-i18n="Meta de Likes">
+                    Meta de Likes
+                </div>
+            </div>
         </nav>
 
         <div class="pt-6 border-t border-white/5 flex flex-col items-center gap-4">
@@ -137,16 +143,17 @@
                     Verificar Atualizações
                 </div>
             </button>
-            <span id="app-version" class="text-[9px] font-black text-white/10 mt-2">v1.4.0</span>
+            <span id="app-version" class="text-[9px] font-black text-white/10 mt-2">v1.5.0</span>
         </div>
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden bg-[#0a0a0a]">
+    <main class="flex-1 flex flex-col h-screen overflow-hidden bg-[#0e0e0e]">
         <!-- Top Bar -->
-        <header class="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0a]/50 backdrop-blur-md z-10">
+        <header class="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#0a0a0a]/50 backdrop-blur-md z-10 flex-none">
             <div class="flex items-center gap-4">
-                <h2 id="tab-title" class="text-lg font-bold tracking-tight">Chat Unificado</h2>
+                <h1 id="header-title" class="text-xl font-black uppercase tracking-tight text-white/90">Chat Unificado</h1>
+                <span id="status-badge" class="bg-white/5 border border-white/5 px-3 py-1 rounded-full text-[10px] font-black tracking-widest text-white/40 uppercase">Desconectado</span>
             </div>
             
             <div class="flex items-center gap-4 relative">
@@ -157,11 +164,11 @@
                 <!-- Botões do Chat (aparecem na aba de chat) -->
                 <div id="chat-ctrl-btns" class="flex items-center gap-3">
                     <button id="btn-start" class="emerald-btn px-5 py-2 rounded-xl text-sm transition shadow-lg shadow-emerald-500/10 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 19 12 6 20 6 4"/></svg>
                         Iniciar Chat
                     </button>
                     <button id="btn-stop" class="hidden bg-red-500/10 text-red-500 border border-red-500/20 px-5 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5" ry="2.5"/></svg>
                         Parar Chat
                     </button>
                 </div>
@@ -172,8 +179,19 @@
                         Iniciar Contador
                     </button>
                     <button id="btn-stop-viewers" class="hidden bg-red-500/10 text-red-500 border border-red-500/20 px-5 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5" ry="2.5"/></svg>
                         Parar Contador
+                    </button>
+                </div>
+                <!-- Botões da Meta de Likes (aparecem na aba de likes) -->
+                <div id="likes-ctrl-btns" class="hidden flex items-center gap-3">
+                    <button id="btn-start-likes" class="emerald-btn px-5 py-2 rounded-xl text-sm transition shadow-lg shadow-emerald-500/10 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 19 12 6 20 6 4"/></svg>
+                        Iniciar Meta
+                    </button>
+                    <button id="btn-stop-likes" class="hidden bg-red-500/10 text-red-500 border border-red-500/20 px-5 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5" ry="2.5"/></svg>
+                        Parar Meta
                     </button>
                 </div>
             </div>
@@ -566,7 +584,7 @@
 
                             <footer class="pt-4 pb-8 px-2 flex flex-col items-center gap-2">
                                 <div class="opacity-30 hover:opacity-100 transition-all duration-300 flex flex-col items-center gap-1 cursor-default group">
-                                    <p id="app-footer-version" class="text-[9px] font-black tracking-[0.2em] uppercase group-hover:text-emerald-400 transition-colors">Chat Unifier v1.4.0</p>
+                                    <p id="app-footer-version" class="text-[9px] font-black tracking-[0.2em] uppercase group-hover:text-emerald-400 transition-colors">Chat Unifier v1.5.0</p>
                                     <p class="text-[8px] font-medium tracking-wider group-hover:text-white/80 transition-colors"><span data-i18n="developedBy">Desenvolvido por</span> <span class="text-emerald-500 font-bold group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.8)] transition-all">Endrigo</span></p>
                                 </div>
                             </footer>
@@ -884,7 +902,7 @@
                         </div>
                     </div>
                     <button id="btn-giveaway-start-chat" class="emerald-btn px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 flex-none shadow-lg shadow-emerald-500/10">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="6 4 19 12 6 20 6 4"/></svg>
                         <span data-i18n="Iniciar Chat Agora">Iniciar Chat Agora</span>
                     </button>
                 </div>
@@ -1116,6 +1134,203 @@
                             </div>
                         </div>
                     </section>
+                </div>
+            </div>
+
+            <!-- ABA: Meta de Likes (YouTube) -->
+            <div id="tab-likes" class="tab-content hidden animate-in fade-in slide-in-from-left-4 duration-500 space-y-6">
+                <!-- Header da Seção -->
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-black uppercase tracking-tight text-white/90 flex items-center gap-2.5">
+                            <span class="w-8 h-8 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h3"/><path d="M14 10V4.5a2.5 2.5 0 0 0-5 0V10"/></svg>
+                            </span>
+                            Meta de Likes no YouTube
+                        </h2>
+                        <p class="text-xs text-white/40 mt-1">Configure sua meta de likes, monitore a contagem em tempo real e exiba no OBS.</p>
+                    </div>
+                </div>
+
+                <!-- Grid Principal: Configurações + Prévia -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Coluna Esquerda: Configurações -->
+                    <div class="lg:col-span-7 space-y-6">
+                        
+                        <!-- Card 1: URL do Overlay OBS -->
+                        <div class="card p-6 rounded-3xl bg-white/[0.02] border border-white/5 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                                    <h3 class="text-xs font-black uppercase text-white/60 tracking-widest">Link do Navegador para o OBS</h3>
+                                </div>
+                                <span class="text-[10px] text-white/30 uppercase font-bold bg-white/5 px-2.5 py-1 rounded-full">Overlay OBS</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" readonly value="http://localhost:3000/likes-goal" id="l-obs-url" class="flex-1 bg-black/40 rounded-xl px-4 py-3 border border-white/5 font-mono text-xs text-red-400/90 break-all select-all focus:outline-none">
+                                <button onclick="copyLink(document.getElementById('l-obs-url').value, this)" class="bg-red-500 hover:bg-red-600 text-white font-bold px-5 rounded-xl transition-all flex items-center gap-2 text-xs">
+                                    <span>Copiar</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Card 2: Dados da Live & Meta -->
+                        <div class="card p-6 rounded-3xl bg-white/[0.02] border border-white/5 space-y-4">
+                            <h3 class="text-xs font-black uppercase text-white/40 tracking-widest">Configuração da Meta</h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-[10px] text-white/40 mb-1.5 uppercase font-black">URL da Live ou Canal do YouTube</label>
+                                    <input type="text" id="l-yt-url" placeholder="https://www.youtube.com/watch?v=... ou @canal (Deixe vazio para usar canal padrão)" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-red-500 text-white placeholder:text-white/20">
+                                    <p class="text-[10px] text-white/30 mt-1 leading-relaxed">* Se deixar em branco, o sistema utilizará o canal do YouTube já cadastrado no Chat/Viewers.</p>
+                                </div>
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] text-white/40 mb-1.5 uppercase font-black">Título da Meta</label>
+                                        <input type="text" id="l-title" value="Meta de Likes" placeholder="Ex: Meta de Likes" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-red-500 text-white">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] text-white/40 mb-1.5 uppercase font-black">Meta (Quantidade de Likes)</label>
+                                        <input type="number" id="l-target" value="100" min="1" step="5" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-red-500 text-white">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 3: Estilo Visual e Modelos -->
+                        <div class="card p-6 rounded-3xl bg-white/[0.02] border border-white/5 space-y-5">
+                            <h3 class="text-xs font-black uppercase text-white/40 tracking-widest">Estilo e Layout do Overlay</h3>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-[10px] text-white/40 mb-2 uppercase font-black">Modelo de Layout</label>
+                                    <select id="l-layout-select" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm focus:outline-none focus:border-red-500 text-white">
+                                        <option value="bar">Barra Moderna (Sleek Bar)</option>
+                                        <option value="card">Card Flutuante (Glassmorphism)</option>
+                                        <option value="pill">Cápsula Compacta (Pill)</option>
+                                        <option value="neon">Gamer Neon</option>
+                                        <option value="minimalist">Barra Minimalista</option>
+                                        <option value="bg-fill">Fundo Preenchido (Progressive Fill)</option>
+                                        <option value="badge">Botão & Contagem (Ultra Compact / YouTube Style)</option>
+                                        <option value="circular">Anel Circular (Donut Ring)</option>
+                                        <option value="clean-inline">Texto & Ícone Inline (Sem Barra)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <label class="block text-[10px] text-white/40 uppercase font-black">Tamanho da Fonte</label>
+                                        <span id="l-font-size-val" class="text-[10px] text-red-400 font-bold">14px</span>
+                                    </div>
+                                    <input type="range" id="l-font-size" min="11" max="28" step="1" value="14" class="w-full accent-red-500 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                                </div>
+                            </div>
+
+                            <!-- Cores e Gradientes -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="space-y-1.5">
+                                    <label class="block text-[10px] text-white/40 uppercase font-black">Cor da Barra</label>
+                                    <input type="color" id="l-bar-color" value="#FF0000" class="w-full h-10 rounded-xl bg-transparent border-none cursor-pointer">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-[10px] text-white/40 uppercase font-black">Gradiente Final</label>
+                                    <input type="color" id="l-bar-gradient" value="#FF5E3A" class="w-full h-10 rounded-xl bg-transparent border-none cursor-pointer">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-[10px] text-white/40 uppercase font-black">Cor de Fundo</label>
+                                    <input type="color" id="l-bg-color" value="#111111" class="w-full h-10 rounded-xl bg-transparent border-none cursor-pointer">
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="block text-[10px] text-white/40 uppercase font-black">Cor do Texto</label>
+                                    <input type="color" id="l-font-color" value="#ffffff" class="w-full h-10 rounded-xl bg-transparent border-none cursor-pointer">
+                                </div>
+                            </div>
+
+                            <!-- Opacidade -->
+                            <div>
+                                <div class="flex justify-between items-center mb-2">
+                                    <label class="block text-[10px] text-white/40 uppercase font-black">Opacidade do Fundo</label>
+                                    <span id="l-bg-opacity-val" class="text-[10px] text-red-400 font-bold">85%</span>
+                                </div>
+                                <input type="range" id="l-bg-opacity" min="0" max="100" step="5" value="85" class="w-full accent-red-500 h-1.5 bg-white/10 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <!-- Toggles de Animação e Opções -->
+                            <div class="pt-4 border-t border-white/5 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-xs font-bold text-white/80">Animação ao Receber Like</h4>
+                                        <p class="text-[10px] text-white/30">Pulso leve no ícone e indicador sutil (+1) flutuando</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="l-pulse-anim" checked class="sr-only peer">
+                                        <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="text-xs font-bold text-white/80">Exibir Porcentagem</h4>
+                                        <p class="text-[10px] text-white/30">Mostra a porcentagem concluída ao lado da meta</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="l-show-percent" checked class="sr-only peer">
+                                        <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card 4: CSS Personalizado -->
+                        <div class="card p-6 rounded-3xl bg-white/[0.02] border border-white/5 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-xs font-black uppercase text-white/40 tracking-widest">CSS Customizado (Opcional)</h3>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="l-custom-css-enabled" checked class="sr-only peer">
+                                    <div class="w-9 h-5 bg-white/10 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500"></div>
+                                </label>
+                            </div>
+                            <textarea id="l-custom-css" placeholder="/* Seu código CSS customizado aqui... */" class="w-full h-24 bg-black/40 border border-white/10 rounded-xl p-3 text-[10px] font-mono focus:outline-none focus:border-red-500 text-white placeholder:text-white/20"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Coluna Direita: Prévia em Tempo Real -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <div class="card p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center sticky top-6">
+                            <div class="w-full flex items-center justify-between mb-4">
+                                <h3 class="text-xs font-black uppercase text-white/40 tracking-widest">Prévia em Tempo Real</h3>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[10px] font-bold text-white/40 uppercase">Status:</span>
+                                    <span id="l-status-text" class="text-[10px] font-black text-white/40 uppercase bg-white/5 px-2.5 py-0.5 rounded-full">Pronto</span>
+                                </div>
+                            </div>
+
+                            <!-- Área do Preview com fundo xadrez transparente simulando OBS -->
+                            <div class="w-full min-h-[220px] rounded-2xl flex items-center justify-center p-6 border border-white/5 relative overflow-hidden" style="background: repeating-conic-gradient(#151515 0% 25%, #1a1a1a 0% 50%) 50% / 20px 20px;">
+                                <div id="l-preview-container" class="relative">
+                                    <!-- Preenchido via JS -->
+                                </div>
+                            </div>
+
+                            <!-- Controles de Teste da Prévia -->
+                            <div class="w-full mt-6 pt-4 border-t border-white/5 space-y-3">
+                                <div class="flex items-center justify-between text-xs">
+                                    <span class="text-white/40 font-bold uppercase text-[10px]">Likes Detectados:</span>
+                                    <span id="l-current-likes-display" class="font-black text-red-400 font-mono text-sm">0</span>
+                                </div>
+                                <div class="flex gap-2">
+                                    <button id="btn-preview-add-like" class="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 py-2.5 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M7 22V11H3v11h4zm7-21c-.83 0-1.54.5-1.84 1.22l-3.02 7.05C9.05 9.47 9 9.73 9 10v10c0 1.1.9 2 2 2h8.31c.82 0 1.52-.5 1.83-1.24l3.19-7.44c.09-.23.14-.48.14-.72V11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14 1z"/></svg>
+                                        <span>Testar +1 Like</span>
+                                    </button>
+                                    <button id="btn-preview-reset-likes" class="px-4 bg-white/5 hover:bg-white/10 text-white/50 hover:text-white py-2.5 rounded-xl text-xs font-bold transition">
+                                        Resetar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

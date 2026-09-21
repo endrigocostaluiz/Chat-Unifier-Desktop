@@ -25,5 +25,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
   downloadUpdate: (url) => ipcRenderer.send('download-update', url),
   onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (event, info) => callback(info)),
   onDownloadCompleted: (callback) => ipcRenderer.on('download-completed', (event, filePath) => callback(filePath)),
-  onDownloadFailed: (callback) => ipcRenderer.on('download-failed', (event, error) => callback(error))
+  onDownloadFailed: (callback) => ipcRenderer.on('download-failed', (event, error) => callback(error)),
+  saveLikesConfig: (config) => ipcRenderer.invoke('save-likes-config', config),
+  startLikes: (url) => ipcRenderer.send('start-likes-goal', url),
+  stopLikes: () => ipcRenderer.send('stop-likes-goal'),
+  testLikeIncrement: () => ipcRenderer.send('test-like-increment'),
+  resetLikes: () => ipcRenderer.send('reset-likes-goal'),
+  onLikesUpdate: (callback) => ipcRenderer.on('likes-update', (event, data) => callback(data)),
+  requestLikesUpdate: () => ipcRenderer.send('request-likes-update')
 });

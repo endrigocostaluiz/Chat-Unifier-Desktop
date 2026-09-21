@@ -137,6 +137,35 @@ const elements = {
     viewerCtrlBtns: document.getElementById('viewer-ctrl-btns'),
     btnStartViewers: document.getElementById('btn-start-viewers'),
     btnStopViewers: document.getElementById('btn-stop-viewers'),
+    likesCtrlBtns: document.getElementById('likes-ctrl-btns'),
+    btnStartLikes: document.getElementById('btn-start-likes'),
+    btnStopLikes: document.getElementById('btn-stop-likes'),
+
+    // Meta de Likes no YouTube
+    tabLikes: document.getElementById('tab-likes'),
+    lObsUrl: document.getElementById('l-obs-url'),
+    lYtUrl: document.getElementById('l-yt-url'),
+    lTitle: document.getElementById('l-title'),
+    lTarget: document.getElementById('l-target'),
+    lLayoutSelect: document.getElementById('l-layout-select'),
+    lFontSize: document.getElementById('l-font-size'),
+    lFontSizeVal: document.getElementById('l-font-size-val'),
+    lBarColor: document.getElementById('l-bar-color'),
+    lBarGradient: document.getElementById('l-bar-gradient'),
+    lBgColor: document.getElementById('l-bg-color'),
+    lFontColor: document.getElementById('l-font-color'),
+    lBgOpacity: document.getElementById('l-bg-opacity'),
+    lBgOpacityVal: document.getElementById('l-bg-opacity-val'),
+    lPulseAnim: document.getElementById('l-pulse-anim'),
+    lShowPercent: document.getElementById('l-show-percent'),
+    lCustomCss: document.getElementById('l-custom-css'),
+    lCustomCssEnabled: document.getElementById('l-custom-css-enabled'),
+    lPreviewContainer: document.getElementById('l-preview-container'),
+    lStatusText: document.getElementById('l-status-text'),
+    lCurrentLikesDisplay: document.getElementById('l-current-likes-display'),
+    btnTestLike: document.getElementById('btn-test-like'),
+    btnPreviewAddLike: document.getElementById('btn-preview-add-like'),
+    btnPreviewResetLikes: document.getElementById('btn-preview-reset-likes'),
     // Update System
     btnUpdate: document.getElementById('btn-update'),
     modalUpdate: document.getElementById('modal-update'),
@@ -734,6 +763,29 @@ async function init() {
         if (elements.vCustomCss) elements.vCustomCss.value = v.customCSS || '';
         if (elements.vCustomCssEnabled) elements.vCustomCssEnabled.checked = v.customCssEnabled !== false;
 
+        // Sincronizar UI - Meta de Likes
+        const lk = appConfig.likesGoalConfig || {};
+        if (elements.lYtUrl) elements.lYtUrl.value = lk.youtubeUrl || '';
+        if (elements.lTitle) elements.lTitle.value = lk.title || 'Meta de Likes';
+        if (elements.lTarget) elements.lTarget.value = lk.target || 100;
+        if (elements.lLayoutSelect) elements.lLayoutSelect.value = lk.layout || 'bar';
+        if (elements.lFontSize) {
+            elements.lFontSize.value = lk.fontSize || 14;
+            if (elements.lFontSizeVal) elements.lFontSizeVal.innerText = `${elements.lFontSize.value}px`;
+        }
+        if (elements.lBarColor) elements.lBarColor.value = lk.barColor || '#FF0000';
+        if (elements.lBarGradient) elements.lBarGradient.value = lk.barGradient || '#FF5E3A';
+        if (elements.lBgColor) elements.lBgColor.value = lk.bgColor || '#111111';
+        if (elements.lFontColor) elements.lFontColor.value = lk.fontColor || '#ffffff';
+        if (elements.lBgOpacity) {
+            elements.lBgOpacity.value = lk.bgOpacity !== undefined ? lk.bgOpacity : 85;
+            if (elements.lBgOpacityVal) elements.lBgOpacityVal.innerText = `${elements.lBgOpacity.value}%`;
+        }
+        if (elements.lPulseAnim) elements.lPulseAnim.checked = lk.enablePulseAnim !== false;
+        if (elements.lShowPercent) elements.lShowPercent.checked = lk.showPercentage !== false;
+        if (elements.lCustomCss) elements.lCustomCss.value = lk.customCSS || '';
+        if (elements.lCustomCssEnabled) elements.lCustomCssEnabled.checked = lk.customCSSEnabled !== false;
+
         // Reordena os cards físicos do contador com base em channelsOrder
         const channelsOrder = v.channelsOrder || ['youtube', 'shorts', 'twitch', 'kick', 'tiktok'];
         const vList = document.getElementById('viewer-channels-list');
@@ -747,6 +799,7 @@ async function init() {
         updateObsUrl();
         updatePreviewLayout();
         updateViewersPreview();
+        updateLikesPreview();
 
         setupChatDragAndDrop();
         setupViewerDragAndDrop();
@@ -832,103 +885,115 @@ function updateViewersPreview() {
         
         const fontColor = (elements.vFontColor && elements.vFontColor.value) ? elements.vFontColor.value : '#ffffff';
         const iconStyle = (elements.vIconStyle && elements.vIconStyle.value) ? elements.vIconStyle.value : 'original';
-        const iconColorVal = (elements.vIconColor && elements.vIconColor.value) ? elements.vIconColor.value.replace('#', '') : 'ffffff';
         const iconRadius = (elements.vIconRadius) ? elements.vIconRadius.value : 30;
         const layout = (elements.vLayoutSelect && elements.vLayoutSelect.value) ? elements.vLayoutSelect.value : 'default';
         const showTotal = elements.vShowTotal ? elements.vShowTotal.checked : true;
+        const iconColor = elements.vIconColor ? elements.vIconColor.value : '#ffffff';
 
-        const getIconUrl = (key, style) => {
-            if (style === 'original') {
-                const originals = {
-                    twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
-                    youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
-                    shorts: 'https://cdn.simpleicons.org/youtubeshorts/FF0000',
-                    kick: 'https://cdn.simpleicons.org/kick/53FC18',
-                    tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
-                };
-                return originals[key];
+        const svgPaths = {
+            youtube: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
+            shorts: 'm18.931 9.99-1.441-.601 1.717-.913a4.48 4.48 0 0 0 1.874-6.078 4.506 4.506 0 0 0-6.09-1.874L4.792 5.929a4.504 4.504 0 0 0-2.402 4.193 4.521 4.521 0 0 0 2.666 3.904c.036.012 1.442.6 1.442.6l-1.706.901a4.51 4.51 0 0 0-2.369 3.967A4.528 4.528 0 0 0 6.93 24c.725 0 1.437-.174 2.08-.508l10.21-5.406a4.494 4.494 0 0 0 2.39-4.192 4.525 4.525 0 0 0-2.678-3.904ZM9.597 15.19V8.824l6.007 3.184z',
+            twitch: 'M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z',
+            kick: 'M1.333 0h8v5.333H12V2.667h2.667V0h8v8H20v2.667h-2.667v2.666H20V16h2.667v8h-8v-2.667H12v-2.666H9.333V24h-8Z',
+            tiktok: 'M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z'
+        };
+
+        const getPlatformSvgContent = (platform, color) => {
+            if (platform === 'youtube') {
+                return `
+                    <path fill="${color || '#FF0000'}" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/>
+                    <polygon fill="#FFFFFF" points="9.545,15.568 9.545,8.432 15.818,12"/>
+                `;
             }
-            
-            const color = style === 'custom' ? iconColorVal : (style === 'white' ? 'FFFFFF' : (style === 'black' ? '000000' : style.replace('#', '')));
-            const slugs = {
-                youtube: 'youtube',
-                shorts: 'youtubeshorts',
-                twitch: 'twitch',
-                kick: 'kick',
-                tiktok: 'tiktok'
-            };
-            return `https://cdn.simpleicons.org/${slugs[key]}/${color}`;
+            if (platform === 'shorts') {
+                return `
+                    <path fill="${color || '#FF0000'}" d="m18.931 9.99-1.441-.601 1.717-.913a4.48 4.48 0 0 0 1.874-6.078 4.506 4.506 0 0 0-6.09-1.874L4.792 5.929a4.504 4.504 0 0 0-2.402 4.193 4.521 4.521 0 0 0 2.666 3.904c.036.012 1.442.6 1.442.6l-1.706.901a4.51 4.51 0 0 0-2.369 3.967A4.528 4.528 0 0 0 6.93 24c.725 0 1.437-.174 2.08-.508l10.21-5.406a4.494 4.494 0 0 0 2.39-4.192 4.525 4.525 0 0 0-2.678-3.904ZM9.597 15.19V8.824l6.007 3.184z"/>
+                    <polygon fill="#FFFFFF" points="9.597,15.19 9.597,8.824 15.604,12.008"/>
+                `;
+            }
+            if (platform === 'twitch') {
+                return `<path fill="${color || '#9146FF'}" d="${svgPaths.twitch}"/>`;
+            }
+            if (platform === 'kick') {
+                return `<path fill="${color || '#53FC18'}" d="${svgPaths.kick}"/>`;
+            }
+            if (platform === 'tiktok') {
+                if (color) {
+                    return `<path fill="${color}" d="${svgPaths.tiktok}"/>`;
+                }
+                return `
+                    <path fill="#25F4EE" d="${svgPaths.tiktok}" opacity="0.85" transform="translate(-0.8, -0.8)"/>
+                    <path fill="#FE2C55" d="${svgPaths.tiktok}" opacity="0.85" transform="translate(0.8, 0.8)"/>
+                    <path fill="#FFFFFF" d="${svgPaths.tiktok}"/>
+                `;
+            }
+            return '';
         };
 
-        const getIconStyle = (key) => {
-            let transform = (key === 'kick' || key === 'shorts') ? 'transform: scale(0.8);' : '';
-            let styleStr = `border-radius: ${iconRadius}%;`;
-            if (transform) styleStr += ` ${transform}`;
-            return `style="${styleStr}"`;
+        const getContrastColor = (hexColor) => {
+            if (!hexColor) return '#ffffff';
+            const hex = hexColor.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16) || 0;
+            const g = parseInt(hex.substring(2, 4), 16) || 0;
+            const b = parseInt(hex.substring(4, 6), 16) || 0;
+            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 128) ? '#000000' : '#ffffff';
         };
 
-        const spacing = elements.vSpacing ? elements.vSpacing.value : 20;
-        let containerClass = "flex items-center p-4 rounded-xl transition-all";
-        let containerStyle = `background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; gap: ${layout === 'stacked' ? Math.floor(spacing / 2) : layout === 'badges' ? 4 : spacing}px;`;
+        const contrastColor = getContrastColor(iconColor);
+        const badgeColors = { youtube: '#FF0000', shorts: '#CC0000', twitch: '#9146FF', kick: '#53FC18', tiktok: '#111111' };
+
+        const spacing = elements.vSpacing ? parseInt(elements.vSpacing.value) || 20 : 20;
+        let containerClass = "inline-flex items-center p-4 rounded-xl transition-all";
+        let containerStyle = `background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; line-height: 1; gap: ${layout === 'stacked' ? Math.max(8, Math.floor(spacing / 2)) : layout === 'badges' ? 6 : spacing}px;`;
         
         if (layout === 'vertical') {
             containerClass = "flex flex-col p-6 rounded-2xl transition-all items-start";
         } else if (layout === 'grid') {
             containerClass = "grid grid-cols-2 p-6 rounded-2xl transition-all";
         } else if (layout === 'minimalist') {
-            containerClass = "flex items-center p-2 rounded-lg transition-all";
+            containerClass = "inline-flex items-center px-4 py-2 rounded-lg transition-all";
         } else if (layout === 'stacked') {
-            containerClass = "flex items-center p-3 rounded-2xl transition-all gap-3";
+            containerClass = "inline-flex items-center px-4 py-3 rounded-2xl transition-all";
         } else if (layout === 'badges') {
-            containerClass = "flex items-center p-2 rounded-xl transition-all gap-1";
+            containerClass = "inline-flex items-center px-3 py-2 rounded-xl transition-all";
         }
 
         const ch = v.channels || {};
         const channelsOrder = v.channelsOrder || ['youtube', 'shorts', 'twitch', 'kick', 'tiktok'];
         const platforms = [
-            { key: 'youtube', icon: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png', count: '38K', enabled: ch.youtube?.enabled !== false },
-            { key: 'shorts', icon: 'https://cdn.simpleicons.org/youtubeshorts/FF0000', count: '8K', enabled: ch.shorts?.enabled !== false },
-            { key: 'twitch', icon: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png', count: '5.2K', enabled: ch.twitch?.enabled !== false },
-            { key: 'kick', icon: 'https://cdn.simpleicons.org/kick/53FC18', count: '1.4K', enabled: ch.kick?.enabled !== false },
-            { key: 'tiktok', icon: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png', count: '12K', enabled: ch.tiktok?.enabled !== false }
+            { key: 'youtube', count: '38K', enabled: ch.youtube?.enabled !== false },
+            { key: 'shorts', count: '8K', enabled: ch.shorts?.enabled !== false },
+            { key: 'twitch', count: '5.2K', enabled: ch.twitch?.enabled !== false },
+            { key: 'kick', count: '1.4K', enabled: ch.kick?.enabled !== false },
+            { key: 'tiktok', count: '12K', enabled: ch.tiktok?.enabled !== false }
         ];
 
         const activePlatforms = platforms.filter(p => p.enabled);
         activePlatforms.sort((a, b) => channelsOrder.indexOf(a.key) - channelsOrder.indexOf(b.key));
 
-        // Cores dos badges por plataforma
-        const badgeColors = { youtube: '#FF0000', shorts: '#CC0000', twitch: '#9146FF', kick: '#53FC18', tiktok: '#111111' };
-
-        const getContrastColor = (hexColor) => {
-            if (!hexColor) return 'white';
-            const hex = hexColor.replace('#', '');
-            const r = parseInt(hex.substring(0, 2), 16) || 0;
-            const g = parseInt(hex.substring(2, 4), 16) || 0;
-            const b = parseInt(hex.substring(4, 6), 16) || 0;
-            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-            return (yiq >= 128) ? 'black' : 'white';
-        };
-
-        const iconColor = elements.vIconColor ? elements.vIconColor.value : '#ffffff';
-        const contrastColor = getContrastColor(iconColor);
-
-        const renderIcon = (key, idx) => {
+        const iconSize = 22;
+        const renderPlatformIcon = (key, isStacked = false, idx = 0) => {
             const isCustom = iconStyle === 'custom';
-            const extraStyle = (key === 'kick' || key === 'shorts') ? 'transform: scale(0.8);' : '';
-            const size = (layout === 'stacked') ? 28 : 24; // size in px
-            const padding = Math.round(size * 0.25);
-            const innerSize = size - padding;
-            
+            const customWrapperSize = 26;
+            const customInnerSize = 16;
+
             if (isCustom) {
+                const stackedMargin = (isStacked && idx > 0) ? `margin-left: -10px;` : '';
                 return `
-                    <div style="width: ${size}px; height: ${size}px; border-radius: ${iconRadius}% !important; background: ${iconColor} !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; ${layout === 'stacked' && idx > 0 ? 'margin-left: -14px;' : ''} z-index: ${10 - idx};">
-                        <img src="${getIconUrl(key, contrastColor)}" style="width: ${innerSize}px; height: ${innerSize}px; object-fit: contain; border-radius: ${iconRadius}% !important; ${extraStyle}">
+                    <div style="width: ${customWrapperSize}px; height: ${customWrapperSize}px; border-radius: ${iconRadius}%; background: ${iconColor}; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 0; ${stackedMargin} z-index: ${20 - idx}; position: relative; ${isStacked ? `border: 2px solid rgba(${br}, ${bg}, ${bb}, 0.9);` : ''}">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${customInnerSize}" height="${customInnerSize}" style="display: block; width: ${customInnerSize}px; height: ${customInnerSize}px;">
+                            ${getPlatformSvgContent(key, contrastColor)}
+                        </svg>
                     </div>
                 `;
             } else {
+                const stackedMargin = (isStacked && idx > 0) ? `margin-left: -8px;` : '';
                 return `
-                    <div class="relative" style="${layout === 'stacked' && idx > 0 ? 'margin-left: -14px;' : ''} z-index: ${10 - idx};">
-                        <img src="${getIconUrl(key, iconStyle)}" class="w-6 h-6 object-contain" style="border-radius: ${iconRadius}% !important; ${extraStyle}">
+                    <div style="width: ${iconSize}px; height: ${iconSize}px; border-radius: ${iconRadius}%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 0; ${stackedMargin} z-index: ${20 - idx}; position: relative; ${isStacked ? `border: 2px solid rgba(${br}, ${bg}, ${bb}, 0.9);` : ''}">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${iconSize}" height="${iconSize}" style="display: block; width: ${iconSize}px; height: ${iconSize}px; border-radius: ${iconRadius}%;">
+                            ${getPlatformSvgContent(key, null)}
+                        </svg>
                     </div>
                 `;
             }
@@ -936,29 +1001,30 @@ function updateViewersPreview() {
 
         let statsHtml = '';
         if (layout === 'stacked') {
-            const iconsHtml = activePlatforms.map((p, idx) => renderIcon(p.key, idx)).join('');
-            statsHtml = `<div class="flex items-center">${iconsHtml}</div>`;
+            const iconsHtml = activePlatforms.map((p, idx) => renderPlatformIcon(p.key, true, idx)).join('');
+            statsHtml = `<div class="inline-flex items-center" style="line-height: 0;">${iconsHtml}</div>`;
         } else if (layout === 'badges') {
             const badgeSize = 30;
-            const iconSize = 18;
+            const badgeInnerIconSize = 18;
             const iconsHtml = activePlatforms.map(p => {
                 const isCustom = iconStyle === 'custom';
-                const bgColor = isCustom ? iconColor : (badgeColors[p.key] || '#444');
+                const bgColor = isCustom ? iconColor : (badgeColors[p.key] || '#333333');
                 const isKick = p.key === 'kick';
-                const iconColorName = isCustom ? contrastColor : (isKick ? 'black' : 'white');
-                const extraStyle = (p.key === 'tiktok' || p.key === 'kick' || p.key === 'shorts') ? 'transform: scale(0.85);' : '';
+                const iconColorName = isCustom ? contrastColor : (isKick ? '#000000' : '#ffffff');
                 return `
-                    <div style="width:${badgeSize}px;height:${badgeSize}px;border-radius:${iconRadius}%;background:${bgColor};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                        <img src="${getIconUrl(p.key, iconColorName)}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;border-radius:${iconRadius}%;${extraStyle}">
+                    <div style="width:${badgeSize}px;height:${badgeSize}px;border-radius:${iconRadius}%;background:${bgColor};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:0;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${badgeInnerIconSize}" height="${badgeInnerIconSize}" style="display: block; width: ${badgeInnerIconSize}px; height: ${badgeInnerIconSize}px;">
+                            ${getPlatformSvgContent(p.key, iconColorName)}
+                        </svg>
                     </div>
                 `;
             }).join('');
-            statsHtml = iconsHtml;
+            statsHtml = `<div class="inline-flex items-center gap-1.5" style="line-height: 0;">${iconsHtml}</div>`;
         } else {
             statsHtml = activePlatforms.map((p, idx) => `
-                <div class="flex items-center gap-1.5">
-                    ${renderIcon(p.key, idx)}
-                    <span class="font-black text-lg" style="color: ${fontColor}">${p.count}</span>
+                <div class="inline-flex items-center gap-1.5" style="line-height: 1;">
+                    ${renderPlatformIcon(p.key, false, idx)}
+                    <span class="font-black text-lg" style="color: ${fontColor}; display: inline-flex; align-items: center; line-height: 1; transform: translateY(-0.06em); font-feature-settings: 'tnum' 1, 'cv05' 1;">${p.count}</span>
                 </div>
             `).join('');
         }
@@ -970,10 +1036,10 @@ function updateViewersPreview() {
                 <div class="${containerClass}" style="${containerStyle}">
                     ${statsHtml}
                     ${showTotalInPreview ? `
-                    <div class="${(layout === 'vertical' || layout === 'grid') ? 'pt-2 border-t w-full' : (layout === 'stacked' ? 'pl-2' : (layout === 'badges' ? 'pl-1.5' : 'pl-4 border-l'))} border-white/10 flex items-center gap-2">
-                        ${(layout !== 'stacked' && layout !== 'badges') ? `<span class="text-[9px] uppercase opacity-40 font-black tracking-widest">Total</span>` : ''}
-                        ${layout === 'badges' ? `<span class="text-white/50 text-lg">•</span>` : ''}
-                        <span class="font-black text-lg">56.6K</span>
+                    <div class="${(layout === 'vertical' || layout === 'grid') ? 'pt-2 border-t w-full' : (layout === 'stacked' ? 'pl-2' : (layout === 'badges' ? 'pl-1.5' : 'pl-4 border-l'))} border-white/10 inline-flex items-center gap-2" style="line-height: 1;">
+                        ${(layout !== 'stacked' && layout !== 'badges') ? `<span class="text-[9px] uppercase opacity-40 font-black tracking-widest" style="display: inline-flex; align-items: center; line-height: 1; transform: translateY(-0.06em);">Total</span>` : ''}
+                        ${layout === 'badges' ? `<span class="text-white/50 text-lg" style="display: inline-flex; align-items: center; line-height: 1; transform: translateY(-0.06em);">•</span>` : ''}
+                        <span class="font-black text-lg" style="display: inline-flex; align-items: center; line-height: 1; transform: translateY(-0.06em); font-feature-settings: 'tnum' 1, 'cv05' 1;">56.6K</span>
                     </div>
                     ` : ''}
                 </div>
@@ -1042,6 +1108,7 @@ function updateObsUrl() {
     if (elements.monitorUrl) elements.monitorUrl.value = `${httpBasePath}/monitor`;
     if (elements.vObsUrl) elements.vObsUrl.value = `${httpBasePath}/viewers`;
     if (elements.vMonitorUrl) elements.vMonitorUrl.value = `${httpBasePath}/viewers-monitor`;
+    if (elements.lObsUrl) elements.lObsUrl.value = `${httpBasePath}/likes-goal`;
 }
 
 // Eventos
@@ -1462,12 +1529,17 @@ document.querySelectorAll('.sidebar-item').forEach(item => {
 
         // Troca os botões do header conforme a aba ativa
         if (elements.chatCtrlBtns && elements.viewerCtrlBtns) {
+            elements.chatCtrlBtns.classList.add('hidden');
+            elements.viewerCtrlBtns.classList.add('hidden');
+            if (elements.likesCtrlBtns) elements.likesCtrlBtns.classList.add('hidden');
+
             if (tab === 'viewers') {
-                elements.chatCtrlBtns.classList.add('hidden');
                 elements.viewerCtrlBtns.classList.remove('hidden');
+            } else if (tab === 'likes') {
+                if (elements.likesCtrlBtns) elements.likesCtrlBtns.classList.remove('hidden');
+                updateLikesPreview();
             } else {
                 elements.chatCtrlBtns.classList.remove('hidden');
-                elements.viewerCtrlBtns.classList.add('hidden');
             }
         }
 
@@ -1624,6 +1696,426 @@ if (elements.vBtnCopy) {
         elements.vBtnCopy.innerText = 'Copiado!';
         setTimeout(() => elements.vBtnCopy.innerHTML = orig, 2000);
     };
+}
+
+// ----------------------------------------------------
+// LÓGICA E PRÉVIA DA META DE LIKES (YOUTUBE)
+// ----------------------------------------------------
+let likesPreviewCount = 0;
+
+const likesThumbsUpSvg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M7 22V11H3v11h4zm7-21c-.83 0-1.54.5-1.84 1.22l-3.02 7.05C9.05 9.47 9 9.73 9 10v10c0 1.1.9 2 2 2h8.31c.82 0 1.52-.5 1.83-1.24l3.19-7.44c.09-.23.14-.48.14-.72V11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14 1z"/>
+    </svg>
+`;
+
+function formatLikesNum(val) {
+    const n = parseInt(String(val).replace(/[^0-9]/g, ''));
+    if (isNaN(n)) return '0';
+    return n.toLocaleString('pt-BR');
+}
+
+function triggerPreviewLikePulse() {
+    if (!elements.lPreviewContainer) return;
+    const isAnimEnabled = elements.lPulseAnim ? elements.lPulseAnim.checked : true;
+    if (!isAnimEnabled) return;
+
+    const iconBox = elements.lPreviewContainer.querySelector('.like-icon-box');
+    if (iconBox) {
+        iconBox.classList.remove('animating-like');
+        void iconBox.offsetWidth;
+        iconBox.classList.add('animating-like');
+    }
+
+    const indicator = document.createElement('div');
+    indicator.className = 'floating-indicator';
+    indicator.innerText = '+1';
+
+    if (iconBox) {
+        const rect = iconBox.getBoundingClientRect();
+        const containerRect = elements.lPreviewContainer.getBoundingClientRect();
+        indicator.style.left = `${rect.left - containerRect.left + (rect.width / 2)}px`;
+        indicator.style.top = `${rect.top - containerRect.top}px`;
+    } else {
+        indicator.style.left = '50%';
+        indicator.style.top = '10px';
+    }
+
+    elements.lPreviewContainer.appendChild(indicator);
+    setTimeout(() => indicator.remove(), 1000);
+}
+
+function updateLikesPreview(hasIncreased = false) {
+    if (!elements.lPreviewContainer) return;
+
+    const lk = appConfig.likesGoalConfig || {};
+    const layout = (elements.lLayoutSelect && elements.lLayoutSelect.value) ? elements.lLayoutSelect.value : (lk.layout || 'bar');
+    const title = (elements.lTitle && elements.lTitle.value) ? elements.lTitle.value : (lk.title || 'Meta de Likes');
+    const target = (elements.lTarget && elements.lTarget.value) ? Math.max(1, parseInt(elements.lTarget.value) || 100) : (lk.target || 100);
+    const likes = likesPreviewCount;
+    const percentage = Math.min(100, Math.round((likes / target) * 100));
+
+    if (elements.lCurrentLikesDisplay) {
+        elements.lCurrentLikesDisplay.innerText = formatLikesNum(likes);
+    }
+
+    const bgColor = (elements.lBgColor && elements.lBgColor.value) ? elements.lBgColor.value : (lk.bgColor || '#111111');
+    const bgOpacity = (elements.lBgOpacity ? parseInt(elements.lBgOpacity.value) : (lk.bgOpacity !== undefined ? lk.bgOpacity : 85)) / 100;
+    const br = parseInt(bgColor.slice(1, 3), 16) || 0;
+    const bg = parseInt(bgColor.slice(3, 5), 16) || 0;
+    const bb = parseInt(bgColor.slice(5, 7), 16) || 0;
+
+    const fontColor = (elements.lFontColor && elements.lFontColor.value) ? elements.lFontColor.value : (lk.fontColor || '#ffffff');
+    const fontSize = elements.lFontSize ? parseInt(elements.lFontSize.value) : (lk.fontSize || 14);
+    const iconSize = Math.round(fontSize * 1.2);
+
+    const barColor = (elements.lBarColor && elements.lBarColor.value) ? elements.lBarColor.value : (lk.barColor || '#FF0000');
+    const barGradient = (elements.lBarGradient && elements.lBarGradient.value) ? elements.lBarGradient.value : (lk.barGradient || '#FF5E3A');
+    const fillStyle = `background: linear-gradient(90deg, ${barColor}, ${barGradient});`;
+
+    const showPercent = elements.lShowPercent ? elements.lShowPercent.checked : true;
+
+    // CSS Customizado se habilitado
+    let customCssText = '';
+    const isCustomCssEnabled = elements.lCustomCssEnabled ? elements.lCustomCssEnabled.checked : true;
+    if (isCustomCssEnabled && elements.lCustomCss && elements.lCustomCss.value) {
+        customCssText = `<style>${elements.lCustomCss.value}</style>`;
+    }
+
+    // Estrutura de cada layout
+    let contentHtml = '';
+
+    if (layout === 'bar') {
+        contentHtml = `
+            <div class="likes-layout-bar" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+                <div class="flex items-center justify-between gap-4" style="line-height: 1;">
+                    <div class="inline-flex items-center gap-2" style="line-height: 1;">
+                        <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                            ${likesThumbsUpSvg}
+                        </div>
+                        <span class="font-extrabold uppercase tracking-wide" style="transform: translateY(-0.06em);">${title}</span>
+                    </div>
+                    <div class="font-black" style="line-height: 1; transform: translateY(-0.06em);">
+                        <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
+                        ${showPercent ? `<span style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                    </div>
+                </div>
+                <div class="w-full h-2.5 rounded-full bg-white/10 overflow-hidden mt-2 relative">
+                    <div class="h-full rounded-full transition-all duration-500" style="width: ${percentage}%; ${fillStyle}"></div>
+                </div>
+            </div>
+        `;
+    } else if (layout === 'card') {
+        contentHtml = `
+            <div class="likes-layout-card" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+                <div class="flex items-center justify-between" style="line-height: 1;">
+                    <div class="inline-flex items-center gap-2" style="line-height: 1;">
+                        <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                            ${likesThumbsUpSvg}
+                        </div>
+                        <span class="font-extrabold uppercase text-[12px] opacity-80 tracking-wider" style="transform: translateY(-0.06em);">${title}</span>
+                    </div>
+                    <span class="font-black text-[11px] px-2 py-0.5 rounded-full bg-white/10" style="color: ${barColor};">${percentage}%</span>
+                </div>
+                <div class="w-full h-3 rounded-lg bg-white/10 overflow-hidden my-2">
+                    <div class="h-full rounded-lg transition-all duration-500" style="width: ${percentage}%; ${fillStyle}"></div>
+                </div>
+                <div class="flex items-center justify-between text-xs opacity-70 font-bold" style="line-height: 1;">
+                    <span><strong style="font-size: ${Math.round(fontSize * 1.15)}px; color: ${fontColor};">${formatLikesNum(likes)}</strong> likes</span>
+                    <span>Meta: <strong style="color: ${fontColor};">${formatLikesNum(target)}</strong></span>
+                </div>
+            </div>
+        `;
+    } else if (layout === 'pill') {
+        contentHtml = `
+            <div class="likes-layout-pill" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+                <div class="inline-flex items-center gap-1.5" style="line-height: 1;">
+                    <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                        ${likesThumbsUpSvg}
+                    </div>
+                    <span class="font-extrabold text-xs" style="transform: translateY(-0.06em);">${title}</span>
+                </div>
+                <div class="w-20 h-2 rounded-full bg-white/15 overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500" style="width: ${percentage}%; ${fillStyle}"></div>
+                </div>
+                <div class="font-black text-xs" style="line-height: 1; transform: translateY(-0.06em);">
+                    <span>${formatLikesNum(likes)}</span>/<span>${formatLikesNum(target)}</span>
+                </div>
+            </div>
+        `;
+    } else if (layout === 'neon') {
+        contentHtml = `
+            <div class="likes-layout-neon" style="color: ${fontColor}; font-size: ${fontSize}px;">
+                <div class="flex items-center justify-between gap-4" style="line-height: 1;">
+                    <div class="inline-flex items-center gap-2" style="line-height: 1;">
+                        <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: #FF3B30;">
+                            ${likesThumbsUpSvg}
+                        </div>
+                        <span class="font-black uppercase tracking-widest text-[#FF3B30]" style="text-shadow: 0 0 10px rgba(255, 59, 48, 0.5); transform: translateY(-0.06em);">${title}</span>
+                    </div>
+                    <div class="font-black text-[#FF3B30]" style="line-height: 1; transform: translateY(-0.06em);">
+                        <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
+                    </div>
+                </div>
+                <div class="w-full h-2 rounded bg-white/10 overflow-hidden mt-2">
+                    <div class="h-full rounded bg-gradient-to-r from-red-600 to-amber-500 shadow-[0_0_10px_#FF3B30] transition-all duration-500" style="width: ${percentage}%;"></div>
+                </div>
+            </div>
+        `;
+    } else if (layout === 'minimalist') {
+        contentHtml = `
+            <div class="likes-layout-minimalist" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+                <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                    ${likesThumbsUpSvg}
+                </div>
+                <span class="font-extrabold uppercase text-[11px] opacity-60" style="transform: translateY(-0.06em);">${title}</span>
+                <div class="w-16 h-1 rounded-sm bg-white/15 overflow-hidden">
+                    <div class="h-full rounded-sm transition-all duration-500" style="width: ${percentage}%; ${fillStyle}"></div>
+                </div>
+                <div class="font-black" style="line-height: 1; transform: translateY(-0.06em);">
+                    <span>${formatLikesNum(likes)}</span>/<span>${formatLikesNum(target)}</span>
+                </div>
+            </div>
+        `;
+    } else if (layout === 'bg-fill') {
+        contentHtml = `
+            <div class="likes-layout-bg-fill" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+                <div class="bg-fill-layer" style="width: ${percentage}%; ${fillStyle}"></div>
+                <div class="content-z">
+                    <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                        ${likesThumbsUpSvg}
+                    </div>
+                    <span class="font-extrabold uppercase tracking-wide whitespace-nowrap">${title}</span>
+                    <div class="divider-dot"></div>
+                    <div class="font-black whitespace-nowrap" style="font-variant-numeric: tabular-nums;">
+                        <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
+                    </div>
+                    ${showPercent ? `<span class="percent-badge font-black" style="color: ${barColor}; font-size: ${Math.round(fontSize * 0.85)}px;">${percentage}%</span>` : ''}
+                </div>
+            </div>
+        `;
+    } else if (layout === 'badge') {
+        contentHtml = `
+            <div class="likes-layout-badge" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+                <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                    ${likesThumbsUpSvg}
+                </div>
+                <span class="font-extrabold uppercase text-[11px] opacity-80" style="transform: translateY(-0.06em);">${title}</span>
+                <div class="w-[1px] h-3.5 bg-white/20"></div>
+                <div class="font-black" style="line-height: 1; transform: translateY(-0.06em);">
+                    <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
+                </div>
+                ${showPercent ? `<span class="font-black text-[10px] px-2 py-0.5 rounded-full bg-white/10" style="color: ${barColor}; line-height: 1;">${percentage}%</span>` : ''}
+            </div>
+        `;
+    } else if (layout === 'circular') {
+        const radius = 18;
+        const circ = 2 * Math.PI * radius;
+        const strokeOffset = circ - (circ * percentage / 100);
+        contentHtml = `
+            <div class="likes-layout-circular" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+                <div class="relative inline-flex items-center justify-center flex-shrink-0 w-11 h-11">
+                    <svg class="w-11 h-11 -rotate-90" viewBox="0 0 44 44">
+                        <circle class="fill-none stroke-white/10 stroke-[3.5]" cx="22" cy="22" r="${radius}"></circle>
+                        <circle class="fill-none stroke-[3.5] stroke-round transition-all duration-500" cx="22" cy="22" r="${radius}" stroke="${barColor}" stroke-dasharray="${circ}" stroke-dashoffset="${strokeOffset}"></circle>
+                    </svg>
+                    <div class="absolute inset-0 flex items-center justify-center">
+                        <div class="like-icon-box" style="width: ${Math.round(iconSize * 0.9)}px; height: ${Math.round(iconSize * 0.9)}px; color: ${barColor};">
+                            ${likesThumbsUpSvg}
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1 text-left flex-1 min-w-0 overflow-hidden" style="line-height: 1;">
+                    <span class="font-extrabold uppercase text-[11px] opacity-70 tracking-wider whitespace-nowrap truncate">${title}</span>
+                    <div class="font-black whitespace-nowrap" style="font-variant-numeric: tabular-nums;">
+                        <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
+                        ${showPercent ? `<span style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (layout === 'clean-inline') {
+        contentHtml = `
+            <div class="likes-layout-clean-inline" style="background: rgba(${br}, ${bg}, ${bb}, ${bgOpacity}); color: ${fontColor}; font-size: ${fontSize}px;">
+                <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                    ${likesThumbsUpSvg}
+                </div>
+                <span class="font-extrabold opacity-75" style="transform: translateY(-0.06em);">${title}:</span>
+                <div class="font-black" style="line-height: 1; transform: translateY(-0.06em);">
+                    <span>${formatLikesNum(likes)}</span> / <span>${formatLikesNum(target)}</span>
+                    ${showPercent ? `<span style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                </div>
+            </div>
+        `;
+    }
+
+    elements.lPreviewContainer.innerHTML = `
+        <style>
+            .likes-layout-bar { padding: 12px 18px; border-radius: 16px; min-width: 280px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+            .likes-layout-card { padding: 16px 20px; border-radius: 20px; min-width: 300px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+            .likes-layout-pill { padding: 8px 16px; border-radius: 999px; display: inline-flex; align-items: center; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.25); }
+            .likes-layout-neon { padding: 14px 20px; border-radius: 12px; min-width: 290px; background: rgba(10, 10, 15, 0.9); border: 1px solid rgba(255, 40, 40, 0.35); box-shadow: 0 0 20px rgba(255, 0, 0, 0.2); }
+            .likes-layout-minimalist { padding: 8px 14px; border-radius: 10px; display: inline-flex; align-items: center; gap: 10px; }
+            .likes-layout-bg-fill { padding: 12px 24px; border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; min-width: 320px; position: relative; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); box-sizing: border-box; }
+            .likes-layout-bg-fill .bg-fill-layer { position: absolute; top: 0; left: 0; bottom: 0; transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); opacity: 0.38; z-index: 0; border-right: 2px solid rgba(255, 255, 255, 0.4); }
+            .likes-layout-bg-fill .content-z { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; gap: 12px; width: 100%; line-height: 1; }
+            .likes-layout-bg-fill .divider-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(255, 255, 255, 0.35); flex-shrink: 0; }
+            .likes-layout-bg-fill .percent-badge { font-weight: 900; padding: 3px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.12); line-height: 1; flex-shrink: 0; }
+            .likes-layout-badge { padding: 8px 18px; border-radius: 999px; display: inline-flex; align-items: center; gap: 10px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35); line-height: 1; }
+            .likes-layout-circular { padding: 12px 18px; border-radius: 18px; display: inline-flex; align-items: center; gap: 14px; width: 260px; min-width: 260px; max-width: 260px; box-sizing: border-box; flex-shrink: 0; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); line-height: 1; }
+            .likes-layout-clean-inline { padding: 6px 14px; border-radius: 8px; display: inline-flex; align-items: center; gap: 8px; line-height: 1; }
+            .like-icon-box { display: inline-flex; align-items: center; justify-content: center; line-height: 0; flex-shrink: 0; }
+            .like-icon-box svg { display: block; width: 100%; height: 100%; }
+            @keyframes likePulse {
+                0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 0, 0, 0)); }
+                35% { transform: scale(1.25); filter: drop-shadow(0 0 10px rgba(255, 60, 60, 0.7)); }
+                100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 0, 0, 0)); }
+            }
+            .animating-like { animation: likePulse 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+            @keyframes floatUpFade {
+                0% { opacity: 0; transform: translate(-50%, 0) scale(0.8); }
+                20% { opacity: 1; transform: translate(-50%, -6px) scale(1.08); }
+                100% { opacity: 0; transform: translate(-50%, -22px) scale(0.95); }
+            }
+            .floating-indicator {
+                position: absolute;
+                font-weight: 900;
+                font-size: 13px;
+                color: #FF4444;
+                text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+                pointer-events: none;
+                z-index: 100;
+                animation: floatUpFade 0.9s ease-out forwards;
+            }
+        </style>
+        ${customCssText}
+        ${contentHtml}
+    `;
+
+    if (hasIncreased) {
+        triggerPreviewLikePulse();
+    }
+}
+
+async function saveAndUpdateLikes() {
+    if (!appConfig.likesGoalConfig) appConfig.likesGoalConfig = {};
+
+    appConfig.likesGoalConfig = {
+        title: elements.lTitle ? elements.lTitle.value : 'Meta de Likes',
+        target: elements.lTarget ? Math.max(1, parseInt(elements.lTarget.value) || 100) : 100,
+        layout: elements.lLayoutSelect ? elements.lLayoutSelect.value : 'bar',
+        youtubeUrl: elements.lYtUrl ? elements.lYtUrl.value.trim() : '',
+        barColor: elements.lBarColor ? elements.lBarColor.value : '#FF0000',
+        barGradient: elements.lBarGradient ? elements.lBarGradient.value : '#FF5E3A',
+        useGradient: true,
+        bgColor: elements.lBgColor ? elements.lBgColor.value : '#111111',
+        bgOpacity: elements.lBgOpacity ? parseInt(elements.lBgOpacity.value) : 85,
+        fontColor: elements.lFontColor ? elements.lFontColor.value : '#ffffff',
+        fontSize: elements.lFontSize ? parseInt(elements.lFontSize.value) : 14,
+        enablePulseAnim: elements.lPulseAnim ? elements.lPulseAnim.checked : true,
+        showPercentage: elements.lShowPercent ? elements.lShowPercent.checked : true,
+        customCSS: elements.lCustomCss ? elements.lCustomCss.value : '',
+        customCSSEnabled: elements.lCustomCssEnabled ? elements.lCustomCssEnabled.checked : true
+    };
+
+    if (elements.lFontSizeVal && elements.lFontSize) {
+        elements.lFontSizeVal.innerText = `${elements.lFontSize.value}px`;
+    }
+    if (elements.lBgOpacityVal && elements.lBgOpacity) {
+        elements.lBgOpacityVal.innerText = `${elements.lBgOpacity.value}%`;
+    }
+
+    updateLikesPreview();
+    if (api && api.saveLikesConfig) {
+        await api.saveLikesConfig(appConfig.likesGoalConfig);
+    }
+}
+
+// Botões de controle da Meta de Likes
+if (elements.btnStartLikes) {
+    elements.btnStartLikes.onclick = () => {
+        if (api && api.startLikes) {
+            api.startLikes(appConfig.likesGoalConfig);
+        }
+        elements.btnStartLikes.classList.add('hidden');
+        if (elements.btnStopLikes) elements.btnStopLikes.classList.remove('hidden');
+        if (elements.lStatusText) {
+            elements.lStatusText.innerText = 'Ao Vivo';
+            elements.lStatusText.className = 'text-[10px] font-black text-emerald-400 uppercase bg-emerald-500/10 px-2.5 py-0.5 rounded-full';
+        }
+    };
+}
+if (elements.btnStopLikes) {
+    elements.btnStopLikes.onclick = () => {
+        if (api && api.stopLikes) {
+            api.stopLikes();
+        }
+        elements.btnStopLikes.classList.add('hidden');
+        if (elements.btnStartLikes) elements.btnStartLikes.classList.remove('hidden');
+        if (elements.lStatusText) {
+            elements.lStatusText.innerText = 'Parado';
+            elements.lStatusText.className = 'text-[10px] font-black text-white/40 uppercase bg-white/5 px-2.5 py-0.5 rounded-full';
+        }
+    };
+}
+
+// Binds de inputs da Meta de Likes
+if (elements.lTitle) elements.lTitle.oninput = saveAndUpdateLikes;
+if (elements.lTarget) elements.lTarget.oninput = saveAndUpdateLikes;
+if (elements.lLayoutSelect) elements.lLayoutSelect.onchange = saveAndUpdateLikes;
+if (elements.lYtUrl) elements.lYtUrl.onchange = saveAndUpdateLikes;
+if (elements.lFontSize) elements.lFontSize.oninput = saveAndUpdateLikes;
+if (elements.lBarColor) elements.lBarColor.oninput = saveAndUpdateLikes;
+if (elements.lBarGradient) elements.lBarGradient.oninput = saveAndUpdateLikes;
+if (elements.lBgColor) elements.lBgColor.oninput = saveAndUpdateLikes;
+if (elements.lFontColor) elements.lFontColor.oninput = saveAndUpdateLikes;
+if (elements.lBgOpacity) elements.lBgOpacity.oninput = saveAndUpdateLikes;
+if (elements.lPulseAnim) elements.lPulseAnim.onchange = saveAndUpdateLikes;
+if (elements.lShowPercent) elements.lShowPercent.onchange = saveAndUpdateLikes;
+if (elements.lCustomCss) elements.lCustomCss.oninput = saveAndUpdateLikes;
+if (elements.lCustomCssEnabled) elements.lCustomCssEnabled.onchange = saveAndUpdateLikes;
+
+// Botões de teste e simulação de Likes
+if (elements.btnTestLike) {
+    elements.btnTestLike.onclick = () => {
+        likesPreviewCount++;
+        if (api && api.testLikeIncrement) {
+            api.testLikeIncrement();
+        } else {
+            updateLikesPreview(true);
+        }
+    };
+}
+if (elements.btnPreviewAddLike) {
+    elements.btnPreviewAddLike.onclick = () => {
+        likesPreviewCount++;
+        if (api && api.testLikeIncrement) {
+            api.testLikeIncrement();
+        } else {
+            updateLikesPreview(true);
+        }
+    };
+}
+if (elements.btnPreviewResetLikes) {
+    elements.btnPreviewResetLikes.onclick = () => {
+        likesPreviewCount = 0;
+        if (api && api.resetLikes) {
+            api.resetLikes();
+        }
+        updateLikesPreview(false);
+    };
+}
+
+// Escuta de atualização de Likes enviada pelo backend
+if (api && api.onLikesUpdate) {
+    api.onLikesUpdate((data) => {
+        if (data && data.current !== undefined) {
+            const prev = likesPreviewCount;
+            likesPreviewCount = parseInt(data.current) || 0;
+            const hasInc = data.hasIncreased || (likesPreviewCount > prev);
+            updateLikesPreview(hasInc);
+        }
+    });
 }
 
 // Preview Listener & Sorteio

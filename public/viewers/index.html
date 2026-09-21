@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat Unifier - Viewer Counter</title>
     <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -15,134 +15,151 @@
             overflow: hidden;
         }
         #viewers-container {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 24px;
             padding: 12px 24px;
             border-radius: 16px;
             font-weight: 900;
+            line-height: 1;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             width: fit-content;
             backdrop-filter: blur(8px);
         }
 
+        /* Layout Vertical */
         .layout-vertical {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 12px;
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+        }
+        .layout-vertical .total-stat {
+            border-left: none !important;
+            border-top: 2px solid rgba(255,255,255,0.15);
+            padding-left: 0 !important;
+            padding-top: 10px !important;
+            width: 100%;
         }
 
         /* Layout Grid */
         .layout-grid {
             display: grid !important;
             grid-template-columns: repeat(2, auto);
-            gap: 16px 32px;
+            gap: 14px 28px !important;
             align-items: center;
         }
-
         .layout-grid .total-stat {
             grid-column: span 2;
+            border-left: none !important;
+            border-top: 2px solid rgba(255,255,255,0.15);
+            padding-left: 0 !important;
+            padding-top: 10px !important;
+            width: 100%;
             justify-content: center;
         }
 
         /* Layout Minimalista */
         .layout-minimalist {
-            gap: 12px;
-            padding: 8px 16px;
+            gap: 14px !important;
+            padding: 8px 16px !important;
         }
-        .layout-minimalist .icon {
-            display: none !important;
-        }
-        
+
         /* Layout Pilhado */
         .layout-stacked {
             padding: 8px 16px !important;
+            display: inline-flex;
+            align-items: center;
         }
-        .layout-stacked .platform-stat {
-            gap: 0 !important;
-            margin-left: -16px;
-            position: relative;
-        }
-        .layout-stacked .platform-stat:first-child {
-            margin-left: 0;
-        }
-        .layout-stacked .platform-stat .count {
-            display: none !important;
-        }
-        .layout-stacked .icon {
-            padding: 0;
+        .layout-stacked .stacked-group {
+            display: inline-flex;
+            align-items: center;
+            line-height: 0;
         }
         .layout-stacked .total-stat {
             border-left: none !important;
-            padding-left: 4px !important;
+            padding-left: 8px !important;
         }
         .layout-stacked .total-stat .label {
             display: none !important;
         }
 
-        .platform-stat {
-            display: flex;
+        /* Layout Badges */
+        .layout-badges {
+            gap: 6px !important;
+            padding: 6px 12px !important;
             align-items: center;
-            gap: 4px;
+            display: inline-flex;
+        }
+        .layout-badges .total-stat {
+            border-left: none !important;
+            padding-left: 6px !important;
+            gap: 6px !important;
+        }
+        .layout-badges .total-stat .label {
+            display: none !important;
         }
 
-        .icon {
-            object-fit: contain;
+        /* Plataforma e Contador - Alinhamento Vertical 100% Preciso */
+        .platform-stat {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
+        }
+
+        .icon-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 0;
+            flex-shrink: 0;
+        }
+        .icon-box svg, .icon-box img {
+            display: block;
+        }
+
+        .count {
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
+            font-feature-settings: "tnum" 1, "cv05" 1;
+            /* Compensação óptica precisa para alinhar o centro dos números com o centro do ícone */
+            transform: translateY(-0.06em);
         }
 
         .total-stat {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            gap: 10px;
-            padding-left: 20px;
-            border-left: 2px solid rgba(255,255,255,0.1);
+            gap: 8px;
+            padding-left: 18px;
+            border-left: 2px solid rgba(255,255,255,0.15);
+            line-height: 1;
         }
 
-        .layout-vertical .total-stat, .layout-grid .total-stat {
-            border-left: none !important;
-            border-top: 2px solid rgba(255,255,255,0.1);
-            padding-left: 0 !important;
-            padding-top: 10px !important;
-            width: 100%;
-        }
-
-        .label {
+        .total-stat .label {
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
             text-transform: uppercase;
             opacity: 0.5;
             letter-spacing: 0.1em;
             font-weight: 800;
+            transform: translateY(-0.06em);
         }
 
-        /* Layout Badges */
-        .layout-badges {
-            gap: 4px;
-            padding: 6px 12px;
+        .total-stat .total-dot {
+            display: inline-flex;
             align-items: center;
+            line-height: 1;
+            opacity: 0.5;
+            transform: translateY(-0.06em);
         }
-        .layout-badges .platform-stat {
-            border-radius: 10px;
-            justify-content: center;
-            gap: 0;
-            flex-shrink: 0;
-        }
-        .layout-badges .platform-stat .count {
-            display: none !important;
-        }
-        .layout-badges .platform-stat .icon {
-            /* Sem filtros para manter a qualidade original do SVG */
-        }
-        .layout-badges [data-platform="twitch"]   { background: #9146FF; }
-        .layout-badges [data-platform="youtube"]   { background: #FF0000; }
-        .layout-badges [data-platform="shorts"]    { background: #CC0000; }
-        .layout-badges [data-platform="kick"]      { background: #53FC18; }
-        .layout-badges [data-platform="tiktok"]   { background: #111111; }
-        .layout-badges .total-stat {
-            border-left: none !important;
-            padding-left: 6px !important;
-            gap: 4px;
-        }
-        .layout-badges .total-stat .label {
-            display: none !important;
+
+        .total-stat .count {
+            display: inline-flex;
+            align-items: center;
+            line-height: 1;
+            transform: translateY(-0.06em);
         }
 
         @keyframes slideIn {
@@ -158,17 +175,58 @@
     <style id="custom-styles-container"></style>
 
     <script>
-        const socket = io('http://localhost:3000', { reconnection: true, reconnectionDelay: 1000, reconnectionDelayMax: 5000, reconnectionAttempts: Infinity });
+        const socket = io(window.location.origin || 'http://localhost:3000', { reconnection: true, reconnectionDelay: 1000, reconnectionDelayMax: 5000, reconnectionAttempts: Infinity });
         const container = document.getElementById('viewers-container');
         const customStyles = document.getElementById('custom-styles-container');
-        
-        const icons = {
-            twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
-            youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
-            shorts: 'https://cdn.simpleicons.org/youtubeshorts/FF0000',
-            kick: 'https://cdn.simpleicons.org/kick/53FC18',
-            tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
+
+        const badgeColors = {
+            youtube: '#FF0000',
+            shorts: '#CC0000',
+            twitch: '#9146FF',
+            kick: '#53FC18',
+            tiktok: '#111111'
         };
+
+        // Paths vetoriais oficiais das plataformas - 100% autônomos, locais e sem falhas no OBS
+        const svgPaths = {
+            youtube: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
+            shorts: 'm18.931 9.99-1.441-.601 1.717-.913a4.48 4.48 0 0 0 1.874-6.078 4.506 4.506 0 0 0-6.09-1.874L4.792 5.929a4.504 4.504 0 0 0-2.402 4.193 4.521 4.521 0 0 0 2.666 3.904c.036.012 1.442.6 1.442.6l-1.706.901a4.51 4.51 0 0 0-2.369 3.967A4.528 4.528 0 0 0 6.93 24c.725 0 1.437-.174 2.08-.508l10.21-5.406a4.494 4.494 0 0 0 2.39-4.192 4.525 4.525 0 0 0-2.678-3.904ZM9.597 15.19V8.824l6.007 3.184z',
+            twitch: 'M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z',
+            kick: 'M1.333 0h8v5.333H12V2.667h2.667V0h8v8H20v2.667h-2.667v2.666H20V16h2.667v8h-8v-2.667H12v-2.666H9.333V24h-8Z',
+            tiktok: 'M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z'
+        };
+
+        function getPlatformSvgContent(platform, color) {
+            if (platform === 'youtube') {
+                return `
+                    <path fill="${color || '#FF0000'}" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/>
+                    <polygon fill="#FFFFFF" points="9.545,15.568 9.545,8.432 15.818,12"/>
+                `;
+            }
+            if (platform === 'shorts') {
+                return `
+                    <path fill="${color || '#FF0000'}" d="m18.931 9.99-1.441-.601 1.717-.913a4.48 4.48 0 0 0 1.874-6.078 4.506 4.506 0 0 0-6.09-1.874L4.792 5.929a4.504 4.504 0 0 0-2.402 4.193 4.521 4.521 0 0 0 2.666 3.904c.036.012 1.442.6 1.442.6l-1.706.901a4.51 4.51 0 0 0-2.369 3.967A4.528 4.528 0 0 0 6.93 24c.725 0 1.437-.174 2.08-.508l10.21-5.406a4.494 4.494 0 0 0 2.39-4.192 4.525 4.525 0 0 0-2.678-3.904Z"/>
+                    <polygon fill="#FFFFFF" points="9.597,15.19 9.597,8.824 15.604,12.008"/>
+                `;
+            }
+            if (platform === 'twitch') {
+                return `<path fill="${color || '#9146FF'}" d="${svgPaths.twitch}"/>`;
+            }
+            if (platform === 'kick') {
+                return `<path fill="${color || '#53FC18'}" d="${svgPaths.kick}"/>`;
+            }
+            if (platform === 'tiktok') {
+                if (color) {
+                    return `<path fill="${color}" d="${svgPaths.tiktok}"/>`;
+                }
+                return `
+                    <path fill="#25F4EE" d="${svgPaths.tiktok}" opacity="0.85" transform="translate(-0.8, -0.8)"/>
+                    <path fill="#FE2C55" d="${svgPaths.tiktok}" opacity="0.85" transform="translate(0.8, 0.8)"/>
+                    <path fill="#FFFFFF" d="${svgPaths.tiktok}"/>
+                `;
+            }
+            return '';
+        }
 
         let currentConfig = {
             bgColor: '#000000', bgOpacity: 85, fontColor: '#ffffff', fontSize: 18, showTotal: true
@@ -188,7 +246,6 @@
                 if (customStyles) {
                     customStyles.innerHTML = (currentConfig.customCssEnabled !== false) ? (currentConfig.customCSS || '') : '';
                 }
-                // Força rebuild ao mudar config
                 container._structureKey = null;
                 render();
             }
@@ -205,17 +262,14 @@
             return n.toLocaleString('pt-BR');
         }
 
-        function getIconUrl(platform, style) {
-            if (style === 'original') return icons[platform];
-            let color = style === 'white' ? 'FFFFFF' : '000000';
-            if (style === 'custom') {
-                const hexColor = (currentConfig.iconColor || '#ffffff').replace('#', '');
-                color = hexColor;
-            } else if (style !== 'black' && style !== 'white') {
-                color = style.replace('#', '');
-            }
-            const slugs = { youtube: 'youtube', shorts: 'youtubeshorts', twitch: 'twitch', kick: 'kick', tiktok: 'tiktok' };
-            return `https://cdn.simpleicons.org/${slugs[platform]}/${color}`;
+        function getContrastColor(hexColor) {
+            if (!hexColor) return '#ffffff';
+            const hex = hexColor.replace('#', '');
+            const r = parseInt(hex.substring(0, 2), 16) || 0;
+            const g = parseInt(hex.substring(2, 4), 16) || 0;
+            const b = parseInt(hex.substring(4, 6), 16) || 0;
+            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return (yiq >= 128) ? '#000000' : '#ffffff';
         }
 
         function render() {
@@ -230,7 +284,6 @@
                 return;
             }
 
-            // Aplicar estilos de fundo e cor (não recriam DOM)
             const bgColor = currentConfig.bgColor || '#111111';
             const fontColor = currentConfig.fontColor || '#ffffff';
             const br = parseInt(bgColor.slice(1, 3), 16) || 0;
@@ -240,33 +293,23 @@
             container.style.background = `rgba(${br}, ${bg}, ${bb}, ${opacity})`;
             container.style.color = fontColor;
 
-            const getContrastColor = (hexColor) => {
-                if (!hexColor) return 'white';
-                const hex = hexColor.replace('#', '');
-                const r = parseInt(hex.substring(0, 2), 16) || 0;
-                const g = parseInt(hex.substring(2, 4), 16) || 0;
-                const b = parseInt(hex.substring(4, 6), 16) || 0;
-                const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-                return (yiq >= 128) ? 'black' : 'white';
-            };
-
             const layout = currentConfig.layout || 'default';
             const spacing = currentConfig.spacing !== undefined ? currentConfig.spacing : 20;
             const channels = currentConfig.channels || {};
             const iconStyle = currentConfig.iconStyle || 'original';
             const fontSize = currentConfig.fontSize || 18;
             const iconRadius = currentConfig.iconRadius !== undefined ? currentConfig.iconRadius : 30;
-            const showTotal = currentData.total > 0 && currentConfig.showTotal && (layout === 'stacked' || layout !== 'minimalist');
+            const showTotal = currentData.total > 0 && currentConfig.showTotal && (layout === 'stacked' || layout === 'badges' || layout !== 'minimalist');
             const iconColor = currentConfig.iconColor || '#ffffff';
             const contrastColor = getContrastColor(iconColor);
 
-            const effectiveIconStyle = iconStyle;
-            // Tamanho do badge (caixa colorida) proporcional ao fontSize
-            const badgeSize = Math.round(fontSize * 1.75);
+            // Tamanho base do ícone proporcional à fonte
+            const iconSize = Math.round(fontSize * 1.1);
+            const badgeSize = Math.round(fontSize * 1.6);
+            const badgeInnerIconSize = Math.round(fontSize * 0.95);
 
             const channelsOrder = currentConfig.channelsOrder || ['youtube', 'shorts', 'twitch', 'kick', 'tiktok'];
 
-            // Calcula quais plataformas devem aparecer
             const visiblePlatforms = [];
             for (const platform of channelsOrder) {
                 const count = currentData.counts[platform];
@@ -275,40 +318,44 @@
                 visiblePlatforms.push(platform);
             }
 
-            // Chave de estrutura: muda apenas quando layout/plataformas/ícone/tamanho/radius/cor mudam
-            const newStructureKey = visiblePlatforms.join(',') + '|' + layout + '|' + effectiveIconStyle + '|' + fontSize + '|' + showTotal + '|' + iconRadius + '|' + (currentConfig.iconColor || '');
+            const newStructureKey = visiblePlatforms.join(',') + '|' + layout + '|' + iconStyle + '|' + fontSize + '|' + showTotal + '|' + iconRadius + '|' + iconColor + '|' + spacing;
             const needsRebuild = !container._structureKey || container._structureKey !== newStructureKey;
 
-            const renderIcon = (platform, idx) => {
-                const isCustom = effectiveIconStyle === 'custom';
-                const extraStyle = (platform === 'kick' || platform === 'shorts') ? 'transform: scale(0.8);' : '';
-                const size = fontSize * 1.5;
-                const innerSize = fontSize * 0.9;
-                
+            const renderPlatformIcon = (platform, isStacked = false, idx = 0) => {
+                const isCustom = iconStyle === 'custom';
+                const customWrapperSize = Math.round(fontSize * 1.4);
+                const customInnerSize = Math.round(fontSize * 0.85);
+
                 if (isCustom) {
+                    const stackedMargin = (isStacked && idx > 0) ? `margin-left: -${Math.round(customWrapperSize * 0.4)}px;` : '';
                     return `
-                        <div style="width: ${size}px; height: ${size}px; border-radius: ${iconRadius}% !important; background: ${iconColor} !important; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; ${layout === 'stacked' && idx > 0 ? `margin-left: -${fontSize * 0.5}px;` : ''} z-index: ${10 - idx};">
-                            <img src="${getIconUrl(platform, contrastColor)}" class="icon" style="width: ${innerSize}px; height: ${innerSize}px; object-fit: contain; border-radius: ${iconRadius}% !important; ${extraStyle}">
+                        <div class="icon-box" style="width: ${customWrapperSize}px; height: ${customWrapperSize}px; border-radius: ${iconRadius}%; background: ${iconColor}; ${stackedMargin} z-index: ${20 - idx}; position: relative; border: ${isStacked ? `2px solid rgba(${br}, ${bg}, ${bb}, 0.9)` : 'none'};">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${customInnerSize}" height="${customInnerSize}" style="display: block; width: ${customInnerSize}px; height: ${customInnerSize}px;">
+                                ${getPlatformSvgContent(platform, contrastColor)}
+                            </svg>
                         </div>
                     `;
                 } else {
+                    const stackedMargin = (isStacked && idx > 0) ? `margin-left: -${Math.round(iconSize * 0.35)}px;` : '';
+                    const borderStyle = isStacked ? `border: 2px solid rgba(${br}, ${bg}, ${bb}, 0.9);` : '';
                     return `
-                        <div style="position: relative; ${layout === 'stacked' && idx > 0 ? `margin-left: -${fontSize * 0.5}px;` : ''} z-index: ${10 - idx};">
-                            <img src="${getIconUrl(platform, effectiveIconStyle)}" class="icon" style="width: ${fontSize}px; height: ${fontSize}px; border-radius: ${iconRadius}% !important; ${extraStyle}">
+                        <div class="icon-box" style="width: ${iconSize}px; height: ${iconSize}px; border-radius: ${iconRadius}%; ${stackedMargin} z-index: ${20 - idx}; position: relative; ${borderStyle}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${iconSize}" height="${iconSize}" style="display: block; width: ${iconSize}px; height: ${iconSize}px; border-radius: ${iconRadius}%;">
+                                ${getPlatformSvgContent(platform, null)}
+                            </svg>
                         </div>
                     `;
                 }
             };
 
             if (needsRebuild) {
-                // Reconstrói DOM apenas quando estrutura muda (inclui imgs dos ícones)
                 container._structureKey = newStructureKey;
                 container.className = '';
 
                 if (layout === 'badges') {
-                    container.style.gap = '4px';
+                    container.style.gap = '6px';
                 } else if (layout === 'stacked') {
-                    container.style.gap = `${Math.floor(spacing / 2)}px`;
+                    container.style.gap = `${Math.max(8, Math.floor(spacing / 2))}px`;
                 } else {
                     container.style.gap = `${spacing}px`;
                 }
@@ -316,54 +363,58 @@
                 if (layout !== 'default') container.classList.add(`layout-${layout}`);
 
                 let html = '';
-                let idx = 0;
-                for (const platform of visiblePlatforms) {
-                    const count = currentData.counts[platform];
 
-                    if (layout === 'badges') {
-                        // Badge: caixa colorida com ícone centralizado (sem contagem individual)
-                        // Para o Kick usamos o ícone preto ('black'), para as outras branco ('white')
-                        const isCustom = effectiveIconStyle === 'custom';
-                        const bgColor = isCustom ? iconColor : (badgeColors[platform] || '#444');
-                        const iconColorName = isCustom ? contrastColor : (platform === 'kick' ? 'black' : 'white');
-                        // Escala ajustada para os ícones ficarem proporcionais
-                        const extraStyle = (platform === 'tiktok' || platform === 'kick' || platform === 'shorts') ? 'transform: scale(0.85);' : '';
+                if (layout === 'stacked') {
+                    // Agrupa todos os ícones sobrepostos em fila
+                    const stackedIconsHtml = visiblePlatforms.map((platform, idx) => renderPlatformIcon(platform, true, idx)).join('');
+                    html += `<div class="stacked-group">${stackedIconsHtml}</div>`;
+                } else if (layout === 'badges') {
+                    // Badges com cores oficiais ou personalizadas e ícone centralizado
+                    for (const platform of visiblePlatforms) {
+                        const isCustom = iconStyle === 'custom';
+                        const bgColor = isCustom ? iconColor : (badgeColors[platform] || '#333333');
+                        const iconColorSvg = isCustom ? contrastColor : (platform === 'kick' ? '#000000' : '#ffffff');
+
                         html += `
-                            <div class="platform-stat" data-platform="${platform}" style="width: ${badgeSize}px; height: ${badgeSize}px; border-radius: ${iconRadius}% !important; background: ${bgColor} !important;">
-                                <img src="${getIconUrl(platform, iconColorName)}" class="icon" style="width: ${fontSize}px; height: ${fontSize}px; border-radius: ${iconRadius}% !important; ${extraStyle}">
-                            </div>
-                        `;
-                    } else if (layout === 'stacked') {
-                        html += `
-                            <div class="platform-stat" data-platform="${platform}">
-                                ${renderIcon(platform, idx)}
-                            </div>
-                        `;
-                    } else {
-                        html += `
-                            <div class="platform-stat" data-platform="${platform}">
-                                ${renderIcon(platform, idx)}
-                                <span class="count" style="font-size: ${fontSize}px;">${formatCount(count)}</span>
+                            <div class="icon-box" data-platform="${platform}" style="width: ${badgeSize}px; height: ${badgeSize}px; border-radius: ${iconRadius}%; background: ${bgColor};">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${badgeInnerIconSize}" height="${badgeInnerIconSize}" style="display: block; width: ${badgeInnerIconSize}px; height: ${badgeInnerIconSize}px;">
+                                    ${getPlatformSvgContent(platform, iconColorSvg)}
+                                </svg>
                             </div>
                         `;
                     }
-                    idx++;
+                } else {
+                    // Layouts Padrão, Vertical, Grid e Minimalista
+                    let idx = 0;
+                    for (const platform of visiblePlatforms) {
+                        const count = currentData.counts[platform];
+                        html += `
+                            <div class="platform-stat" data-platform="${platform}">
+                                ${renderPlatformIcon(platform, false, idx)}
+                                <span class="count" style="font-size: ${fontSize}px;">${formatCount(count)}</span>
+                            </div>
+                        `;
+                        idx++;
+                    }
                 }
+
                 if (showTotal) {
-                    const dotHtml = layout === 'badges' ? `<span class="total-dot" style="font-size: ${fontSize}px; opacity: 0.5; margin-right: 4px;">•</span>` : '';
+                    const dotHtml = layout === 'badges' ? `<span class="total-dot" style="font-size: ${fontSize}px; margin-right: 2px;">•</span>` : '';
+                    const showLabel = (layout !== 'stacked' && layout !== 'badges');
                     html += `
                         <div class="total-stat" data-platform="__total__" style="border-color: ${fontColor}33;">
-                            <span class="label" style="font-size: ${Math.max(10, fontSize * 0.55)}px;">Total</span>
+                            ${showLabel ? `<span class="label" style="font-size: ${Math.max(10, Math.round(fontSize * 0.55))}px;">Total</span>` : ''}
                             ${dotHtml}
                             <span class="count" style="font-size: ${fontSize}px;">${formatCount(currentData.total)}</span>
                         </div>
                     `;
                 }
+
                 container.innerHTML = html;
 
             } else {
-                // Estrutura não mudou: atualiza SOMENTE os textos de contagem, sem recriar ícones
-                container.style.gap = layout === 'stacked' ? `${Math.floor(spacing / 2)}px` : `${spacing}px`;
+                // Atualização dos números sem repintura completa
+                container.style.gap = (layout === 'stacked') ? `${Math.max(8, Math.floor(spacing / 2))}px` : (layout === 'badges' ? '6px' : `${spacing}px`);
 
                 for (const platform of visiblePlatforms) {
                     const el = container.querySelector(`[data-platform="${platform}"] .count`);

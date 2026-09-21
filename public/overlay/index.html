@@ -13,7 +13,7 @@
     <style id="custom-styles-container"></style>
 
     <script>
-        const socket = io('http://localhost:3000', { reconnection: true, reconnectionDelay: 1000, reconnectionDelayMax: 5000, reconnectionAttempts: Infinity });
+        const socket = io(window.location.origin || 'http://localhost:3000', { reconnection: true, reconnectionDelay: 1000, reconnectionDelayMax: 5000, reconnectionAttempts: Infinity });
         const container = document.getElementById('chat-container');
         const customStyles = document.getElementById('custom-styles-container');
 

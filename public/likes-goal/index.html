@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Unifier - Meta de Likes (YouTube)</title>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: transparent;
+            color: white;
+            overflow: hidden;
+        }
+
+        #goal-wrapper {
+            position: relative;
+            width: fit-content;
+            display: inline-flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        /* Animação suave de pulso ao receber like */
+        @keyframes likePulse {
+            0% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 0, 0, 0)); }
+            35% { transform: scale(1.22); filter: drop-shadow(0 0 10px rgba(255, 60, 60, 0.7)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 0, 0, 0)); }
+        }
+
+        .animating-like {
+            animation: likePulse 0.65s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Indicador sutil de +1 flutuando */
+        @keyframes floatUpFade {
+            0% { opacity: 0; transform: translate(-50%, 0) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -6px) scale(1.08); }
+            100% { opacity: 0; transform: translate(-50%, -22px) scale(0.95); }
+        }
+
+        .floating-indicator {
+            position: absolute;
+            font-weight: 900;
+            font-size: 13px;
+            color: #FF4444;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+            pointer-events: none;
+            z-index: 100;
+            animation: floatUpFade 0.9s ease-out forwards;
+        }
+
+        /* Ícone Thumbs Up SVG */
+        .like-icon-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 0;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+        }
+        .like-icon-box svg {
+            display: block;
+        }
+
+        /* ----------------------------------------------------
+           MODELO 1: Barra Moderna (Sleek Bar)
+           ---------------------------------------------------- */
+        .layout-bar {
+            padding: 12px 18px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 280px;
+            backdrop-filter: blur(8px);
+        }
+        .layout-bar .goal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            line-height: 1;
+        }
+        .layout-bar .title-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1;
+        }
+        .layout-bar .goal-title {
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            line-height: 1;
+            transform: translateY(-0.06em);
+        }
+        .layout-bar .goal-numbers {
+            font-weight: 900;
+            line-height: 1;
+            transform: translateY(-0.06em);
+            font-feature-settings: "tnum" 1, "cv05" 1;
+        }
+        .layout-bar .bar-track {
+            width: 100%;
+            height: 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+            position: relative;
+        }
+        .layout-bar .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        /* ----------------------------------------------------
+           MODELO 2: Card Flutuante (Floating Glass)
+           ---------------------------------------------------- */
+        .layout-card {
+            padding: 16px 20px;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 300px;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+        .layout-card .goal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            line-height: 1;
+        }
+        .layout-card .title-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1;
+        }
+        .layout-card .goal-title {
+            font-weight: 800;
+            font-size: 13px;
+            opacity: 0.8;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            line-height: 1;
+            transform: translateY(-0.06em);
+        }
+        .layout-card .percent-badge {
+            font-weight: 900;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            line-height: 1;
+        }
+        .layout-card .bar-track {
+            width: 100%;
+            height: 12px;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+        }
+        .layout-card .bar-fill {
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .layout-card .stats-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            opacity: 0.65;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .layout-card .stats-footer span {
+            transform: translateY(-0.06em);
+            font-feature-settings: "tnum" 1, "cv05" 1;
+        }
+
+        /* ----------------------------------------------------
+           MODELO 3: Cápsula / Pill Compacta
+           ---------------------------------------------------- */
+        .layout-pill {
+            padding: 8px 16px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            backdrop-filter: blur(8px);
+            line-height: 1;
+        }
+        .layout-pill .title-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            line-height: 1;
+        }
+        .layout-pill .goal-title {
+            font-weight: 800;
+            font-size: 12px;
+            line-height: 1;
+            transform: translateY(-0.06em);
+        }
+        .layout-pill .bar-track {
+            width: 90px;
+            height: 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+        }
+        .layout-pill .bar-fill {
+            height: 100%;
+            border-radius: 999px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .layout-pill .goal-numbers {
+            font-weight: 900;
+            font-size: 13px;
+            line-height: 1;
+            transform: translateY(-0.06em);
+            font-feature-settings: "tnum" 1, "cv05" 1;
+        }
+
+        /* ----------------------------------------------------
+           MODELO 4: Gamer Neon
+           ---------------------------------------------------- */
+        .layout-neon {
+            padding: 14px 20px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 290px;
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid rgba(255, 40, 40, 0.35);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+        }
+        .layout-neon .goal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            line-height: 1;
+        }
+        .layout-neon .title-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1;
+        }
+        .layout-neon .goal-title {
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            line-height: 1;
+            transform: translateY(-0.06em);
+            color: #FF3B30;
+            text-shadow: 0 0 10px rgba(255, 59, 48, 0.5);
+        }
+        .layout-neon .goal-numbers {
+            font-weight: 900;
+            line-height: 1;
+            transform: translateY(-0.06em);
+            font-feature-settings: "tnum" 1, "cv05" 1;
+        }
+        .layout-neon .bar-track {
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.08);
+            overflow: hidden;
+        }
+        .layout-neon .bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #FF2A2A, #FF7700);
+            box-shadow: 0 0 10px #FF3B30;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ----------------------------------------------------
+           MODELO 5: Minimalista
+           ---------------------------------------------------- */
+        .layout-minimalist {
+            padding: 8px 14px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            line-height: 1;
+        }
+        .layout-minimalist .goal-title {
+            font-weight: 800;
+            opacity: 0.6;
+            text-transform: uppercase;
+            font-size: 11px;
+            line-height: 1;
+            transform: translateY(-0.06em);
+        }
+        .layout-minimalist .bar-track {
+            width: 80px;
+            height: 4px;
+            border-radius: 2px;
+            background: rgba(255, 255, 255, 0.15);
+            overflow: hidden;
+        }
+        .layout-minimalist .bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.6s ease;
+        }
+        .layout-minimalist .goal-numbers {
+            font-weight: 900;
+            line-height: 1;
+            transform: translateY(-0.06em);
+            font-feature-settings: "tnum" 1, "cv05" 1;
+        }
+
+        /* ----------------------------------------------------
+           MODELO 6: Fundo Preenchido (Progressive Fill)
+           ---------------------------------------------------- */
+        .layout-bg-fill {
+            padding: 12px 24px;
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 320px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(8px);
+            box-sizing: border-box;
+        }
+        .layout-bg-fill .bg-fill-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0.38;
+            z-index: 0;
+            border-right: 2px solid rgba(255, 255, 255, 0.4);
+        }
+        .layout-bg-fill .content-z {
+            position: relative;
+            z-index: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            width: 100%;
+            line-height: 1;
+        }
+        .layout-bg-fill .like-icon-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            line-height: 0;
+        }
+        .layout-bg-fill .goal-title {
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            line-height: 1;
+            white-space: nowrap;
+        }
+        .layout-bg-fill .divider-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.35);
+            flex-shrink: 0;
+        }
+        .layout-bg-fill .goal-numbers {
+            font-weight: 900;
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1, "cv05" 1;
+            white-space: nowrap;
+        }
+        .layout-bg-fill .percent-badge {
+            font-weight: 900;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            line-height: 1;
+            flex-shrink: 0;
+        }
+
+        /* ----------------------------------------------------
+           MODELO 7: Botão & Contagem (Ultra Compact)
+           ---------------------------------------------------- */
+        .layout-badge {
+            padding: 8px 18px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(8px);
+            line-height: 1;
+        }
+        .layout-badge .goal-title {
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 11px;
+            opacity: 0.8;
+            letter-spacing: 0.05em;
+            transform: translateY(-0.06em);
+        }
+        .layout-badge .divider {
+            width: 1px;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .layout-badge .goal-numbers {
+            font-weight: 900;
+            line-height: 1;
+            transform: translateY(-0.06em);
+            font-feature-settings: "tnum" 1, "cv05" 1;
+        }
+        .layout-badge .badge-percent {
+            font-weight: 900;
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            line-height: 1;
+        }
+
+        /* ----------------------------------------------------
+           MODELO 8: Anel Circular (Donut Ring)
+           ---------------------------------------------------- */
+        .layout-circular {
+            padding: 12px 18px;
+            border-radius: 18px;
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            width: 260px;
+            min-width: 260px;
+            max-width: 260px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(8px);
+            line-height: 1;
+        }
+        .layout-circular .circle-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            width: 44px;
+            height: 44px;
+        }
+        .layout-circular .circle-svg {
+            transform: rotate(-90deg);
+            width: 44px;
+            height: 44px;
+        }
+        .layout-circular .circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.12);
+            stroke-width: 3.5;
+        }
+        .layout-circular .circle-progress {
+            fill: none;
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .layout-circular .circle-inner {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .layout-circular .info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            line-height: 1;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .layout-circular .goal-title {
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 11px;
+            opacity: 0.7;
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .layout-circular .goal-numbers {
+            font-weight: 900;
+            line-height: 1;
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
+            font-feature-settings: "tnum" 1, "cv05" 1;
+        }
+
+        /* ----------------------------------------------------
+           MODELO 9: Texto & Ícone Inline (Sem Barra)
+           ---------------------------------------------------- */
+        .layout-clean-inline {
+            padding: 6px 14px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1;
+            backdrop-filter: blur(4px);
+        }
+        .layout-clean-inline .goal-title {
+            font-weight: 800;
+            opacity: 0.75;
+            line-height: 1;
+            transform: translateY(-0.06em);
+        }
+        .layout-clean-inline .goal-numbers {
+            font-weight: 900;
+            line-height: 1;
+            transform: translateY(-0.06em);
+            font-feature-settings: "tnum" 1, "cv05" 1;
+        }
+    </style>
+</head>
+<body>
+    <div id="goal-wrapper">
+        <!-- Renderizado pelo JS -->
+    </div>
+    <style id="custom-styles-container"></style>
+
+    <script>
+        const socket = io(window.location.origin || 'http://localhost:3000', { reconnection: true, reconnectionDelay: 1000, reconnectionDelayMax: 5000, reconnectionAttempts: Infinity });
+        const wrapper = document.getElementById('goal-wrapper');
+        const customStyles = document.getElementById('custom-styles-container');
+
+        // SVG do Thumbs Up oficial com detalhes precisos
+        const thumbsUpSvg = `
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M7 22V11H3v11h4zm7-21c-.83 0-1.54.5-1.84 1.22l-3.02 7.05C9.05 9.47 9 9.73 9 10v10c0 1.1.9 2 2 2h8.31c.82 0 1.52-.5 1.83-1.24l3.19-7.44c.09-.23.14-.48.14-.72V11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14 1z"/>
+            </svg>
+        `;
+
+        let currentConfig = {
+            title: 'Meta de Likes',
+            target: 100,
+            initialLikes: 0,
+            layout: 'bar',
+            barColor: '#FF0000',
+            barGradient: '#FF5E3A',
+            useGradient: true,
+            bgColor: '#111111',
+            bgOpacity: 85,
+            fontColor: '#ffffff',
+            fontSize: 14,
+            enablePulseAnim: true,
+            showPercentage: true
+        };
+
+        let currentLikes = 0;
+        let lastLikes = -1;
+
+        socket.on('connect', () => {
+            socket.emit('join-room', 'likes-goal');
+            socket.emit('request-likes-update');
+            socket.emit('get-likes-config');
+        });
+
+        socket.on('config-update', (config) => {
+            if (config && (config.likesGoalConfig || config.target !== undefined)) {
+                currentConfig = config.likesGoalConfig || config;
+                if (customStyles) {
+                    customStyles.innerHTML = currentConfig.customCSS || '';
+                }
+                wrapper._structureKey = null;
+                render();
+            }
+        });
+
+        socket.on('likes-update', (data) => {
+            if (data) {
+                const prev = currentLikes;
+                currentLikes = parseInt(data.current) || 0;
+                if (data.target) currentConfig.target = parseInt(data.target) || currentConfig.target;
+                if (data.title) currentConfig.title = data.title;
+
+                const hasIncreased = (lastLikes !== -1 && currentLikes > prev);
+                lastLikes = currentLikes;
+
+                render(hasIncreased);
+            }
+        });
+
+        function formatCount(val) {
+            const n = parseInt(String(val).replace(/[^0-9]/g, ''));
+            if (isNaN(n)) return '0';
+            return n.toLocaleString('pt-BR');
+        }
+
+        function triggerLikeAnimation() {
+            if (!currentConfig.enablePulseAnim) return;
+
+            const iconEl = wrapper.querySelector('.like-icon-box');
+            if (iconEl) {
+                iconEl.classList.remove('animating-like');
+                void iconEl.offsetWidth; // Trigger reflow
+                iconEl.classList.add('animating-like');
+            }
+
+            // Cria o pequeno indicador "+1" flutuante
+            const indicator = document.createElement('div');
+            indicator.className = 'floating-indicator';
+            indicator.innerText = '+1';
+            
+            // Posição sobre o ícone ou centro
+            if (iconEl) {
+                const rect = iconEl.getBoundingClientRect();
+                const wrapperRect = wrapper.getBoundingClientRect();
+                indicator.style.left = `${rect.left - wrapperRect.left + (rect.width / 2)}px`;
+                indicator.style.top = `${rect.top - wrapperRect.top}px`;
+            } else {
+                indicator.style.left = '50%';
+                indicator.style.top = '10px';
+            }
+
+            wrapper.appendChild(indicator);
+            setTimeout(() => indicator.remove(), 1000);
+        }
+
+        function render(hasIncreased = false) {
+            const layout = currentConfig.layout || 'bar';
+            const title = currentConfig.title || 'Meta de Likes';
+            const target = Math.max(1, parseInt(currentConfig.target) || 100);
+            const likes = currentLikes;
+            const percentage = Math.min(100, Math.round((likes / target) * 100));
+
+            const bgColor = currentConfig.bgColor || '#111111';
+            const fontColor = currentConfig.fontColor || '#ffffff';
+            const br = parseInt(bgColor.slice(1, 3), 16) || 0;
+            const bg = parseInt(bgColor.slice(3, 5), 16) || 0;
+            const bb = parseInt(bgColor.slice(5, 7), 16) || 0;
+            const opacity = (currentConfig.bgOpacity !== undefined ? currentConfig.bgOpacity : 85) / 100;
+            const barColor = currentConfig.barColor || '#FF0000';
+            const barGradient = currentConfig.barGradient || '#FF5E3A';
+            const useGradient = currentConfig.useGradient !== false;
+            const fillStyle = useGradient ? `background: linear-gradient(90deg, ${barColor}, ${barGradient});` : `background: ${barColor};`;
+            const fontSize = currentConfig.fontSize || 14;
+            const iconSize = Math.round(fontSize * 1.2);
+
+            const structureKey = `${layout}|${title}|${target}|${bgColor}|${opacity}|${fontColor}|${fontSize}|${barColor}|${barGradient}|${useGradient}`;
+            const needsRebuild = !wrapper._structureKey || wrapper._structureKey !== structureKey;
+
+            if (needsRebuild) {
+                wrapper._structureKey = structureKey;
+                wrapper.className = `layout-${layout}`;
+                wrapper.style.background = `rgba(${br}, ${bg}, ${bb}, ${opacity})`;
+                wrapper.style.color = fontColor;
+                wrapper.style.fontSize = `${fontSize}px`;
+
+                let html = '';
+
+                if (layout === 'bar') {
+                    html = `
+                        <div class="goal-header">
+                            <div class="title-group">
+                                <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                                    ${thumbsUpSvg}
+                                </div>
+                                <span class="goal-title">${title}</span>
+                            </div>
+                            <div class="goal-numbers">
+                                <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
+                                ${currentConfig.showPercentage ? `<span class="percent-val" style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                            </div>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: ${percentage}%; ${fillStyle}"></div>
+                        </div>
+                    `;
+                } else if (layout === 'card') {
+                    html = `
+                        <div class="goal-header">
+                            <div class="title-group">
+                                <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                                    ${thumbsUpSvg}
+                                </div>
+                                <span class="goal-title">${title}</span>
+                            </div>
+                            <span class="percent-badge" style="color: ${barColor};">${percentage}%</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: ${percentage}%; ${fillStyle}"></div>
+                        </div>
+                        <div class="stats-footer">
+                            <span><strong class="current-count" style="font-size: ${Math.round(fontSize * 1.15)}px; color: ${fontColor};">${formatCount(likes)}</strong> likes</span>
+                            <span>Meta: <strong class="target-count" style="color: ${fontColor};">${formatCount(target)}</strong></span>
+                        </div>
+                    `;
+                } else if (layout === 'pill') {
+                    html = `
+                        <div class="title-group">
+                            <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                                ${thumbsUpSvg}
+                            </div>
+                            <span class="goal-title">${title}</span>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: ${percentage}%; ${fillStyle}"></div>
+                        </div>
+                        <div class="goal-numbers">
+                            <span class="current-count">${formatCount(likes)}</span>/<span class="target-count">${formatCount(target)}</span>
+                        </div>
+                    `;
+                } else if (layout === 'neon') {
+                    html = `
+                        <div class="goal-header">
+                            <div class="title-group">
+                                <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: #FF3B30;">
+                                    ${thumbsUpSvg}
+                                </div>
+                                <span class="goal-title">${title}</span>
+                            </div>
+                            <div class="goal-numbers" style="color: #FF3B30;">
+                                <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
+                            </div>
+                        </div>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: ${percentage}%;"></div>
+                        </div>
+                    `;
+                } else if (layout === 'minimalist') {
+                    html = `
+                        <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                            ${thumbsUpSvg}
+                        </div>
+                        <span class="goal-title">${title}</span>
+                        <div class="bar-track">
+                            <div class="bar-fill" style="width: ${percentage}%; ${fillStyle}"></div>
+                        </div>
+                        <div class="goal-numbers">
+                            <span class="current-count">${formatCount(likes)}</span>/<span class="target-count">${formatCount(target)}</span>
+                        </div>
+                    `;
+                } else if (layout === 'bg-fill') {
+                    html = `
+                        <div class="bg-fill-layer" style="width: ${percentage}%; ${fillStyle}"></div>
+                        <div class="content-z">
+                            <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                                ${thumbsUpSvg}
+                            </div>
+                            <span class="goal-title">${title}</span>
+                            <div class="divider-dot"></div>
+                            <div class="goal-numbers">
+                                <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
+                            </div>
+                            ${currentConfig.showPercentage ? `<span class="percent-badge" style="color: ${barColor}; font-size: ${Math.round(fontSize * 0.85)}px;">${percentage}%</span>` : ''}
+                        </div>
+                    `;
+                } else if (layout === 'badge') {
+                    html = `
+                        <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                            ${thumbsUpSvg}
+                        </div>
+                        <span class="goal-title">${title}</span>
+                        <div class="divider"></div>
+                        <div class="goal-numbers">
+                            <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
+                        </div>
+                        ${currentConfig.showPercentage ? `<span class="badge-percent percent-badge" style="color: ${barColor};">${percentage}%</span>` : ''}
+                    `;
+                } else if (layout === 'circular') {
+                    const radius = 18;
+                    const circ = 2 * Math.PI * radius;
+                    const strokeOffset = circ - (circ * percentage / 100);
+                    html = `
+                        <div class="circle-wrap">
+                            <svg class="circle-svg" viewBox="0 0 44 44">
+                                <circle class="circle-bg" cx="22" cy="22" r="${radius}"></circle>
+                                <circle class="circle-progress" cx="22" cy="22" r="${radius}" stroke="${barColor}" stroke-dasharray="${circ}" stroke-dashoffset="${strokeOffset}"></circle>
+                            </svg>
+                            <div class="circle-inner">
+                                <div class="like-icon-box" style="width: ${Math.round(iconSize * 0.9)}px; height: ${Math.round(iconSize * 0.9)}px; color: ${barColor};">
+                                    ${thumbsUpSvg}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="info-group">
+                            <span class="goal-title">${title}</span>
+                            <div class="goal-numbers">
+                                <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
+                                ${currentConfig.showPercentage ? `<span class="percent-val" style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                } else if (layout === 'clean-inline') {
+                    html = `
+                        <div class="like-icon-box" style="width: ${iconSize}px; height: ${iconSize}px; color: ${barColor};">
+                            ${thumbsUpSvg}
+                        </div>
+                        <span class="goal-title">${title}:</span>
+                        <div class="goal-numbers">
+                            <span class="current-count">${formatCount(likes)}</span> / <span class="target-count">${formatCount(target)}</span>
+                            ${currentConfig.showPercentage ? `<span class="percent-val" style="opacity: 0.6; font-size: ${Math.round(fontSize * 0.85)}px; margin-left: 4px;">(${percentage}%)</span>` : ''}
+                        </div>
+                    `;
+                }
+
+                wrapper.innerHTML = html;
+
+            } else {
+                // Atualização rápida de valores e barra
+                const currentEl = wrapper.querySelector('.current-count');
+                const targetEl = wrapper.querySelector('.target-count');
+                const percentEl = wrapper.querySelector('.percent-val');
+                const percentBadge = wrapper.querySelector('.percent-badge');
+                const barFill = wrapper.querySelector('.bar-fill');
+                const bgFillLayer = wrapper.querySelector('.bg-fill-layer');
+                const circleProgress = wrapper.querySelector('.circle-progress');
+
+                if (currentEl) currentEl.textContent = formatCount(likes);
+                if (targetEl) targetEl.textContent = formatCount(target);
+                if (percentEl) percentEl.textContent = `(${percentage}%)`;
+                if (percentBadge) percentBadge.textContent = `${percentage}%`;
+                if (barFill) barFill.style.width = `${percentage}%`;
+                if (bgFillLayer) bgFillLayer.style.width = `${percentage}%`;
+                if (circleProgress) {
+                    const radius = 18;
+                    const circ = 2 * Math.PI * radius;
+                    circleProgress.style.strokeDashoffset = circ - (circ * percentage / 100);
+                }
+            }
+
+            if (hasIncreased) {
+                triggerLikeAnimation();
+            }
+        }
+    </script>
+</body>
+</html>

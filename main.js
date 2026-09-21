@@ -250,6 +250,25 @@ const defaultViewersConfig = () => ({
   customCssEnabled: true
 });
 
+const defaultLikesGoalConfig = () => ({
+  enabled: true,
+  title: 'Meta de Likes',
+  target: 100,
+  current: 0,
+  youtubeUrl: '',
+  layout: 'bar',
+  barColor: '#FF0000',
+  barGradient: '#FF5E3A',
+  useGradient: true,
+  bgColor: '#111111',
+  bgOpacity: 85,
+  fontColor: '#ffffff',
+  fontSize: 14,
+  enablePulseAnim: true,
+  showPercentage: true,
+  customCSS: '',
+  customCssEnabled: true
+});
 
 let config = {
   platforms: [],
@@ -259,6 +278,8 @@ let config = {
   overlay2Enabled: false,
   viewersConfig: defaultViewersConfig(),
   viewersEnabled: true,
+  likesGoalConfig: defaultLikesGoalConfig(),
+  likesGoalEnabled: false,
   lastIgnoredVersion: '',
   trayNotificationEnabled: true
 };
@@ -268,6 +289,9 @@ const scraperRegistry = new Map(); // webContents.id -> key (ex: 'shorts', 'yout
 let viewerScrapers = {}; // { platformKey: BrowserWindow }
 let viewerCounterStarted = false; // Flag mestre do contador
 const chatScraperRegistry = new Map(); // webContents.id -> platformId
+
+let currentLikesGoal = { current: 0 };
+let likesScraper = null;
 
 const globalProcessedIds = new Set();
 
@@ -280,11 +304,88 @@ const io = new Server(server, { cors: { origin: "*" } });
 serverApp.use(express.static(path.join(__dirname, 'public/overlay')));
 serverApp.use('/viewers', express.static(path.join(__dirname, 'public/viewers')));
 serverApp.use('/viewers-monitor', express.static(path.join(__dirname, 'public/viewers-monitor')));
+serverApp.use('/likes-goal', express.static(path.join(__dirname, 'public/likes-goal')));
+serverApp.use('/icons', express.static(path.join(__dirname, 'public/icons')));
 
 serverApp.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/overlay/index.html')));
 serverApp.get('/monitor', (req, res) => res.sendFile(path.join(__dirname, 'public/overlay/index.html')));
 serverApp.get('/viewers', (req, res) => res.sendFile(path.join(__dirname, 'public/viewers/index.html')));
 serverApp.get('/viewers-monitor', (req, res) => res.sendFile(path.join(__dirname, 'public/viewers-monitor/index.html')));
+serverApp.get('/likes-goal', (req, res) => res.sendFile(path.join(__dirname, 'public/likes-goal/index.html')));
+
+function broadcastLikesUpdate(hasIncreased = false) {
+  if (!io) return;
+  const target = (config.likesGoalConfig && config.likesGoalConfig.target) || 100;
+  const title = (config.likesGoalConfig && config.likesGoalConfig.title) || 'Meta de Likes';
+  io.to('likes-goal').emit('likes-update', {
+    current: currentLikesGoal.current,
+    target: target,
+    title: title,
+    hasIncreased: hasIncreased
+  });
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('likes-update', {
+      current: currentLikesGoal.current,
+      target: target,
+      title: title,
+      hasIncreased: hasIncreased
+    });
+  }
+}
+
+function startLikesScraper(rawUrl) {
+  if (likesScraper && !likesScraper.isDestroyed()) {
+    return;
+  }
+  let targetUrl = rawUrl;
+  if (!targetUrl) {
+    targetUrl = config.likesGoalConfig?.youtubeUrl || config.viewersConfig?.channels?.youtube?.url || config.platforms?.find(p => p.type === 'youtube')?.url;
+  }
+  if (!targetUrl) {
+    console.log('[Likes Goal] Nenhuma URL do YouTube informada para iniciar o scraper de likes.');
+    return;
+  }
+
+  console.log('[Likes Goal] Iniciando scraper de likes para: ' + targetUrl);
+  likesScraper = new BrowserWindow({
+    show: false,
+    width: 800,
+    height: 600,
+    webPreferences: {
+      preload: path.join(__dirname, 'scraper.js'),
+      contextIsolation: false,
+      nodeIntegration: true,
+      backgroundThrottling: false
+    }
+  });
+
+  const webContentsId = likesScraper.webContents.id;
+  scraperRegistry.set(webContentsId, 'youtube');
+
+  likesScraper.on('closed', () => {
+    scraperRegistry.delete(webContentsId);
+    likesScraper = null;
+  });
+
+  if (isYoutubeRedirectUrl(targetUrl)) {
+    const startUrl = getYoutubeStartUrl(targetUrl);
+    resolveYoutubeRedirect(likesScraper, startUrl, (resolvedVideoId) => {
+      if (likesScraper && !likesScraper.isDestroyed()) {
+        likesScraper.loadURL(`https://www.youtube.com/watch?v=${resolvedVideoId}`);
+      }
+    });
+  } else {
+    likesScraper.loadURL(targetUrl).catch(e => console.log('[Likes Goal] Erro ao carregar URL:', e.message));
+  }
+}
+
+function stopLikesScraper() {
+  if (likesScraper && !likesScraper.isDestroyed()) {
+    likesScraper.destroy();
+    likesScraper = null;
+    console.log('[Likes Goal] Scraper de likes parado.');
+  }
+}
 
 io.on('connection', (socket) => {
   // O cliente informa qual overlay é ao se conectar
@@ -296,11 +397,20 @@ io.on('connection', (socket) => {
       socket.emit('config-update', config.viewersConfig);
       broadcastViewerCounts();
     }
+    if (room === 'likes-goal') {
+      socket.emit('config-update', config.likesGoalConfig);
+      broadcastLikesUpdate(false);
+    }
   });
 
   socket.on('request-viewers-update', () => broadcastViewerCounts());
   socket.on('get-config', () => {
     socket.emit('config-update', config.viewersConfig);
+  });
+
+  socket.on('request-likes-update', () => broadcastLikesUpdate(false));
+  socket.on('get-likes-config', () => {
+    socket.emit('config-update', config.likesGoalConfig);
   });
 });
 
@@ -414,6 +524,7 @@ async function loadConfig() {
         ...saved,
         overlay1: { ...defaultOverlay('overlay1'), ...(saved.overlay1 || {}) },
         overlay2: { ...defaultOverlay('overlay2'), ...(saved.overlay2 || {}) },
+        likesGoalConfig: { ...defaultLikesGoalConfig(), ...(saved.likesGoalConfig || {}) },
         port: 3000
       };
     }
@@ -940,6 +1051,7 @@ ipcMain.handle('save-config', (e, newConfig) => {
     io.to('overlay1').emit('config-update', config.overlay1);
     io.to('overlay2').emit('config-update', config.overlay2);
     io.to('viewers').emit('config-update', config.viewersConfig);
+    io.to('likes-goal').emit('config-update', config.likesGoalConfig);
     // Aplica mudanças nos scrapers de viewers em tempo real
     updateViewerScrapers();
     return true;
@@ -1009,6 +1121,56 @@ ipcMain.on('viewer-count', (event, data) => {
 // Responde a pedidos imediatos de atualização (quando o overlay faz F5)
 ipcMain.on('request-viewers-update', () => {
     broadcastViewerCounts();
+});
+
+// Handlers da Meta de Likes (YouTube)
+ipcMain.on('youtube-likes-count', (event, data) => {
+  const newCount = parseInt(data.likes) || 0;
+  if (newCount > 0) {
+    const hasIncreased = (currentLikesGoal.current > 0 && newCount > currentLikesGoal.current);
+    currentLikesGoal.current = newCount;
+    console.log(`[IPC] Likes atualizados do YouTube: ${newCount} (Aumentou: ${hasIncreased})`);
+    broadcastLikesUpdate(hasIncreased);
+  }
+});
+
+ipcMain.on('test-like-increment', () => {
+  currentLikesGoal.current = (parseInt(currentLikesGoal.current) || 0) + 1;
+  console.log(`[IPC] Simulação de like: ${currentLikesGoal.current}`);
+  broadcastLikesUpdate(true);
+});
+
+ipcMain.on('reset-likes-goal', () => {
+  currentLikesGoal.current = 0;
+  console.log(`[IPC] Meta de likes resetada para 0`);
+  broadcastLikesUpdate(false);
+});
+
+ipcMain.handle('save-likes-config', (event, newConfig) => {
+  config.likesGoalConfig = { ...(config.likesGoalConfig || defaultLikesGoalConfig()), ...newConfig };
+  try {
+    fs.writeJsonSync(CONFIG_PATH, config);
+    io.to('likes-goal').emit('config-update', config.likesGoalConfig);
+    broadcastLikesUpdate(false);
+    return true;
+  } catch (err) {
+    console.error("Erro ao salvar config de likes:", err);
+    return false;
+  }
+});
+
+ipcMain.on('start-likes-goal', (event, targetUrl) => {
+  config.likesGoalEnabled = true;
+  startLikesScraper(targetUrl || config.likesGoalConfig?.youtubeUrl);
+});
+
+ipcMain.on('stop-likes-goal', () => {
+  config.likesGoalEnabled = false;
+  stopLikesScraper();
+});
+
+ipcMain.on('request-likes-update', () => {
+  broadcastLikesUpdate(false);
 });
 
 
@@ -1157,6 +1319,20 @@ if (!gotTheLock) {
 
   app.whenReady().then(async () => {
     await loadConfig();
+
+    server.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        console.error(`Erro: A porta ${config.port || 3000} já está em uso.`);
+        dialog.showErrorBox(
+          'Porta 3000 em Uso (Conflito de Porta)',
+          `A porta ${config.port || 3000} já está sendo utilizada por outra aplicação em execução no seu computador (por exemplo, outro projeto Node/Next.js ou outra instância aberta).\n\nPara iniciar o Chat Unifier:\n1. Feche o outro servidor ou terminal que está usando a porta 3000;\n2. Ou encerre o processo conflitante e abra o aplicativo novamente.`
+        );
+        app.quit();
+      } else {
+        console.error('Erro no servidor HTTP:', err);
+      }
+    });
+
     server.listen(config.port, () => {
       console.log(`Servidor rodando em http://localhost:${config.port}`);
     });
