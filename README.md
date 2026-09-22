@@ -1,6 +1,6 @@
 # 🌌 Chat Unifier Desktop - Multichat & Multistream para Stream no OBS 🚀
 
-[![Release](https://img.shields.io/badge/Release-v1.4.0-emerald?style=for-the-badge&logo=electron)](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases)
+[![Release](https://img.shields.io/badge/Release-v1.5.1-emerald?style=for-the-badge&logo=electron)](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![Platforms](https://img.shields.io/badge/Platforms-Twitch%20|%20YouTube%20|%20Kick%20|%20TikTok-9146ff?style=for-the-badge)](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop)
 [![OBS Compatible](https://img.shields.io/badge/OBS%20Studio-Compatible-302e31?style=for-the-badge&logo=obsstudio)](https://obsproject.com/)

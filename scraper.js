@@ -8,7 +8,16 @@ window.addEventListener('visibilitychange', (e) => e.stopImmediatePropagation(),
 
 console.log('Chat Unifier Scraper Ativo: ' + window.location.href);
 
-// Limpeza de Banners e Popups do TikTok (evita que o chat pare de rolar/atualizar)
+// Garante que nenhum áudio seja reproduzido em background
+setInterval(() => {
+  try {
+    const media = document.querySelectorAll('video, audio');
+    media.forEach(m => {
+      if (!m.muted) m.muted = true;
+      m.volume = 0;
+    });
+  } catch(e) {}
+}, 1000);
 if (window.location.href.includes('tiktok.com')) {
     setInterval(() => {
         // Tenta remover banners de cookies e login
@@ -333,6 +342,58 @@ const fetchViewers = async () => {
         return match ? match[1] : null;
     };
 
+    // Parser robusto de likes para canais e lives do YouTube
+    const parseLikesValue = (str) => {
+        if (!str) return null;
+        if (typeof str === 'number') return str > 0 ? str : null;
+        const text = String(str).trim();
+        if (!text) return null;
+
+        // Se for string pura com números inteiros (ex: "3", "1450")
+        if (/^\d+$/.test(text)) {
+            const val = parseInt(text, 10);
+            return val > 0 ? val : null;
+        }
+
+        // Frase do YouTube: "com outras X pessoas" / "along with X other people"
+        // No YouTube, "com outras 2 pessoas" significa você + outras 2 pessoas = 3 likes no total!
+        const alongWithMatch = text.match(/(?:com outras|along with|junto com outras|com outra|junto com outra)\s*([\d.,]+)\s*(?:outras|other)?\s*(?:pessoas|people|pessoa|person)/i);
+        if (alongWithMatch) {
+            const clean = alongWithMatch[1].replace(/\D/g, '');
+            const parsed = parseInt(clean, 10);
+            return (!isNaN(parsed) && parsed >= 0) ? (parsed + 1) : null;
+        }
+
+        // Tenta capturar padrão com 'mil' ou 'K'/'k' (ex: "1,2 mil", "1.2K", "15K", "1,5 mi", "2M")
+        const multMatch = text.match(/([\d.,]+)\s*(mil|k|mi|m)\b/i);
+        if (multMatch) {
+            const rawNum = multMatch[1].replace(',', '.');
+            const unit = multMatch[2].toLowerCase();
+            const factor = (unit === 'mil' || unit === 'k') ? 1000 : 1000000;
+            const parsed = Math.round(parseFloat(rawNum) * factor);
+            return (!isNaN(parsed) && parsed > 0) ? parsed : null;
+        }
+
+        // Tenta capturar números em frases de contagem direta:
+        // "3 marcações como gostei", "1.450 marcações", "123 likes", "1 pessoa marcou como gostei"
+        const phraseMatch = text.match(/([\d.,]+)\s*(?:marcações|pessoas marcaram|likes|marcação|pessoa marcou)/i);
+        if (phraseMatch) {
+            const clean = phraseMatch[1].replace(/\D/g, '');
+            const parsed = parseInt(clean, 10);
+            return (!isNaN(parsed) && parsed > 0) ? parsed : null;
+        }
+
+        // Caso geral: procura qualquer sequência de dígitos formatada com milhar (ex: 1.450 ou 10.000)
+        const genericMatch = text.match(/\b\d{1,3}(?:[.,]\d{3})+\b/) || text.match(/\b\d+\b/);
+        if (genericMatch) {
+            const clean = genericMatch[0].replace(/\D/g, '');
+            const parsed = parseInt(clean, 10);
+            return (!isNaN(parsed) && parsed > 0) ? parsed : null;
+        }
+
+        return null;
+    };
+
     if (window.location.href.includes('twitch.tv')) {
       platform = 'twitch';
       let channel = urlParams.get('unifier_channel') || window._channelName;
@@ -387,6 +448,7 @@ const fetchViewers = async () => {
         }
       }
 
+      let updatedMetadataActions = [];
       if (v && !isShortsPage) {
         try {
           const res = await fetch('https://www.youtube.com/youtubei/v1/updated_metadata?prettyPrint=false', {
@@ -396,6 +458,7 @@ const fetchViewers = async () => {
           });
           const json = await res.json();
           const actions = json.actions || [];
+          updatedMetadataActions = actions;
           actions.forEach(a => {
             const renderer = a.updateViewershipAction?.viewCount?.videoViewCountRenderer;
             if (renderer?.originalViewCount) count = renderer.originalViewCount;
@@ -450,60 +513,107 @@ const fetchViewers = async () => {
             }
           }
         }
+      }
 
-        // ==========================================
-        // Captura de Likes do YouTube (Meta de Likes)
-        // ==========================================
+      // ==========================================
+      // Captura de Likes do YouTube (Meta de Likes)
+      // Executado sempre no YouTube, independente dos viewers
+      // ==========================================
+      try {
+        const candidates = [];
+        const debugSources = [];
+        const pushCandidate = (src, val) => { candidates.push(val); debugSources.push(`${src}=${val}`); };
+
+        // 1. Dados diretos do Player do YouTube (microformat / videoDetails: "likeCount": "3")
         try {
-          let likeCount = null;
+          if (window.ytInitialPlayerResponse?.microformat?.playerMicroformatRenderer?.likeCount) {
+            const parsed = parseInt(window.ytInitialPlayerResponse.microformat.playerMicroformatRenderer.likeCount, 10);
+            if (!isNaN(parsed) && parsed > 0) pushCandidate('microformat', parsed);
+          }
+        } catch(e) {}
+        try {
+          if (window.ytInitialPlayerResponse?.videoDetails?.likeCount) {
+            const parsed = parseInt(window.ytInitialPlayerResponse.videoDetails.likeCount, 10);
+            if (!isNaN(parsed) && parsed > 0) pushCandidate('videoDetails', parsed);
+          }
+        } catch(e) {}
+        try {
+          const mLike = document.documentElement.innerHTML.match(/"likeCount"\s*:\s*"(\d+)"/);
+          if (mLike && mLike[1]) {
+            const parsed = parseInt(mLike[1], 10);
+            if (!isNaN(parsed) && parsed > 0) pushCandidate('html', parsed);
+          }
+        } catch(e) {}
 
-          // 1. Botão de Like no DOM (Interface nova e clássica do YouTube)
-          const likeBtn = document.querySelector('like-button-view-model button, segmented-like-dislike-button-view-model button, #segmented-like-button button, button[aria-label*="gostei" i], button[aria-label*="like" i], ytd-toggle-button-renderer[is-icon-button] button');
-          if (likeBtn) {
-            const aria = likeBtn.getAttribute('aria-label') || '';
-            // Tenta extrair dígitos do aria-label (ex: "gostei deste vídeo com outras 1.450 pessoas" ou "1.450 marcações")
-            const numMatches = aria.match(/([\d.,\s]+)/g);
-            if (numMatches) {
-              for (const nm of numMatches) {
-                const parsed = extractCount(nm);
-                if (parsed && parsed !== '0') {
-                  likeCount = parsed;
-                  break;
-                }
+        // 2. Actions do updated_metadata (atualizações dinâmicas da live)
+        if (typeof updatedMetadataActions !== 'undefined' && Array.isArray(updatedMetadataActions)) {
+          for (const a of updatedMetadataActions) {
+            const tb = a.updateToggleButtonTextAction;
+            if (tb) {
+              const directText = tb.defaultText?.simpleText || tb.toggledText?.simpleText;
+              let parsed = parseLikesValue(directText);
+              if (!parsed) {
+                const label = tb.defaultText?.accessibility?.accessibilityData?.label || 
+                              tb.toggledText?.accessibility?.accessibilityData?.label;
+                parsed = parseLikesValue(label);
               }
+              if (parsed && parsed > 0) pushCandidate('updated_metadata[' + (tb.buttonId || '?') + ']', parsed);
             }
-            // Se o aria não deu certo, tenta o texto visível do botão
-            if (!likeCount || likeCount === '0') {
-              const textEl = likeBtn.querySelector('.yt-spec-button-shape-next__button-text-content, .yt-core-attributed-string, span');
-              if (textEl && textEl.innerText) {
-                const parsed = extractCount(textEl.innerText);
-                if (parsed && parsed !== '0') likeCount = parsed;
-              }
-            }
           }
-
-          // 2. Fallback no updated_metadata ou ytInitialData
-          if (!likeCount || likeCount === '0') {
-            try {
-              if (window.ytInitialData) {
-                const dataStr = JSON.stringify(window.ytInitialData);
-                const match = dataStr.match(/likeCount["']?\s*:\s*["']?(\d+)/i) || 
-                              dataStr.match(/([\d.,]+)\s*marcações como gostei/i) || 
-                              dataStr.match(/with\s*([\d.,]+)\s*other\s*people/i);
-                if (match && match[1]) {
-                  likeCount = extractCount(match[1]);
-                }
-              }
-            } catch(e) {}
-          }
-
-          if (likeCount && likeCount !== '0') {
-            console.log(`[YouTube Scraper] Likes detectados: ${likeCount}`);
-            ipcRenderer.send('youtube-likes-count', { likes: likeCount, videoId: v });
-          }
-        } catch(errLikes) {
-          console.error('[YouTube Scraper] Erro ao capturar likes:', errLikes);
         }
+
+        // 3. Botões de Like no DOM (Interface visual)
+        const likeSelectors = [
+          'like-button-view-model button',
+          'segmented-like-dislike-button-view-model button',
+          '#segmented-like-button button',
+          'ytd-watch-metadata #top-level-buttons-computed like-button-view-model button',
+          'ytd-menu-renderer like-button-view-model button',
+          'button[aria-label*="gostei" i]',
+          'button[aria-label*="like" i]',
+          'ytd-toggle-button-renderer[is-icon-button] button'
+        ];
+
+        for (const sel of likeSelectors) {
+          const btn = document.querySelector(sel);
+          if (!btn) continue;
+
+          // Texto numérico visível
+          const textEl = btn.querySelector('.yt-spec-button-shape-next__button-text-content, .yt-core-attributed-string, span, div[class*="text"]');
+          if (textEl && textEl.innerText) {
+            const parsed = parseLikesValue(textEl.innerText);
+            if (parsed && parsed > 0) pushCandidate('dom-texto(' + sel + ':' + textEl.innerText.trim() + ')', parsed);
+          }
+
+          // Atributo aria-label
+          const aria = btn.getAttribute('aria-label') || '';
+          const parsedAria = parseLikesValue(aria);
+          if (parsedAria && parsedAria > 0) pushCandidate('dom-aria(' + aria + ')', parsedAria);
+        }
+
+        // 4. Descrição da live (factoids oficiais)
+        const factoids = document.querySelectorAll('ytd-factoid-renderer, .yt-spec-factoid-renderer');
+        for (const f of factoids) {
+          const text = f.innerText || '';
+          if (/gostei|likes/i.test(text)) {
+            const valEl = f.querySelector('.yt-spec-factoid-renderer__value, [class*="value"]');
+            const parsed = parseLikesValue(valEl ? valEl.innerText : text);
+            if (parsed && parsed > 0) pushCandidate('factoid', parsed);
+          }
+        }
+
+        // Seleciona o maior valor detectado entre as fontes oficiais atualizadas
+        let likeCount = candidates.length > 0 ? Math.max(...candidates) : null;
+
+        if (likeCount && likeCount > 0) {
+          window._lastValidLikesCount = likeCount;
+          console.log(`[YouTube Scraper] Likes detectados: ${likeCount} | fontes: ${debugSources.join(' ; ')}`);
+          ipcRenderer.send('youtube-likes-count', { likes: likeCount, videoId: v });
+        } else if (window._lastValidLikesCount) {
+          ipcRenderer.send('youtube-likes-count', { likes: window._lastValidLikesCount, videoId: v });
+        }
+      } catch(errLikes) {
+        console.error('[YouTube Scraper] Erro ao capturar likes:', errLikes);
       }
     } else if (window.location.href.includes('kick.com')) {
       platform = 'kick';

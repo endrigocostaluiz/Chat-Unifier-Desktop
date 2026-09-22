@@ -889,55 +889,39 @@ function updateViewersPreview() {
         const layout = (elements.vLayoutSelect && elements.vLayoutSelect.value) ? elements.vLayoutSelect.value : 'default';
         const showTotal = elements.vShowTotal ? elements.vShowTotal.checked : true;
         const iconColor = elements.vIconColor ? elements.vIconColor.value : '#ffffff';
+        const iconColorVal = iconColor.replace('#', '');
 
-        const svgPaths = {
-            youtube: 'M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z',
-            shorts: 'm18.931 9.99-1.441-.601 1.717-.913a4.48 4.48 0 0 0 1.874-6.078 4.506 4.506 0 0 0-6.09-1.874L4.792 5.929a4.504 4.504 0 0 0-2.402 4.193 4.521 4.521 0 0 0 2.666 3.904c.036.012 1.442.6 1.442.6l-1.706.901a4.51 4.51 0 0 0-2.369 3.967A4.528 4.528 0 0 0 6.93 24c.725 0 1.437-.174 2.08-.508l10.21-5.406a4.494 4.494 0 0 0 2.39-4.192 4.525 4.525 0 0 0-2.678-3.904ZM9.597 15.19V8.824l6.007 3.184z',
-            twitch: 'M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z',
-            kick: 'M1.333 0h8v5.333H12V2.667h2.667V0h8v8H20v2.667h-2.667v2.666H20V16h2.667v8h-8v-2.667H12v-2.666H9.333V24h-8Z',
-            tiktok: 'M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z'
-        };
-
-        const getPlatformSvgContent = (platform, color) => {
-            if (platform === 'youtube') {
-                return `
-                    <path fill="${color || '#FF0000'}" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/>
-                    <polygon fill="#FFFFFF" points="9.545,15.568 9.545,8.432 15.818,12"/>
-                `;
+        const getIconUrl = (key, style) => {
+            if (style === 'original') {
+                const originals = {
+                    twitch: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png',
+                    youtube: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
+                    shorts: 'https://cdn.simpleicons.org/youtubeshorts/FF0000',
+                    kick: 'https://cdn.simpleicons.org/kick/53FC18',
+                    tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png'
+                };
+                return originals[key];
             }
-            if (platform === 'shorts') {
-                return `
-                    <path fill="${color || '#FF0000'}" d="m18.931 9.99-1.441-.601 1.717-.913a4.48 4.48 0 0 0 1.874-6.078 4.506 4.506 0 0 0-6.09-1.874L4.792 5.929a4.504 4.504 0 0 0-2.402 4.193 4.521 4.521 0 0 0 2.666 3.904c.036.012 1.442.6 1.442.6l-1.706.901a4.51 4.51 0 0 0-2.369 3.967A4.528 4.528 0 0 0 6.93 24c.725 0 1.437-.174 2.08-.508l10.21-5.406a4.494 4.494 0 0 0 2.39-4.192 4.525 4.525 0 0 0-2.678-3.904ZM9.597 15.19V8.824l6.007 3.184z"/>
-                    <polygon fill="#FFFFFF" points="9.597,15.19 9.597,8.824 15.604,12.008"/>
-                `;
-            }
-            if (platform === 'twitch') {
-                return `<path fill="${color || '#9146FF'}" d="${svgPaths.twitch}"/>`;
-            }
-            if (platform === 'kick') {
-                return `<path fill="${color || '#53FC18'}" d="${svgPaths.kick}"/>`;
-            }
-            if (platform === 'tiktok') {
-                if (color) {
-                    return `<path fill="${color}" d="${svgPaths.tiktok}"/>`;
-                }
-                return `
-                    <path fill="#25F4EE" d="${svgPaths.tiktok}" opacity="0.85" transform="translate(-0.8, -0.8)"/>
-                    <path fill="#FE2C55" d="${svgPaths.tiktok}" opacity="0.85" transform="translate(0.8, 0.8)"/>
-                    <path fill="#FFFFFF" d="${svgPaths.tiktok}"/>
-                `;
-            }
-            return '';
+            
+            const color = style === 'custom' ? iconColorVal : (style === 'white' ? 'FFFFFF' : (style === 'black' ? '000000' : style.replace('#', '')));
+            const slugs = {
+                youtube: 'youtube',
+                shorts: 'youtubeshorts',
+                twitch: 'twitch',
+                kick: 'kick',
+                tiktok: 'tiktok'
+            };
+            return `https://cdn.simpleicons.org/${slugs[key]}/${color}`;
         };
 
         const getContrastColor = (hexColor) => {
-            if (!hexColor) return '#ffffff';
+            if (!hexColor) return 'white';
             const hex = hexColor.replace('#', '');
             const r = parseInt(hex.substring(0, 2), 16) || 0;
             const g = parseInt(hex.substring(2, 4), 16) || 0;
             const b = parseInt(hex.substring(4, 6), 16) || 0;
             const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-            return (yiq >= 128) ? '#000000' : '#ffffff';
+            return (yiq >= 128) ? 'black' : 'white';
         };
 
         const contrastColor = getContrastColor(iconColor);
@@ -972,28 +956,24 @@ function updateViewersPreview() {
         const activePlatforms = platforms.filter(p => p.enabled);
         activePlatforms.sort((a, b) => channelsOrder.indexOf(a.key) - channelsOrder.indexOf(b.key));
 
-        const iconSize = 22;
         const renderPlatformIcon = (key, isStacked = false, idx = 0) => {
             const isCustom = iconStyle === 'custom';
-            const customWrapperSize = 26;
-            const customInnerSize = 16;
+            const extraStyle = (key === 'kick' || key === 'shorts') ? 'transform: scale(0.82);' : '';
+            const size = (layout === 'stacked') ? 26 : 22;
+            const innerSize = Math.round(size * 0.7);
 
             if (isCustom) {
-                const stackedMargin = (isStacked && idx > 0) ? `margin-left: -10px;` : '';
+                const stackedMargin = (isStacked && idx > 0) ? 'margin-left: -10px;' : '';
                 return `
-                    <div style="width: ${customWrapperSize}px; height: ${customWrapperSize}px; border-radius: ${iconRadius}%; background: ${iconColor}; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 0; ${stackedMargin} z-index: ${20 - idx}; position: relative; ${isStacked ? `border: 2px solid rgba(${br}, ${bg}, ${bb}, 0.9);` : ''}">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${customInnerSize}" height="${customInnerSize}" style="display: block; width: ${customInnerSize}px; height: ${customInnerSize}px;">
-                            ${getPlatformSvgContent(key, contrastColor)}
-                        </svg>
+                    <div style="width: ${size}px; height: ${size}px; border-radius: ${iconRadius}%; background: ${iconColor}; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 0; ${stackedMargin} z-index: ${20 - idx}; position: relative; ${isStacked ? `border: 2px solid rgba(${br}, ${bg}, ${bb}, 0.9);` : ''}">
+                        <img src="${getIconUrl(key, contrastColor)}" style="width: ${innerSize}px; height: ${innerSize}px; object-fit: contain; border-radius: ${iconRadius}%; ${extraStyle}">
                     </div>
                 `;
             } else {
-                const stackedMargin = (isStacked && idx > 0) ? `margin-left: -8px;` : '';
+                const stackedMargin = (isStacked && idx > 0) ? 'margin-left: -8px;' : '';
                 return `
-                    <div style="width: ${iconSize}px; height: ${iconSize}px; border-radius: ${iconRadius}%; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; line-height: 0; ${stackedMargin} z-index: ${20 - idx}; position: relative; ${isStacked ? `border: 2px solid rgba(${br}, ${bg}, ${bb}, 0.9);` : ''}">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${iconSize}" height="${iconSize}" style="display: block; width: ${iconSize}px; height: ${iconSize}px; border-radius: ${iconRadius}%;">
-                            ${getPlatformSvgContent(key, null)}
-                        </svg>
+                    <div class="relative inline-flex items-center justify-center flex-shrink-0" style="line-height: 0; ${stackedMargin} z-index: ${20 - idx};">
+                        <img src="${getIconUrl(key, iconStyle)}" class="w-5 h-5 object-contain" style="border-radius: ${iconRadius}%; ${extraStyle}">
                     </div>
                 `;
             }
@@ -1005,17 +985,16 @@ function updateViewersPreview() {
             statsHtml = `<div class="inline-flex items-center" style="line-height: 0;">${iconsHtml}</div>`;
         } else if (layout === 'badges') {
             const badgeSize = 30;
-            const badgeInnerIconSize = 18;
+            const iconSize = 18;
             const iconsHtml = activePlatforms.map(p => {
                 const isCustom = iconStyle === 'custom';
-                const bgColor = isCustom ? iconColor : (badgeColors[p.key] || '#333333');
+                const bgColor = isCustom ? iconColor : (badgeColors[p.key] || '#444444');
                 const isKick = p.key === 'kick';
-                const iconColorName = isCustom ? contrastColor : (isKick ? '#000000' : '#ffffff');
+                const iconColorName = isCustom ? contrastColor : (isKick ? 'black' : 'white');
+                const extraStyle = (p.key === 'tiktok' || p.key === 'kick' || p.key === 'shorts') ? 'transform: scale(0.85);' : '';
                 return `
                     <div style="width:${badgeSize}px;height:${badgeSize}px;border-radius:${iconRadius}%;background:${bgColor};display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;line-height:0;">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="${badgeInnerIconSize}" height="${badgeInnerIconSize}" style="display: block; width: ${badgeInnerIconSize}px; height: ${badgeInnerIconSize}px;">
-                            ${getPlatformSvgContent(p.key, iconColorName)}
-                        </svg>
+                        <img src="${getIconUrl(p.key, iconColorName)}" style="width:${iconSize}px;height:${iconSize}px;object-fit:contain;border-radius:${iconRadius}%;${extraStyle}">
                     </div>
                 `;
             }).join('');
@@ -2089,8 +2068,9 @@ async function saveAndUpdateLikes() {
 // Botões de controle da Meta de Likes
 if (elements.btnStartLikes) {
     elements.btnStartLikes.onclick = () => {
+        const ytUrl = (elements.lYtUrl ? elements.lYtUrl.value.trim() : '') || appConfig?.likesGoalConfig?.youtubeUrl || '';
         if (api && api.startLikes) {
-            api.startLikes(appConfig.likesGoalConfig);
+            api.startLikes(ytUrl);
         }
         elements.btnStartLikes.classList.add('hidden');
         if (elements.btnStopLikes) elements.btnStopLikes.classList.remove('hidden');

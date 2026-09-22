@@ -19,7 +19,7 @@ app.isQuiting = false;
 const CONFIG_PATH = path.join(app.getPath('userData'), 'driftweb-stream-chat.json');
 
 function isYoutubeRedirectUrl(url) {
-  if (!url) return false;
+  if (!url || typeof url !== 'string') return false;
   if (url.includes('youtube.com/@') || url.includes('youtube.com/channel/') || url.includes('youtube.com/c/') || url.includes('youtube.com/user/')) {
     if (!url.includes('watch?v=') && !url.includes('live_chat')) {
       return true;
@@ -29,7 +29,7 @@ function isYoutubeRedirectUrl(url) {
 }
 
 function getYoutubeStartUrl(url) {
-  if (!url) return null;
+  if (!url || typeof url !== 'string') return null;
   let formatted = url.trim();
   if (!/^https?:\/\//i.test(formatted)) {
     formatted = 'https://' + formatted;
@@ -337,13 +337,22 @@ function startLikesScraper(rawUrl) {
   if (likesScraper && !likesScraper.isDestroyed()) {
     return;
   }
-  let targetUrl = rawUrl;
+  let targetUrl = '';
+  if (typeof rawUrl === 'string') {
+    targetUrl = rawUrl.trim();
+  } else if (rawUrl && typeof rawUrl === 'object') {
+    targetUrl = (rawUrl.youtubeUrl || '').trim();
+  }
   if (!targetUrl) {
-    targetUrl = config.likesGoalConfig?.youtubeUrl || config.viewersConfig?.channels?.youtube?.url || config.platforms?.find(p => p.type === 'youtube')?.url;
+    targetUrl = (config.likesGoalConfig?.youtubeUrl || config.viewersConfig?.channels?.youtube?.url || config.platforms?.find(p => p.type === 'youtube')?.url || '').trim();
   }
   if (!targetUrl) {
     console.log('[Likes Goal] Nenhuma URL do YouTube informada para iniciar o scraper de likes.');
     return;
+  }
+
+  if (!/^https?:\/\//i.test(targetUrl)) {
+    targetUrl = 'https://' + targetUrl;
   }
 
   console.log('[Likes Goal] Iniciando scraper de likes para: ' + targetUrl);
@@ -351,13 +360,22 @@ function startLikesScraper(rawUrl) {
     show: false,
     width: 800,
     height: 600,
+    skipTaskbar: true,
+    frame: false,
+    focusable: false,
+    transparent: true,
     webPreferences: {
       preload: path.join(__dirname, 'scraper.js'),
-      contextIsolation: false,
-      nodeIntegration: true,
+      contextIsolation: true,
+      nodeIntegration: false,
+      webSecurity: false,
       backgroundThrottling: false
     }
   });
+
+  likesScraper.setMenu(null);
+  likesScraper.setMenuBarVisibility(false);
+  likesScraper.webContents.setAudioMuted(true);
 
   const webContentsId = likesScraper.webContents.id;
   scraperRegistry.set(webContentsId, 'youtube');
@@ -367,15 +385,19 @@ function startLikesScraper(rawUrl) {
     likesScraper = null;
   });
 
-  if (isYoutubeRedirectUrl(targetUrl)) {
-    const startUrl = getYoutubeStartUrl(targetUrl);
-    resolveYoutubeRedirect(likesScraper, startUrl, (resolvedVideoId) => {
-      if (likesScraper && !likesScraper.isDestroyed()) {
-        likesScraper.loadURL(`https://www.youtube.com/watch?v=${resolvedVideoId}`);
-      }
-    });
-  } else {
-    likesScraper.loadURL(targetUrl).catch(e => console.log('[Likes Goal] Erro ao carregar URL:', e.message));
+  try {
+    if (isYoutubeRedirectUrl(targetUrl)) {
+      const startUrl = getYoutubeStartUrl(targetUrl);
+      resolveYoutubeRedirect(likesScraper, startUrl, (resolvedVideoId) => {
+        if (likesScraper && !likesScraper.isDestroyed()) {
+          likesScraper.loadURL(`https://www.youtube.com/watch?v=${resolvedVideoId}`).catch(e => console.log('[Likes Goal] Erro ao carregar URL resolvida:', e.message));
+        }
+      });
+    } else {
+      likesScraper.loadURL(targetUrl).catch(e => console.log('[Likes Goal] Erro ao carregar URL:', e.message));
+    }
+  } catch (errLoad) {
+    console.error('[Likes Goal] Erro ao iniciar carregamento:', errLoad.message);
   }
 }
 
@@ -1125,12 +1147,18 @@ ipcMain.on('request-viewers-update', () => {
 
 // Handlers da Meta de Likes (YouTube)
 ipcMain.on('youtube-likes-count', (event, data) => {
-  const newCount = parseInt(data.likes) || 0;
+  if (!data) return;
+  const newCount = typeof data.likes === 'number' ? data.likes : (parseInt(String(data.likes).replace(/\D/g, ''), 10) || 0);
   if (newCount > 0) {
-    const hasIncreased = (currentLikesGoal.current > 0 && newCount > currentLikesGoal.current);
+    const isFirstLoad = (currentLikesGoal.current === 0);
+    const hasIncreased = (!isFirstLoad && newCount > currentLikesGoal.current);
+    const hasChanged = (newCount !== currentLikesGoal.current);
+    
     currentLikesGoal.current = newCount;
-    console.log(`[IPC] Likes atualizados do YouTube: ${newCount} (Aumentou: ${hasIncreased})`);
-    broadcastLikesUpdate(hasIncreased);
+    if (hasChanged) {
+      console.log(`[IPC] Likes atualizados do YouTube: ${newCount} (Aumentou: ${hasIncreased})`);
+      broadcastLikesUpdate(hasIncreased);
+    }
   }
 });
 
@@ -1159,8 +1187,14 @@ ipcMain.handle('save-likes-config', (event, newConfig) => {
   }
 });
 
-ipcMain.on('start-likes-goal', (event, targetUrl) => {
+ipcMain.on('start-likes-goal', (event, rawInput) => {
   config.likesGoalEnabled = true;
+  let targetUrl = '';
+  if (typeof rawInput === 'string') {
+    targetUrl = rawInput;
+  } else if (rawInput && typeof rawInput === 'object') {
+    targetUrl = rawInput.youtubeUrl || '';
+  }
   startLikesScraper(targetUrl || config.likesGoalConfig?.youtubeUrl);
 });
 
