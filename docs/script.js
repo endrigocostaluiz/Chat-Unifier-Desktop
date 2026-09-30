@@ -13,7 +13,44 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // 2. FAQ Accordion
+  // 2. Mobile Menu Toggle & Drawer
+  const mobileToggle = document.getElementById('mobile-toggle');
+  const mobileDrawer = document.getElementById('mobile-drawer');
+  const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+
+  function toggleMobileMenu(open) {
+    const shouldOpen = open !== undefined ? open : !mobileDrawer?.classList.contains('open');
+    if (shouldOpen) {
+      mobileToggle?.classList.add('active');
+      mobileDrawer?.classList.add('open');
+      mobileToggle?.setAttribute('aria-expanded', 'true');
+      mobileDrawer?.setAttribute('aria-hidden', 'false');
+    } else {
+      mobileToggle?.classList.remove('active');
+      mobileDrawer?.classList.remove('open');
+      mobileToggle?.setAttribute('aria-expanded', 'false');
+      mobileDrawer?.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  mobileToggle?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    toggleMobileMenu();
+  });
+
+  mobileNavItems.forEach(item => {
+    item.addEventListener('click', () => {
+      toggleMobileMenu(false);
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (mobileDrawer?.classList.contains('open') && !mobileDrawer.contains(e.target) && !mobileToggle?.contains(e.target)) {
+      toggleMobileMenu(false);
+    }
+  });
+
+  // 3. FAQ Accordion
   const faqItems = document.querySelectorAll('.faq-item');
   faqItems.forEach(item => {
     const questionBtn = item.querySelector('.faq-question');
@@ -26,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
+
 
   // 3. Copiar texto utilitário
   window.copyText = function(text, btnElement) {
