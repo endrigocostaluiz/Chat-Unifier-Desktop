@@ -1,0 +1,37 @@
+# Chat Unifier Desktop - Multichat & Multistream para OBS Studio
+
+> O Chat Unifier Desktop é um aplicativo desktop gratuito e de código aberto para Windows que unifica em tempo real os chats e contadores de espectadores simultâneos de Twitch, YouTube (Lives e Shorts), Kick e TikTok para OBS Studio e Streamlabs.
+
+## Informações Principais
+- Nome: Chat Unifier Desktop
+- Versão Atual: 1.5.3
+- Plataforma: Windows (Executável Portátil / Portable .exe)
+- Licença: MIT (100% Gratuito e Código Aberto)
+- Repositório Oficial: https://github.com/endrigocostaluiz/Chat-Unifier-Desktop
+- Download Direto: https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest
+- Site Oficial: https://endrigocostaluiz.github.io/Chat-Unifier-Desktop/
+- Desenvolvedor: Endrigo Costa Luiz (GitHub: @endrigocostaluiz)
+
+## Recursos Principais
+- **Multichat Unificado**: Conecta simultaneamente os feeds de chat da Twitch, YouTube Live, YouTube Shorts, Kick e TikTok em uma única lista cronológica.
+- **Zero Configuração de API**: Não requer chaves de API, cadastros, contas de bot ou tokens OAuth. A conexão é realizada localmente por scraping inteligente e seguro.
+- **Overlays para OBS Studio**: Gera URLs locais (Browser Source) leves, aceleradas por hardware, com 8 estilos visuais (Moderno, Glassmorphism, Cyberpunk Neon, Bubble, Sticker, Dark Slim, Card Float e Retro 8-Bit).
+- **Módulo de Sorteio (Giveaways)**: Realiza sorteios interativos entre os espectadores de todas as plataformas conectadas via comando (ex: `!sorteio`) ou qualquer mensagem, com roleta animada, contagem regressiva, reroll e detecção em tempo real de quando o sorteado responder no chat.
+- **Contador de Viewers Multistream**: Soma simultânea de espectadores de todas as plataformas ativas com widgets personalizáveis para OBS.
+- **Overlay Duplo Independente**: URL otimizada para a transmissão e URL em tela cheia para monitor secundário, tablet ou celular.
+- **Meta de Likes**: Widget com barra de progresso em tempo real para metas de likes no YouTube.
+
+## Comparativo com Alternativas
+- **Restream Chat**: O Restream cobra mensalidades para canais adicionais e exige contas vinculadas na nuvem. O Chat Unifier é 100% gratuito e local.
+- **Social Stream Ninja**: O Chat Unifier Desktop oferece uma interface gráfica dedicada para Windows, sorteio integrado com roleta animada e monitor secundário sem depender de extensões de navegador complexas.
+- **Botrix / Lumia Stream**: Não exige criação de bots nem permissões de moderador para ler mensagens.
+
+## Como Usar no OBS Studio
+1. Baixe o executável `Chat.Unifier.1.5.3.exe` na página de releases.
+2. Execute o aplicativo (não necessita de instalação).
+3. Insira o nome dos seus canais em Twitch, YouTube, Kick e/ou TikTok.
+4. Clique em "Iniciar Chat" e copie a URL do Overlay OBS (`http://localhost:3000/overlay`).
+5. No OBS Studio, adicione uma fonte de Navegador (Browser Source), cole a URL e defina a resolução.
+
+## Documentação Completa para LLMs
+- Documentação detalhada: https://endrigocostaluiz.github.io/Chat-Unifier-Desktop/llms-full.txt

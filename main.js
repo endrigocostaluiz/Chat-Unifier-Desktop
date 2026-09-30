@@ -369,7 +369,13 @@ function startLikesScraper(rawUrl) {
       contextIsolation: true,
       nodeIntegration: false,
       webSecurity: false,
-      backgroundThrottling: false
+      backgroundThrottling: false,
+      // Identifica esta janela para o preload (scraper.js) de forma síncrona e confiável,
+      // via process.argv — ao contrário de um parâmetro na URL, isso não depende de timing
+      // (window._isLikesGoalWindow só era injetado no 'dom-ready', tarde demais para o
+      // primeiro ciclo) nem sobrevive ao próprio YouTube "limpando" a URL e removendo
+      // parâmetros desconhecidos como unifier_mode/unifier_platform.
+      additionalArguments: ['--unifier-window-role=likesgoal']
     }
   });
 
@@ -383,6 +389,10 @@ function startLikesScraper(rawUrl) {
   likesScraper.on('closed', () => {
     scraperRegistry.delete(webContentsId);
     likesScraper = null;
+  });
+
+  likesScraper.webContents.on('console-message', (event, level, message) => {
+    console.log(`[Likes Goal Scraper] ${message}`);
   });
 
   try {

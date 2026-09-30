@@ -1,5 +1,19 @@
 const { ipcRenderer } = require('electron');
 
+// Identifica de forma síncrona e confiável se esta janela é a DEDICADA à Meta de Likes
+// (ver additionalArguments em startLikesScraper, main.js). Usar process.argv em vez de um
+// parâmetro na URL ou de uma injeção via 'dom-ready' é necessário porque: (1) o YouTube
+// costuma "limpar" a URL e remover parâmetros que não reconhece antes do nosso primeiro
+// ciclo rodar, e (2) a injeção via 'dom-ready' do processo principal chega tarde demais —
+// o primeiro fetchViewers() já roda antes disso.
+const IS_LIKES_GOAL_WINDOW = (() => {
+  try {
+    return process.argv.some(arg => arg === '--unifier-window-role=likesgoal');
+  } catch (e) {
+    return false;
+  }
+})();
+
 // Força o site a achar que a aba está sempre visível
 Object.defineProperty(document, 'visibilityState', { get: () => 'visible' });
 Object.defineProperty(document, 'hidden', { get: () => false });
@@ -433,7 +447,40 @@ const fetchViewers = async () => {
       // Se a URL contém /shorts/ ou a chave é 'shorts', define como shorts
       const isShortsPage = window.location.href.includes('/shorts/');
       platform = (isShortsPage || unifierKey === 'shorts') ? 'shorts' : 'youtube';
-      
+
+      // Só a janela DEDICADA da Meta de Likes (aberta por startLikesScraper) deve capturar
+      // e emitir likes. Antes disso rodava em QUALQUER janela do YouTube (inclusive a de
+      // chat/espectadores), e as duas ficavam sobrescrevendo o valor uma da outra — por isso
+      // a contagem parecia "travar": uma janela reenviava sempre o mesmo valor antigo por cima
+      // da outra que tinha acabado de atualizar.
+      const isLikesGoalWindow = IS_LIKES_GOAL_WINDOW;
+
+      console.log(`[YouTube Scraper] Ciclo iniciado | url=${window.location.href} | isLikesGoalWindow=${isLikesGoalWindow} | isShortsPage=${isShortsPage}`);
+
+      // A janela da Meta de Likes recarrega a página a cada ciclo para garantir um "retrato"
+      // sempre atual do like count (o mesmo truque já usado para o TikTok acima). Sem isso,
+      // window.ytInitialPlayerResponse e o HTML embutido ficam congelados no valor do
+      // carregamento inicial e nunca mudam sozinhos.
+      if (isLikesGoalWindow && !isShortsPage) {
+        const jaRecarregouLikes = sessionStorage.getItem('_yt_likes_reloaded') === '1';
+        console.log(`[YouTube Scraper] Checagem de reload | jaRecarregouLikes=${jaRecarregouLikes}`);
+        if (!jaRecarregouLikes) {
+          sessionStorage.setItem('_yt_likes_reloaded', '1');
+          console.log('[YouTube Scraper] Recarregando a página para capturar likes atualizados...');
+          location.reload();
+          await new Promise(r => setTimeout(r, 999999)); // Aguarda o reload acontecer
+        }
+        sessionStorage.removeItem('_yt_likes_reloaded');
+
+        // Dá tempo do player e dos componentes do YouTube (botão de like, factoids etc.)
+        // hidratarem no DOM. Sem essa espera, capturávamos logo no início da carga da
+        // página — cedo demais para uma live, cujos componentes do player demoram mais
+        // que os de um vídeo comum — e nenhuma fonte era encontrada.
+        console.log('[YouTube Scraper] Página fresca. Aguardando o player carregar...');
+        await new Promise(r => setTimeout(r, 4000));
+        console.log('[YouTube Scraper] Prosseguindo para captura de likes...');
+      }
+
       let v = urlParams.get('v');
       if (!v) { const pathMatch = window.location.pathname.match(/\/(live|shorts)\/([^/]+)/); if (pathMatch) v = pathMatch[2]; }
       
@@ -451,10 +498,18 @@ const fetchViewers = async () => {
       let updatedMetadataActions = [];
       if (v && !isShortsPage) {
         try {
-          const res = await fetch('https://www.youtube.com/youtubei/v1/updated_metadata?prettyPrint=false', {
+          // Usa a mesma chave/contexto que o próprio YouTube usa para consultar este endpoint.
+          // Sem isso a requisição falha silenciosamente (403/400) e a Meta de Likes nunca
+          // recebe atualizações "ao vivo" — fica presa no valor estático capturado no load da página.
+          const innertubeKey = (window.ytcfg && typeof window.ytcfg.get === 'function' && window.ytcfg.get('INNERTUBE_API_KEY'))
+            || 'AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8';
+          const innertubeContext = (window.ytcfg && typeof window.ytcfg.get === 'function' && window.ytcfg.get('INNERTUBE_CONTEXT'))
+            || { client: { clientName: 'WEB', clientVersion: '2.20240101.00.00' } };
+
+          const res = await fetch(`https://www.youtube.com/youtubei/v1/updated_metadata?key=${innertubeKey}&prettyPrint=false`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ videoId: v, context: { client: { clientName: 'WEB', clientVersion: '2.20240101.00.00' } } })
+            body: JSON.stringify({ videoId: v, context: innertubeContext })
           });
           const json = await res.json();
           const actions = json.actions || [];
@@ -517,35 +572,70 @@ const fetchViewers = async () => {
 
       // ==========================================
       // Captura de Likes do YouTube (Meta de Likes)
-      // Executado sempre no YouTube, independente dos viewers
+      // Executado SOMENTE na janela dedicada da Meta de Likes (ver isLikesGoalWindow acima)
       // ==========================================
       try {
-        const candidates = [];
+        if (!isLikesGoalWindow) {
+          console.log('[YouTube Scraper] Captura de likes ignorada nesta janela (não é a janela dedicada da Meta de Likes).');
+          throw { _skip: true };
+        }
+
+        console.log(`[YouTube Scraper] Iniciando captura de likes | videoId=${v}`);
+
+        // Reseta o estado (baseline/último valor) sempre que o vídeo mudar, para não
+        // "herdar" a contagem de uma live anterior.
+        if (window._ytLikesVideoId !== v) {
+          window._ytLikesVideoId = v;
+          window._ytLikesStaticBaseline = null;
+          window._lastValidLikesCount = null;
+        }
+
+        // Nesta janela a página é recarregada a cada ciclo (ver acima), então TODAS as
+        // fontes abaixo — inclusive o "retrato" embutido no HTML/no player — refletem o
+        // estado atual da live, não um valor congelado do primeiro carregamento.
+        const liveCandidates = [];
         const debugSources = [];
-        const pushCandidate = (src, val) => { candidates.push(val); debugSources.push(`${src}=${val}`); };
+        const pushLive = (src, val) => { liveCandidates.push(val); debugSources.push(`${src}=${val}`); };
 
         // 1. Dados diretos do Player do YouTube (microformat / videoDetails: "likeCount": "3")
         try {
           if (window.ytInitialPlayerResponse?.microformat?.playerMicroformatRenderer?.likeCount) {
             const parsed = parseInt(window.ytInitialPlayerResponse.microformat.playerMicroformatRenderer.likeCount, 10);
-            if (!isNaN(parsed) && parsed > 0) pushCandidate('microformat', parsed);
+            if (!isNaN(parsed) && parsed > 0) pushLive('microformat', parsed);
           }
         } catch(e) {}
         try {
           if (window.ytInitialPlayerResponse?.videoDetails?.likeCount) {
             const parsed = parseInt(window.ytInitialPlayerResponse.videoDetails.likeCount, 10);
-            if (!isNaN(parsed) && parsed > 0) pushCandidate('videoDetails', parsed);
+            if (!isNaN(parsed) && parsed > 0) pushLive('videoDetails', parsed);
           }
         } catch(e) {}
         try {
           const mLike = document.documentElement.innerHTML.match(/"likeCount"\s*:\s*"(\d+)"/);
           if (mLike && mLike[1]) {
             const parsed = parseInt(mLike[1], 10);
-            if (!isNaN(parsed) && parsed > 0) pushCandidate('html', parsed);
+            if (!isNaN(parsed) && parsed > 0) pushLive('html', parsed);
           }
         } catch(e) {}
 
-        // 2. Actions do updated_metadata (atualizações dinâmicas da live)
+        // 1b. Em LIVES o campo "likeCount" costuma não vir preenchido no JSON inicial — o
+        // valor fica só no rótulo de acessibilidade do botão de like, embutido no HTML
+        // inicial (ytInitialData), algo como {"accessibilityData":{"label":"3 pessoas
+        // marcaram como Gostei deste vídeo"}}. Varre todos esses rótulos no HTML bruto.
+        try {
+          const html = document.documentElement.innerHTML;
+          const labelRegex = /"label"\s*:\s*"([^"]{0,80})"/g;
+          let m;
+          while ((m = labelRegex.exec(html)) !== null) {
+            const label = m[1];
+            if (/gostei|curtiu|curtida|like/i.test(label)) {
+              const parsed = parseLikesValue(label);
+              if (parsed && parsed > 0) pushLive('html-label(' + label + ')', parsed);
+            }
+          }
+        } catch(e) {}
+
+        // 2. Actions do updated_metadata (atualizações dinâmicas da live — fonte ao vivo)
         if (typeof updatedMetadataActions !== 'undefined' && Array.isArray(updatedMetadataActions)) {
           for (const a of updatedMetadataActions) {
             const tb = a.updateToggleButtonTextAction;
@@ -553,16 +643,16 @@ const fetchViewers = async () => {
               const directText = tb.defaultText?.simpleText || tb.toggledText?.simpleText;
               let parsed = parseLikesValue(directText);
               if (!parsed) {
-                const label = tb.defaultText?.accessibility?.accessibilityData?.label || 
+                const label = tb.defaultText?.accessibility?.accessibilityData?.label ||
                               tb.toggledText?.accessibility?.accessibilityData?.label;
                 parsed = parseLikesValue(label);
               }
-              if (parsed && parsed > 0) pushCandidate('updated_metadata[' + (tb.buttonId || '?') + ']', parsed);
+              if (parsed && parsed > 0) pushLive('updated_metadata[' + (tb.buttonId || '?') + ']', parsed);
             }
           }
         }
 
-        // 3. Botões de Like no DOM (Interface visual)
+        // 3. Botões de Like no DOM (Interface visual — fonte ao vivo, atualiza sozinha)
         const likeSelectors = [
           'like-button-view-model button',
           'segmented-like-dislike-button-view-model button',
@@ -582,38 +672,42 @@ const fetchViewers = async () => {
           const textEl = btn.querySelector('.yt-spec-button-shape-next__button-text-content, .yt-core-attributed-string, span, div[class*="text"]');
           if (textEl && textEl.innerText) {
             const parsed = parseLikesValue(textEl.innerText);
-            if (parsed && parsed > 0) pushCandidate('dom-texto(' + sel + ':' + textEl.innerText.trim() + ')', parsed);
+            if (parsed && parsed > 0) pushLive('dom-texto(' + sel + ':' + textEl.innerText.trim() + ')', parsed);
           }
 
           // Atributo aria-label
           const aria = btn.getAttribute('aria-label') || '';
           const parsedAria = parseLikesValue(aria);
-          if (parsedAria && parsedAria > 0) pushCandidate('dom-aria(' + aria + ')', parsedAria);
+          if (parsedAria && parsedAria > 0) pushLive('dom-aria(' + aria + ')', parsedAria);
         }
 
-        // 4. Descrição da live (factoids oficiais)
+        // 4. Descrição da live (factoids oficiais — fonte ao vivo)
         const factoids = document.querySelectorAll('ytd-factoid-renderer, .yt-spec-factoid-renderer');
         for (const f of factoids) {
           const text = f.innerText || '';
           if (/gostei|likes/i.test(text)) {
             const valEl = f.querySelector('.yt-spec-factoid-renderer__value, [class*="value"]');
             const parsed = parseLikesValue(valEl ? valEl.innerText : text);
-            if (parsed && parsed > 0) pushCandidate('factoid', parsed);
+            if (parsed && parsed > 0) pushLive('factoid', parsed);
           }
         }
 
-        // Seleciona o maior valor detectado entre as fontes oficiais atualizadas
-        let likeCount = candidates.length > 0 ? Math.max(...candidates) : null;
+        // Seleciona o maior valor detectado neste ciclo (todas as fontes estão frescas,
+        // pois a página acabou de recarregar). Sem candidato novo, mantém o último válido
+        // em vez de zerar (evita flicker caso um ciclo específico falhe em capturar algo).
+        let likeCount = liveCandidates.length > 0 ? Math.max(...liveCandidates) : window._lastValidLikesCount;
 
         if (likeCount && likeCount > 0) {
           window._lastValidLikesCount = likeCount;
-          console.log(`[YouTube Scraper] Likes detectados: ${likeCount} | fontes: ${debugSources.join(' ; ')}`);
+          console.log(`[YouTube Scraper] Likes detectados: ${likeCount} | fontes: ${debugSources.join(' ; ') || 'nenhuma nova (mantendo último valor)'}`);
           ipcRenderer.send('youtube-likes-count', { likes: likeCount, videoId: v });
-        } else if (window._lastValidLikesCount) {
-          ipcRenderer.send('youtube-likes-count', { likes: window._lastValidLikesCount, videoId: v });
+        } else {
+          console.log('[YouTube Scraper] Nenhuma fonte de likes encontrada neste ciclo.');
         }
       } catch(errLikes) {
-        console.error('[YouTube Scraper] Erro ao capturar likes:', errLikes);
+        if (!errLikes || !errLikes._skip) {
+          console.error('[YouTube Scraper] Erro ao capturar likes:', errLikes);
+        }
       }
     } else if (window.location.href.includes('kick.com')) {
       platform = 'kick';
@@ -700,7 +794,10 @@ const fetchViewers = async () => {
         window._lastValidCount = count;
     }
 
-    if (platform && count && count !== '0') {
+    // A janela dedicada da Meta de Likes não deve reportar espectadores — ela existe só
+    // para capturar likes, e recarrega a página a cada ciclo, o que faria seu contador de
+    // espectadores brigar/sobrescrever o da janela "de verdade" configurada pelo usuário.
+    if (platform && count && count !== '0' && !IS_LIKES_GOAL_WINDOW) {
       ipcRenderer.send('viewer-count', { platform, key, count });
     }
   } catch(e) {

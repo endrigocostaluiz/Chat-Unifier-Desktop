@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://endrigocostaluiz.github.io/Chat-Unifier-Desktop/sitemap.xml
