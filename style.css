@@ -84,9 +84,9 @@ body {
   top: 0;
   left: 0;
   right: 0;
-  height: 80px;
+  height: 76px;
   z-index: 100;
-  background: rgba(7, 9, 14, 0.75);
+  background: rgba(7, 9, 14, 0.85);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
@@ -94,9 +94,9 @@ body {
 }
 
 .site-header.scrolled {
-  background: rgba(7, 9, 14, 0.92);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-  height: 72px;
+  background: rgba(7, 9, 14, 0.95);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  height: 68px;
 }
 
 .nav-container {
@@ -104,6 +104,7 @@ body {
   align-items: center;
   justify-content: space-between;
   height: 100%;
+  max-width: 1320px;
 }
 
 .brand-logo {
@@ -112,18 +113,19 @@ body {
   gap: 12px;
   text-decoration: none;
   color: #fff;
+  flex-shrink: 0;
 }
 
 .logo-badge {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   background: linear-gradient(135deg, var(--accent-emerald), #059669);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 900;
-  font-size: 16px;
+  font-size: 15px;
   color: #000;
   box-shadow: 0 0 20px var(--accent-emerald-glow);
   transition: transform 0.3s ease;
@@ -133,8 +135,14 @@ body {
   transform: rotate(-6deg) scale(1.05);
 }
 
+.brand-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .brand-text {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   background: linear-gradient(to right, #fff, #cbd5e1);
@@ -147,35 +155,183 @@ body {
   background: rgba(16, 185, 129, 0.15);
   color: var(--accent-emerald-light);
   border: 1px solid rgba(16, 185, 129, 0.3);
-  padding: 2px 8px;
+  padding: 2px 7px;
   border-radius: 999px;
   font-weight: 700;
+}
+
+/* Desktop Nav Menu - Modern Pill Bar */
+.desktop-nav {
+  display: flex;
+  align-items: center;
 }
 
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 4px;
   list-style: none;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 4px 6px;
+  border-radius: 999px;
 }
 
-.nav-links a {
+.nav-item {
+  display: inline-block;
   text-decoration: none;
   color: var(--text-muted);
   font-weight: 500;
-  font-size: 0.95rem;
-  transition: color 0.2s ease;
+  font-size: 0.88rem;
+  padding: 6px 14px;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
 
-.nav-links a:hover {
+.nav-item:hover {
   color: #fff;
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex-shrink: 0;
 }
+
+.btn-github-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-github-compact:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.btn-nav-cta {
+  padding: 9px 18px !important;
+  font-size: 0.88rem !important;
+  border-radius: 10px !important;
+}
+
+/* Mobile Menu Toggle */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-toggle:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hamburger-line {
+  width: 20px;
+  height: 2px;
+  background-color: #fff;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+  opacity: 0;
+  transform: translateX(-10px);
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* Mobile Drawer */
+.mobile-nav-drawer {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: rgba(10, 14, 23, 0.98);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+.mobile-nav-drawer.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.mobile-nav-links {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-nav-item {
+  display: block;
+  padding: 12px 16px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.mobile-nav-item:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mobile-drawer-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.w-full {
+  width: 100%;
+}
+
 
 /* Buttons */
 .btn {
@@ -1108,6 +1264,15 @@ body {
 
 /* Responsive adjustments */
 @media (max-width: 1024px) {
+  .desktop-nav {
+    display: none;
+  }
+  .btn-github-compact {
+    display: none;
+  }
+  .mobile-menu-toggle {
+    display: flex;
+  }
   .features-grid {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -1131,11 +1296,17 @@ body {
 }
 
 @media (max-width: 768px) {
-  .nav-links {
-    display: none;
+  .site-header {
+    height: 70px;
   }
   .hero-section {
-    padding-top: 120px;
+    padding-top: 110px;
+  }
+  .brand-text {
+    font-size: 1.1rem;
+  }
+  .brand-version {
+    display: none;
   }
   .features-grid,
   .steps-grid {
@@ -1149,3 +1320,4 @@ body {
     padding: 40px 20px;
   }
 }
+
