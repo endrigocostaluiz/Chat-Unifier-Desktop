@@ -94,29 +94,87 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // 4. Buscar dados da release no GitHub (Fallback gracioso caso rate limit)
-  fetch('https://api.github.com/repos/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest')
-    .then(res => res.json())
+  // 4. Sistema Dinâmico de Captura Automática da Última Versão do GitHub
+  function applyReleaseData(release) {
+    if (!release) return;
+
+    const tagName = release.tag_name || 'v1.5.3';
+
+    // 1. Atualiza todos os badges e textos de versão
+    const versionElements = document.querySelectorAll('.dynamic-version');
+    versionElements.forEach(el => {
+      el.textContent = tagName;
+    });
+
+    // 2. Busca o arquivo executável (.exe) da release
+    let exeAsset = null;
+    if (release.assets && Array.isArray(release.assets) && release.assets.length > 0) {
+      exeAsset = release.assets.find(a => a.name && a.name.toLowerCase().endsWith('.exe')) || release.assets[0];
+    }
+
+    if (exeAsset) {
+      // Atualiza os links de download direto
+      const downloadButtons = document.querySelectorAll('.direct-download-btn');
+      downloadButtons.forEach(btn => {
+        if (exeAsset.browser_download_url) {
+          btn.href = exeAsset.browser_download_url;
+          btn.setAttribute('download', exeAsset.name);
+          btn.setAttribute('title', `Baixar ${exeAsset.name}`);
+        }
+      });
+
+      // Atualiza o tamanho em MB
+      if (exeAsset.size) {
+        const sizeMb = (exeAsset.size / (1024 * 1024)).toFixed(1) + ' MB';
+        const sizeElements = document.querySelectorAll('.dynamic-size');
+        sizeElements.forEach(el => {
+          el.textContent = sizeMb;
+        });
+      }
+
+      // Atualiza o nome do arquivo exibido
+      if (exeAsset.name) {
+        const filenameElements = document.querySelectorAll('.dynamic-filename');
+        filenameElements.forEach(el => {
+          el.textContent = exeAsset.name;
+        });
+      }
+    }
+  }
+
+  // Carrega imediatamente do cache da sessão (se já consultado nesta sessão)
+  try {
+    const cached = sessionStorage.getItem('chat_unifier_release_cache');
+    if (cached) {
+      applyReleaseData(JSON.parse(cached));
+    }
+  } catch(e) {}
+
+  // Consulta a API do GitHub Releases para obter sempre a última versão cadastrada
+  fetch('https://api.github.com/repos/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest', {
+    headers: { 'Accept': 'application/vnd.github.v3+json' }
+  })
+    .then(res => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.json();
+    })
     .then(data => {
       if (data && data.tag_name) {
-        const versionBadges = document.querySelectorAll('.dynamic-version');
-        versionBadges.forEach(el => {
-          el.innerText = data.tag_name;
-        });
-
-        // Atualizar link direto do asset .exe se disponível
-        if (data.assets && data.assets.length > 0) {
-          const exeAsset = data.assets.find(a => a.name.endsWith('.exe'));
-          if (exeAsset && exeAsset.browser_download_url) {
-            const dlButtons = document.querySelectorAll('.direct-download-btn');
-            dlButtons.forEach(btn => {
-              btn.href = exeAsset.browser_download_url;
-            });
-          }
-        }
+        applyReleaseData(data);
+        try {
+          sessionStorage.setItem('chat_unifier_release_cache', JSON.stringify(data));
+        } catch(e) {}
       }
     })
-    .catch(() => {
-      // Ignora erro e mantém valores padrão do HTML
+    .catch(err => {
+      console.warn('Usando fallback para releases/latest:', err.message);
+      // Fallback: garante que todos os botões de download apontem para /releases/latest caso haja erro de rede
+      const downloadButtons = document.querySelectorAll('.direct-download-btn');
+      downloadButtons.forEach(btn => {
+        if (!btn.href || btn.href.endsWith('.html') || btn.href === '#') {
+          btn.href = 'https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest';
+        }
+      });
     });
 });
+
