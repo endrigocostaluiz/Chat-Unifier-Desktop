@@ -1,0 +1,53 @@
+# Chat Unifier Desktop - Documentação Completa e Especificação Técnica
+
+## Visão Geral
+O Chat Unifier Desktop é um software de produtividade para transmissões ao vivo (live streaming) e multistreaming. Ele foi desenvolvido com Electron, Node.js, Express e Socket.io, atuando como um servidor local (localhost:3000) e cliente para capturar, unificar e formatar chats de múltiplas plataformas em tempo real.
+
+O projeto resolve o principal problema dos criadores de conteúdo que transmitem simultaneamente para diversas redes sociais (multistream): a fragmentação de comentários e a dificuldade de gerenciar múltiplos chats em telas separadas durante a transmissão.
+
+## Plataformas Suportadas
+1. **Twitch**: Leitura de chat em tempo real e monitoramento de espectadores ao vivo.
+2. **YouTube Live**: Leitura de chat de transmissões ao vivo normais e monitor de viewers.
+3. **YouTube Shorts Live**: Suporte específico para o formato vertical Shorts ao vivo.
+4. **Kick**: Conexão com canais da plataforma Kick para streaming de jogos.
+5. **TikTok Live**: Suporte a transmissões ao vivo da rede social TikTok.
+
+## Arquitetura e Funcionamento
+- **Processamento Local (Zero Cloud Relay)**: Todo o scraping e a consolidação de mensagens ocorrem na máquina do usuário. Nenhuma mensagem ou dado de login é enviado para servidores de terceiros.
+- **Servidor Express + WebSockets (Socket.IO)**: O software inicia um servidor HTTP local na porta 3000 (ou configurável), que emite eventos WebSocket instantâneos assim que uma nova mensagem é capturada.
+- **Overlays para OBS Studio (Browser Source)**: O OBS consome o endpoint `http://localhost:3000/overlay` como uma fonte de navegador comum. Como o servidor está na mesma máquina local (127.0.0.1), a latência é inferior a 10 milissegundos e o consumo de banda de internet é zero.
+- **Estilos Visuais do Chat Overlay**:
+  - Moderno: Design limpo com cantos arredondados, cores de identificação por plataforma e suporte a fotos de perfil.
+  - Glassmorphism: Fundo translúcido com desfoque de fundo (backdrop-filter blur).
+  - Cyberpunk Neon: Cores vibrantes com glow e bordas estilizadas.
+  - Sticker: Estilo cartela de adesivos com alto contraste.
+  - Bubble: Formato de balão de mensagem para um visual descontraído.
+  - Dark Slim: Versão minimalista de linha única, ideal para jogos com pouco espaço na tela.
+  - Card Float: Efeito de cards flutuantes com animação de subida suave.
+  - Retro 8-Bit: Tipografia pixelada e estética nostálgica para streamers retrô.
+
+## Módulo de Sorteio (Giveaways)
+- Critérios de entrada configuráveis:
+  - Digitar palavra-chave específica (ex: `!sorteio`, `!participar`, `#premio`).
+  - Qualquer mensagem enviada no chat durante o período do sorteio.
+- Filtros:
+  - 1 inscrição única por usuário (anti-spam).
+  - Ignorar maiúsculas e minúsculas.
+  - Seleção de plataformas autorizadas (ex: somente Twitch ou todas).
+- Sorteio com Roleta Animada e Confetes.
+- Monitoramento de Resposta do Ganhador: O software monitora o chat em tempo real após o sorteio e alerta na tela quando o ganhador envia uma mensagem confirmando presença.
+
+## Contador de Espectadores Multistream
+- Soma dinâmica do número de espectadores simultâneos em cada rede.
+- Overlay de viewers para posicionar no canto do OBS (estilos: Horizontal, Grid, Minimalista, Badges).
+
+## Requisitos de Sistema
+- Sistema Operacional: Windows 10 ou Windows 11 (64-bit).
+- Dependências: Nenhuma. O aplicativo é portátil (.exe).
+- Compatibilidade: OBS Studio, Streamlabs Desktop, vMix, XSplit, Twitch Studio, TikTok Live Studio.
+
+## Links Oficiais
+- Site Oficial: https://endrigocostaluiz.github.io/Chat-Unifier-Desktop/
+- GitHub: https://github.com/endrigocostaluiz/Chat-Unifier-Desktop
+- Releases e Download: https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest
+- Criador: Endrigo Costa Luiz

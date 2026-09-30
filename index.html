@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- SEO Primary Meta Tags -->
+  <title>Chat Unifier Desktop | O Melhor Multichat & Multistream para OBS Studio</title>
+  <meta name="title" content="Chat Unifier Desktop | O Melhor Multichat & Multistream para OBS Studio">
+  <meta name="description" content="Unifique mensagens e espectadores simultâneos de Twitch, YouTube (Lives e Shorts), Kick e TikTok no OBS Studio em tempo real. 100% gratuito, sem chaves de API, com sorteios e overlays profissionais.">
+  <meta name="keywords" content="multichat, unificador de chat, chat para live, multistreaming, obs studio, overlay chat obs, twitch chat, youtube live chat, kick chat, tiktok live chat, contador de viewers multistream, sorteio na stream, giveaway live, restream alternativo">
+  <meta name="author" content="Endrigo Costa Luiz">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://endrigocostaluiz.github.io/Chat-Unifier-Desktop/">
+
+  <!-- LLM & AI Discovery -->
+  <link rel="help" type="text/plain" href="llms.txt" title="Documentação LLM (llms.txt)">
+
+  <!-- Open Graph / Facebook / Discord / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://endrigocostaluiz.github.io/Chat-Unifier-Desktop/">
+  <meta property="og:title" content="Chat Unifier Desktop | Multichat & Multistream para OBS Studio">
+  <meta property="og:description" content="Centralize Twitch, YouTube, Kick e TikTok no OBS Studio em um único feed e overlay transparente. Sem chaves de API, com roleta de sorteio e contador de viewers.">
+  <meta property="og:image" content="https://endrigocostaluiz.github.io/Chat-Unifier-Desktop/assets/screenshot-dashboard-real.png">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:site_name" content="Chat Unifier Desktop">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://endrigocostaluiz.github.io/Chat-Unifier-Desktop/">
+  <meta name="twitter:title" content="Chat Unifier Desktop | Multichat & Multistream para OBS Studio">
+  <meta name="twitter:description" content="Centralize Twitch, YouTube, Kick e TikTok no OBS Studio em um único feed e overlay transparente. 100% Gratuito e portátil.">
+  <meta name="twitter:image" content="https://endrigocostaluiz.github.io/Chat-Unifier-Desktop/assets/screenshot-dashboard-real.png">
+
+  <!-- Favicons & Icons -->
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <link rel="apple-touch-icon" href="assets/icon.png">
+  <meta name="theme-color" content="#07090e">
+
+  <!-- Fonts: Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Structured Data JSON-LD for Google Rich Snippets & LLM Crawlers -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "SoftwareApplication",
+        "name": "Chat Unifier Desktop",
+        "operatingSystem": "Windows 10, Windows 11",
+        "applicationCategory": "MultimediaApplication",
+        "applicationSubCategory": "Live Streaming Software",
+        "offers": {
+          "@type": "Offer",
+          "price": "0.00",
+          "priceCurrency": "BRL"
+        },
+        "description": "Aplicativo portátil para Windows que unifica em tempo real feeds de chat e contadores de espectadores simultâneos de Twitch, YouTube, Kick e TikTok para OBS Studio sem chaves de API.",
+        "softwareVersion": "1.5.3",
+        "downloadUrl": "https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest",
+        "author": {
+          "@type": "Person",
+          "name": "Endrigo Costa Luiz",
+          "url": "https://github.com/endrigocostaluiz"
+        }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "O Chat Unifier Desktop é realmente 100% gratuito?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sim! O Chat Unifier Desktop é totalmente gratuito e de código aberto sob licença MIT. Não há planos premium, limites de canais nem assinaturas mensais."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Preciso de chaves de API ou cadastro de bots nas plataformas?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Não! O Chat Unifier utiliza captura local inteligente (scraping local) diretamente no seu computador. Basta inserir o nome do seu canal ou link da live para conectar instantaneamente sem gerar chaves OAuth ou de desenvolvedor."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "É compatível com OBS Studio e Streamlabs?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Sim, é 100% compatível com OBS Studio, Streamlabs Desktop, Twitch Studio, vMix e qualquer outro software de transmissão que suporte Fontes de Navegador (Browser Source)."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Como funciona o sistema de sorteios (giveaways)?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "O Chat Unifier possui um módulo de sorteios integrado com roleta animada, contagem regressiva e filtros anti-spam (1 entrada por pessoa). Ele ainda conta com o recurso exclusivo de detectar em tempo real quando o vencedor responder no chat da live."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Consome muita CPU ou memória da máquina durante a transmissão?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Não. Como todo o processamento de renderização é feito de forma ultraleve via Chromium integrado com aceleração por hardware e o servidor roda localmente (localhost:3000), o impacto na taxa de FPS dos seus jogos é imperceptível."
+            }
+          }
+        ]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+
+  <!-- Background Grid Effect -->
+  <div class="grid-bg-overlay" aria-hidden="true"></div>
+
+  <!-- Header / Navigation Bar -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="#" class="brand-logo" aria-label="Página Inicial do Chat Unifier">
+        <div class="logo-badge">CU</div>
+        <div>
+          <span class="brand-text">Chat Unifier</span>
+          <span class="brand-version dynamic-version">v1.5.3</span>
+        </div>
+      </a>
+
+      <nav aria-label="Navegação Principal">
+        <ul class="nav-links">
+          <li><a href="#recursos">Recursos</a></li>
+          <li><a href="#telas">Prints do App</a></li>
+          <li><a href="#comparativo">Comparativo</a></li>
+          <li><a href="#como-usar">Como Usar</a></li>
+          <li><a href="#faq">Perguntas Frequentes</a></li>
+          <li><a href="#apoiar">Apoiar</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="https://github.com/endrigocostaluiz/Chat-Unifier-Desktop" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" aria-label="Ver repositório no GitHub">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          <span>GitHub</span>
+        </a>
+        <a href="https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest" class="btn btn-primary btn-glow direct-download-btn" aria-label="Baixar Chat Unifier Desktop">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          <span>Baixar Grátis</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      
+      <!-- Pill Badge -->
+      <div class="hero-pill">
+        <span class="pulse-dot"></span>
+        <span>Versão <strong class="dynamic-version">v1.5.3</strong> Estável • 100% Gratuito & Open Source</span>
+      </div>
+
+      <!-- Main Headline -->
+      <h1 class="hero-title">
+        O <span class="gradient-text">Multichat Definitivo</span><br>
+        Para Streamers no OBS Studio
+      </h1>
+
+      <!-- Subtitle -->
+      <p class="hero-subtitle">
+        Centralize em tempo real as mensagens e espectadores de <strong>Twitch, YouTube (Lives & Shorts), Kick e TikTok</strong> em uma única tela e overlay transparente para sua transmissão, <strong>sem precisar de chaves de API</strong> ou cadastros burocráticos.
+      </p>
+
+      <!-- CTA Buttons -->
+      <div class="hero-cta-group">
+        <a href="https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest" class="btn btn-primary btn-glow direct-download-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.949-1.951"/></svg>
+          <span>Baixar para Windows (64-bit)</span>
+        </a>
+        <a href="#telas" class="btn btn-secondary">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          <span>Ver Demonstração Real</span>
+        </a>
+      </div>
+
+      <!-- Download Meta Subtext -->
+      <div class="download-subtext">
+        <span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Executável Portátil (Não requer instalação)
+        </span>
+        <span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Tamanho: ~66 MB
+        </span>
+        <span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          Compatível com Windows 10 e Windows 11
+        </span>
+      </div>
+
+      <!-- Supported Platforms Badges -->
+      <div class="platform-badges-wrapper">
+        <span class="platform-badges-label">Plataformas e Softwares Integrados</span>
+        <div class="platform-badges">
+          <div class="platform-badge twitch">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#9146ff"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+            <span>Twitch</span>
+          </div>
+          <div class="platform-badge youtube">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+            <span>YouTube Live & Shorts</span>
+          </div>
+          <div class="platform-badge kick">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#53fc18"><path d="M1.333 0h8v5.333H12V2.667h2.667V0H22.667v8H20v2.667h-2.667v2.666H20V16h2.667v8H14.667v-2.667H12v-2.666H9.333V24h-8V0zm8 8H6.667v8H9.333V8z"/></svg>
+            <span>Kick</span>
+          </div>
+          <div class="platform-badge tiktok">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#ff0050"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.99v9.75c-.01 1.9-.6 3.8-1.74 5.3-1.63 2.18-4.2 3.49-6.93 3.5-2.64.03-5.22-1.15-6.91-3.17-1.72-2.02-2.42-4.78-1.92-7.41.5-2.6 2.22-4.85 4.62-5.97 1.48-.68 3.12-.92 4.74-.7v4.18c-.89-.13-1.82.02-2.6.43-.88.46-1.53 1.28-1.78 2.24-.26 1.01-.06 2.1.53 2.95.59.85 1.56 1.37 2.6 1.39 1.14.04 2.27-.5 2.92-1.44.42-.59.64-1.32.65-2.06V.02z"/></svg>
+            <span>TikTok Live</span>
+          </div>
+          <div class="platform-badge obs">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="#cbd5e1"><circle cx="12" cy="12" r="10"/></svg>
+            <span>OBS Studio & Streamlabs</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real App Window Mockup Frame -->
+      <div class="hero-mockup-container">
+        <div class="window-frame">
+          <div class="window-header">
+            <div class="window-dots">
+              <span class="window-dot dot-red"></span>
+              <span class="window-dot dot-yellow"></span>
+              <span class="window-dot dot-green"></span>
+            </div>
+            <span class="window-title">Chat Unifier Desktop - Painel de Controle (Captura Real)</span>
+            <span class="window-status-tag">STATUS: CONECTADO</span>
+          </div>
+          <img src="assets/screenshot-dashboard-real.png" alt="Interface Principal do Chat Unifier Desktop em execução com canais conectados" class="hero-main-screenshot" loading="eager" width="1440" height="900">
+        </div>
+
+        <!-- Floating Card Showing Real Overlay -->
+        <div class="hero-floating-card">
+          <div class="floating-card-header">
+            <span class="floating-card-title">
+              <span class="pulse-dot"></span>
+              Overlay no OBS Studio
+            </span>
+            <span style="font-size:0.75rem; color:#94a3b8; font-family:var(--font-mono);">Browser Source</span>
+          </div>
+          <img src="assets/screenshot-overlay-obs.png" alt="Overlay transparente do Chat Unifier rodando no OBS Studio" class="floating-card-img" width="600" height="400">
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Metrics Bar -->
+  <section class="metrics-section" aria-label="Estatísticas do Chat Unifier">
+    <div class="container">
+      <div class="metrics-grid">
+        <div class="metric-item">
+          <div class="metric-number">4 em 1</div>
+          <div class="metric-label">Twitch, YouTube, Kick e TikTok simultâneos</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-number">0 Chaves</div>
+          <div class="metric-label">Sem cadastros de API ou bots complexos</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-number">&lt; 10ms</div>
+          <div class="metric-label">Latência ultrabaixa via servidor local</div>
+        </div>
+        <div class="metric-item">
+          <div class="metric-number">100%</div>
+          <div class="metric-label">Gratuito, sem limites e de código aberto</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Grid -->
+  <section class="section" id="recursos">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Recursos Poderosos</span>
+        <h2 class="section-title">Tudo o que Você Precisa para Elevar sua Live</h2>
+        <p class="section-subtitle">
+          Criado por quem entende as dores reais de quem faz multistreaming diário. Mais controle, menos abas abertas e foco total no seu gameplay e audiência.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        
+        <!-- Card 1 -->
+        <article class="feature-card">
+          <div class="feature-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 class="feature-title">Multichat Unificado em Tempo Real</h3>
+          <p class="feature-desc">
+            Reúna comentários da Twitch, YouTube Live, YouTube Shorts, Kick e TikTok em um feed único ordenado cronologicamente, com identificação de cores e badges de cada rede.
+          </p>
+          <div class="feature-badge-list">
+            <span class="feature-mini-badge">Zero Delay</span>
+            <span class="feature-mini-badge">Fotos de Perfil</span>
+            <span class="feature-mini-badge">Emojis</span>
+          </div>
+        </article>
+
+        <!-- Card 2 -->
+        <article class="feature-card">
+          <div class="feature-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>
+          </div>
+          <h3 class="feature-title">Overlays Transparentes para OBS</h3>
+          <p class="feature-desc">
+            Adicione uma simples Fonte de Navegador (Browser Source) no OBS Studio ou Streamlabs. Escolha entre 8 temas premium: Glassmorphism, Cyberpunk Neon, Retro 8-bit, Dark Slim e mais.
+          </p>
+          <div class="feature-badge-list">
+            <span class="feature-mini-badge">8 Estilos Visuais</span>
+            <span class="feature-mini-badge">CSS Customizável</span>
+            <span class="feature-mini-badge">Animações de Entrada</span>
+          </div>
+        </article>
+
+        <!-- Card 3 -->
+        <article class="feature-card">
+          <div class="feature-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+          </div>
+          <h3 class="feature-title">Sorteios com Roleta Animada & Confetes</h3>
+          <p class="feature-desc">
+            Faça sorteios interativos entre espectadores de todas as plataformas simultaneamente por palavra-chave (ex: <code>!sorteio</code>). Possui detecção automática da resposta do ganhador ao vivo!
+          </p>
+          <div class="feature-badge-list">
+            <span class="feature-mini-badge">Roleta Efeito Slot</span>
+            <span class="feature-mini-badge">Anti-Spam (1 Entrada)</span>
+            <span class="feature-mini-badge">Reroll Instantâneo</span>
+          </div>
+        </article>
+
+        <!-- Card 4 -->
+        <article class="feature-card">
+          <div class="feature-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+          </div>
+          <h3 class="feature-title">Contador e Monitor de Viewers Multistream</h3>
+          <p class="feature-desc">
+            Acompanhe o total de espectadores ao vivo somando Twitch + YouTube + Kick + TikTok. Inclui widget personalizável para exibir a contagem na tela da live.
+          </p>
+          <div class="feature-badge-list">
+            <span class="feature-mini-badge">Soma Automática</span>
+            <span class="feature-mini-badge">Badges por Rede</span>
+            <span class="feature-mini-badge">Intervalo Ajustável</span>
+          </div>
+        </article>
+
+        <!-- Card 5 -->
+        <article class="feature-card">
+          <div class="feature-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+          </div>
+          <h3 class="feature-title">Sistema de Overlay Duplo Independente</h3>
+          <p class="feature-desc">
+            Tenha uma URL leve otimizada para o OBS Studio e outra URL em tela cheia com fontes maiores projetada para o seu segundo monitor, tablet ou celular.
+          </p>
+          <div class="feature-badge-list">
+            <span class="feature-mini-badge">URL de Live (OBS)</span>
+            <span class="feature-mini-badge">URL de Monitor (2ª Tela)</span>
+            <span class="feature-mini-badge">Modo Escuro Otimizado</span>
+          </div>
+        </article>
+
+        <!-- Card 6 -->
+        <article class="feature-card">
+          <div class="feature-icon-box">
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3 class="feature-title">Scraping Local Seguro & 100% Privado</h3>
+          <p class="feature-desc">
+            Nenhum dado, login ou histórico passa por servidores na nuvem. Todo o processamento ocorre exclusivamente no seu computador com baixo consumo de memória.
+          </p>
+          <div class="feature-badge-list">
+            <span class="feature-mini-badge">Sem Envio de Dados</span>
+            <span class="feature-mini-badge">Sem Queda de Conexão</span>
+            <span class="feature-mini-badge">App Portátil</span>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Deep Dive Showcase with REAL SCREENSHOTS -->
+  <section class="section" id="telas" style="background: rgba(13, 18, 31, 0.4); border-top: 1px solid var(--border-color);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Galeria Oficial</span>
+        <h2 class="section-title">Prints Reais do Aplicativo em Execução</h2>
+        <p class="section-subtitle">
+          Veja a interface nativa e os módulos reais funcionando no Windows com streamers reais.
+        </p>
+      </div>
+
+      <!-- Screenshot Card 1: Chat Dashboard -->
+      <div class="deep-dive-card">
+        <div class="deep-dive-text">
+          <div class="deep-dive-tag">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>Painel Principal do Multichat</span>
+          </div>
+          <h3 class="deep-dive-title">Controle Central de Todos os Seus Canais</h3>
+          <p class="deep-dive-desc">
+            Insira o nome de usuário da sua Twitch, canal do YouTube, Kick ou @ do TikTok. Com um clique em "Iniciar Chat", todos os feeds se conectam e são exibidos com badges e cores distintos.
+          </p>
+          <ul class="feature-check-list">
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>Barra de pesquisa rápida para filtrar comentários em tempo real.</span>
+            </li>
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>Controle individual para ligar/desligar qualquer canal a qualquer momento.</span>
+            </li>
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>Preview em tempo real na própria janela do aplicativo antes de abrir o OBS.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="deep-dive-visual">
+          <img src="assets/preview-chat.png" alt="Print real da aba de Chat Unificado no Chat Unifier Desktop" class="deep-dive-img" loading="lazy" width="1183" height="785">
+          <div class="visual-caption">
+            <span>Aba Chat Unificado • Conexão simultânea</span>
+            <span style="color:#10b981; font-weight:700;">● Ao Vivo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot Card 2: Giveaway & Sorteios -->
+      <div class="deep-dive-card reversed">
+        <div class="deep-dive-text">
+          <div class="deep-dive-tag">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect width="20" height="5" x="2" y="7"/><line x1="12" x2="12" y1="22" y2="7"/></svg>
+            <span>Módulo de Sorteios (Giveaways)</span>
+          </div>
+          <h3 class="deep-dive-title">Sorteios Interativos com Roleta Animada e Confetes</h3>
+          <p class="deep-dive-desc">
+            Engaje seu público premiando espectadores de qualquer plataforma conectada. Defina a palavra-chave (ex: <code>!sorteio</code>), ative filtros anti-duplicidade e gire a roleta estilo slot machine com desaceleração emocionante.
+          </p>
+          <ul class="feature-check-list">
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span><strong>Detecção em Tempo Real da Resposta do Ganhador:</strong> O aplicativo monitora o chat e avisa assim que o sorteado responder!</span>
+            </li>
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>Botão de <strong>Reroll Instantâneo</strong> caso o ganhador não responda dentro do prazo.</span>
+            </li>
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>Histórico completo de ganhadores salvo para auditoria.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="deep-dive-visual">
+          <img src="assets/screenshot-giveaway-real.png" alt="Print real do módulo de sorteio com roleta animada no Chat Unifier" class="deep-dive-img" loading="lazy" width="1440" height="900">
+          <div class="visual-caption">
+            <span>Módulo de Sorteio com Roleta de Prêmios e Filtros</span>
+            <span style="color:#10b981; font-weight:700;">Recurso Exclusivo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot Card 3: Viewers Counter -->
+      <div class="deep-dive-card">
+        <div class="deep-dive-text">
+          <div class="deep-dive-tag">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <span>Contador de Espectadores Multistream</span>
+          </div>
+          <h3 class="deep-dive-title">Monitore sua Audiência Total em Tempo Real</h3>
+          <p class="deep-dive-desc">
+            Saiba exatamente quantas pessoas estão assistindo você na Twitch, YouTube, Kick e TikTok simultaneamente, sem precisar abrir cada painel de criador no navegador.
+          </p>
+          <ul class="feature-check-list">
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>Widget leve para colocar diretamente na cena do OBS Studio.</span>
+            </li>
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>Vários layouts: Horizontal, Lista Vertical, Minimalista, Grid e Badges.</span>
+            </li>
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>Intervalo de atualização configurável para máxima precisão.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="deep-dive-visual">
+          <img src="assets/preview-viewers.png" alt="Print real do contador de viewers multistream do Chat Unifier" class="deep-dive-img" loading="lazy" width="1183" height="785">
+          <div class="visual-caption">
+            <span>Contador de Viewers Multistream • Twitch, YouTube, Kick e TikTok</span>
+            <span style="color:#10b981; font-weight:700;">Total Unificado</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Screenshot Card 4: Settings & Overlays Customization -->
+      <div class="deep-dive-card reversed">
+        <div class="deep-dive-text">
+          <div class="deep-dive-tag">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Customização Visual & Temas</span>
+          </div>
+          <h3 class="deep-dive-title">Deixe o Chat com a Cara da sua Live</h3>
+          <p class="deep-dive-desc">
+            Personalize cada detalhe visual: oculte fotos de perfil se quiser um visual minimalista, ative animações suaves de entrada (Bounce, Slide, Fade), configure o modo lento (slow mode) e injete seu próprio código CSS.
+          </p>
+          <ul class="feature-check-list">
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>8 temas pré-construídos para combinar com qualquer estilo de jogo.</span>
+            </li>
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>Ajuste fino de opacidade de fundo para transparência perfeita no OBS.</span>
+            </li>
+            <li class="feature-check-item">
+              <span class="check-icon">✓</span>
+              <span>Suporte a editor de CSS customizado em tempo real.</span>
+            </li>
+          </ul>
+        </div>
+        <div class="deep-dive-visual">
+          <img src="assets/preview-settings.png" alt="Print real do painel de configurações visuais de overlay do Chat Unifier" class="deep-dive-img" loading="lazy" width="1183" height="785">
+          <div class="visual-caption">
+            <span>Aba de Configuração de Temas e Overlays</span>
+            <span style="color:#10b981; font-weight:700;">Controle Total</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Competitors Comparison Table (SEO & Decision Making) -->
+  <section class="section comparison-section" id="comparativo">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Análise Comparativa</span>
+        <h2 class="section-title">Por Que o Chat Unifier Supera os Concorrentes?</h2>
+        <p class="section-subtitle">
+          Veja como o Chat Unifier Desktop se compara com alternativas populares como Restream Chat, Social Stream Ninja, Botrix e Casterlabs.
+        </p>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th>Recursos & Vantagens</th>
+              <th class="highlight-col">Chat Unifier Desktop</th>
+              <th>Restream Chat</th>
+              <th>Social Stream Ninja</th>
+              <th>Botrix / Casterlabs</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Preço e Acesso</strong></td>
+              <td class="highlight-col"><span class="badge-yes">100% Gratuito / Open Source</span></td>
+              <td><span class="badge-warning">Planos pagos caros para canais extras</span></td>
+              <td><span class="badge-yes">Gratuito</span></td>
+              <td><span class="badge-warning">Versão básica com paywall</span></td>
+            </tr>
+            <tr>
+              <td><strong>Necessidade de Chaves de API / Bot</strong></td>
+              <td class="highlight-col"><span class="badge-yes">Zero Chaves de API (Scraping Local)</span></td>
+              <td><span class="badge-no">Exige login em nuvem</span></td>
+              <td><span class="badge-warning">Requer extensões de navegador</span></td>
+              <td><span class="badge-no">Exige bot moderador</span></td>
+            </tr>
+            <tr>
+              <td><strong>Suporte Simultâneo (Twitch, YT, Kick, TikTok)</strong></td>
+              <td class="highlight-col"><span class="badge-yes">Nativo & Imediato</span></td>
+              <td><span class="badge-warning">TikTok e Kick limitados</span></td>
+              <td><span class="badge-yes">Suportado</span></td>
+              <td><span class="badge-warning">Configuração complexa</span></td>
+            </tr>
+            <tr>
+              <td><strong>Sorteios com Roleta Animada & Confetes</strong></td>
+              <td class="highlight-col"><span class="badge-yes">Integrado de Fábrica</span></td>
+              <td><span class="badge-no">Não possui</span></td>
+              <td><span class="badge-no">Não possui</span></td>
+              <td><span class="badge-warning">Básico / sem roleta animada</span></td>
+            </tr>
+            <tr>
+              <td><strong>Detecção de Resposta do Ganhador no Chat</strong></td>
+              <td class="highlight-col"><span class="badge-yes">Exclusivo em Tempo Real</span></td>
+              <td><span class="badge-no">Não possui</span></td>
+              <td><span class="badge-no">Não possui</span></td>
+              <td><span class="badge-no">Não possui</span></td>
+            </tr>
+            <tr>
+              <td><strong>Contador de Viewers Multistream</strong></td>
+              <td class="highlight-col"><span class="badge-yes">Integrado com Overlay OBS</span></td>
+              <td><span class="badge-warning">Apenas no painel web</span></td>
+              <td><span class="badge-warning">Requer script externo</span></td>
+              <td><span class="badge-warning">Requer widget pago</span></td>
+            </tr>
+            <tr>
+              <td><strong>URL de Monitor em Tela Cheia (2ª Tela)</strong></td>
+              <td class="highlight-col"><span class="badge-yes">Incluso (Overlay Duplo)</span></td>
+              <td><span class="badge-warning">Apenas na janela web</span></td>
+              <td><span class="badge-yes">Disponível</span></td>
+              <td><span class="badge-no">Não possui</span></td>
+            </tr>
+            <tr>
+              <td><strong>Privacidade e Dados Locais</strong></td>
+              <td class="highlight-col"><span class="badge-yes">100% no seu PC (Zero Nuvem)</span></td>
+              <td><span class="badge-no">Tudo passa pelos servidores deles</span></td>
+              <td><span class="badge-yes">Local</span></td>
+              <td><span class="badge-no">Servidores externos</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Step by Step Setup Guide -->
+  <section class="section" id="como-usar">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Passo a Passo</span>
+        <h2 class="section-title">Como Configurar no OBS Studio em 3 Passos</h2>
+        <p class="section-subtitle">
+          Leve menos de 2 minutos para colocar seu chat e contador de viewers funcionando na sua stream.
+        </p>
+      </div>
+
+      <div class="steps-grid">
+        
+        <!-- Step 1 -->
+        <div class="step-card">
+          <span class="step-number">01</span>
+          <div class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+          </div>
+          <h3 class="step-title">Baixe o Chat Unifier</h3>
+          <p class="step-desc">
+            Baixe o arquivo portátil <code>Chat.Unifier.1.5.3.exe</code> e execute diretamente no seu computador. Não precisa instalar nada nem poluir o registro do Windows.
+          </p>
+          <a href="https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest" class="btn btn-secondary direct-download-btn" style="margin-top:auto;">
+            <span>Baixar Executável</span>
+          </a>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="step-card">
+          <span class="step-number">02</span>
+          <div class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <h3 class="step-title">Adicione seus Canais</h3>
+          <p class="step-desc">
+            Digite seus usernames da Twitch, Kick, TikTok ou link da live do YouTube. Clique no botão <strong>"Iniciar Chat"</strong> para começar a sincronização em tempo real.
+          </p>
+          <div class="code-snippet" style="margin-top:auto;">
+            <span>Twitch + YT + Kick + TikTok</span>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="step-card">
+          <span class="step-number">03</span>
+          <div class="step-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="3" rx="2"/><line x1="8" x2="16" y1="21" y2="21"/><line x1="12" x2="12" y1="17" y2="21"/></svg>
+          </div>
+          <h3 class="step-title">Cole no OBS Studio</h3>
+          <p class="step-desc">
+            No OBS Studio, adicione uma nova fonte do tipo <strong>Navegador (Browser Source)</strong>, cole a URL local gerada e ajuste a largura e altura desejadas. Pronto!
+          </p>
+          <div class="code-snippet" style="margin-top:auto;">
+            <code>http://localhost:3000/overlay</code>
+            <button class="copy-mini-btn" onclick="copyText('http://localhost:3000/overlay', this)" title="Copiar URL" aria-label="Copiar URL do Overlay">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section (Schema.org / SEO / User Clarifications) -->
+  <section class="section" id="faq">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Tire Suas Dúvidas</span>
+        <h2 class="section-title">Perguntas Frequentes (FAQ)</h2>
+        <p class="section-subtitle">
+          Tudo o que você precisa saber sobre funcionamento, requisitos e compatibilidade do aplicativo.
+        </p>
+      </div>
+
+      <div class="faq-list">
+        
+        <div class="faq-item active">
+          <button class="faq-question">
+            <span>O Chat Unifier Desktop é realmente 100% gratuito?</span>
+            <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Sim! O software é 100% gratuito e de código aberto sob licença MIT. Você pode usar livremente nas suas streams sem pagar nenhuma taxa, sem propagandas inseridas na tela e sem bloqueio artificial de recursos.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Preciso criar conta de desenvolvedor ou gerar chaves de API?</span>
+            <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Não! O Chat Unifier Desktop foi desenvolvido para eliminar completamente a burocracia de APIs, tokens OAuth que expiram e cadastros em plataformas terceiras. A leitura dos chats é feita de forma local e inteligente, bastando inserir seu nome de usuário.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Funciona com YouTube Shorts e TikTok Live?</span>
+            <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Sim! O aplicativo possui suporte específico para transmissões no formato vertical do YouTube Shorts e TikTok Live, além do formato horizontal tradicional de lives do YouTube, Twitch e Kick.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>O aplicativo causa lag ou queda de FPS nos jogos durante a live?</span>
+            <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Não. Todo o sistema do Chat Unifier é altamente otimizado: as mensagens são despachadas via WebSockets ultraleves locais na porta 3000 do seu computador, garantindo consumo insignificante de processador e memória RAM.
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Como funciona a detecção de resposta do sorteado no giveaway?</span>
+            <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Após a roleta parar e revelar o nome do ganhador, o modal de vitória passa a vigiar o chat ao vivo em tempo real. Assim que o vencedor enviar qualquer mensagem confirmando que está presente na live, o aplicativo destaca na hora o comentário e horário exato na tela!
+            </p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Posso usar em um segundo monitor sem colocar na tela da live?</span>
+            <svg class="faq-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>
+              Com certeza! O Chat Unifier possui o recurso de Overlay Duplo: você pode usar a <strong>URL de Monitor</strong> (<code>http://localhost:3000/monitor</code>) para abrir no seu navegador em tela cheia no segundo monitor com fontes ampliadas e alto contraste, ou até mesmo abrir no tablet ou celular conectado na mesma rede Wi-Fi!
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Support & Donation Section -->
+  <section class="section" id="apoiar">
+    <div class="container">
+      <div class="donation-box">
+        <span class="section-tag">Apoie o Desenvolvedor</span>
+        <h2 class="section-title" style="font-size: 2.2rem; margin-bottom: 14px;">Gostou do Projeto?</h2>
+        <p class="section-subtitle" style="margin-bottom: 24px;">
+          O Chat Unifier Desktop é desenvolvido e mantido com carinho de forma independente. Se esta ferramenta ajuda suas lives, considere apoiar com um café ou PIX!
+        </p>
+
+        <!-- PIX Card -->
+        <div class="pix-card">
+          <div style="text-align: left;">
+            <span style="font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 700;">Chave PIX (Brasil):</span>
+            <div class="pix-key-text" id="pix-key">endrigocosta@hotmail.com</div>
+          </div>
+          <button class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;" onclick="copyText('endrigocosta@hotmail.com', this)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <span>Copiar Chave PIX</span>
+          </button>
+        </div>
+
+        <div style="margin-top: 24px;">
+          <a href="https://buymeacoffee.com/endrigo" target="_blank" rel="noopener noreferrer" class="btn btn-primary" style="background:#ffdd00; color:#000; box-shadow:0 4px 20px rgba(255, 221, 0, 0.3);">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+            <span>Buy Me a Coffee (Internacional)</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final Call to Action -->
+  <section class="download-cta-section">
+    <div class="container">
+      <div class="cta-box">
+        <h2 class="hero-title" style="font-size: clamp(2rem, 4vw, 3.2rem);">
+          Pronto para Transformar<br>
+          o Chat da Sua Live?
+        </h2>
+        <p class="hero-subtitle">
+          Baixe agora mesmo o <strong>Chat Unifier Desktop</strong> e tenha o multichat mais completo do mercado no seu OBS Studio em menos de 2 minutos.
+        </p>
+        <div class="hero-cta-group">
+          <a href="https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases/latest" class="btn btn-primary btn-glow direct-download-btn" style="padding: 18px 36px; font-size: 1.1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.949-1.951"/></svg>
+            <span>Baixar Gratuitamente (v1.5.3)</span>
+          </a>
+          <a href="https://github.com/endrigocostaluiz/Chat-Unifier-Desktop" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" style="padding: 18px 36px; font-size: 1.1rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+            <span>Ver no GitHub</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <div class="logo-badge">CU</div>
+            <span class="brand-text">Chat Unifier</span>
+          </div>
+          <p>
+            O unificador de chat e multistream gratuito e de código aberto feito sob medida para streamers no OBS Studio e Streamlabs.
+          </p>
+        </div>
+
+        <div class="footer-nav-col">
+          <h4>Navegação</h4>
+          <ul>
+            <li><a href="#recursos">Recursos</a></li>
+            <li><a href="#telas">Prints do App</a></li>
+            <li><a href="#comparativo">Comparativo</a></li>
+            <li><a href="#como-usar">Como Usar no OBS</a></li>
+            <li><a href="#faq">Perguntas Frequentes</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-nav-col">
+          <h4>Comunidade & Links</h4>
+          <ul>
+            <li><a href="https://github.com/endrigocostaluiz/Chat-Unifier-Desktop" target="_blank" rel="noopener noreferrer">Repositório GitHub</a></li>
+            <li><a href="https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases" target="_blank" rel="noopener noreferrer">Releases & Versões</a></li>
+            <li><a href="https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/issues" target="_blank" rel="noopener noreferrer">Reportar Erro / Ideias</a></li>
+            <li><a href="llms.txt" target="_blank">llms.txt (Busca IA)</a></li>
+            <li><a href="llms-full.txt" target="_blank">llms-full.txt</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-nav-col">
+          <h4>Plataformas Suportadas</h4>
+          <ul>
+            <li>Twitch Live Stream</li>
+            <li>YouTube Live & Shorts</li>
+            <li>Kick Streaming</li>
+            <li>TikTok Live</li>
+            <li>OBS Studio & Streamlabs</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>
+          &copy; 2026 Chat Unifier Desktop • Licenciado sob a Licença MIT. Desenvolvido com dedicação por <strong>Endrigo Costa Luiz</strong> (@endrigocostaluiz).
+        </p>
+        <p style="font-size: 0.85rem;">
+          <a href="https://github.com/endrigocostaluiz/Chat-Unifier-Desktop" target="_blank" rel="noopener noreferrer" style="color: var(--accent-emerald-light); text-decoration: none;">GitHub Oficial</a>
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="script.js"></script>
+</body>
+</html>
