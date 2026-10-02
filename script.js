@@ -80,9 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (btnElement) {
       const originalText = btnElement.innerHTML;
+      const copiedLabel = (window.ChatUnifierI18n && window.ChatUnifierI18n.getText('ui.copied')) || 'Copiado!';
       btnElement.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:#10b981;"><polyline points="20 6 9 17 4 12"/></svg>
-        <span>Copiado!</span>
+        <span>${copiedLabel}</span>
       `;
       btnElement.style.borderColor = '#10b981';
       btnElement.style.color = '#34d399';
@@ -95,8 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // 4. Sistema Dinâmico de Captura Automática da Última Versão do GitHub
+  let currentReleaseData = null;
+
   function applyReleaseData(release) {
     if (!release) return;
+    currentReleaseData = release;
 
     const tagName = release.tag_name || 'v1.5.3';
 
@@ -141,6 +145,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+
+  // Se o idioma for alterado, re-hidrata os elementos dinâmicos
+  document.addEventListener('chatUnifierLanguageChanged', () => {
+    if (currentReleaseData) {
+      applyReleaseData(currentReleaseData);
+    }
+  });
 
   // Carrega imediatamente do cache da sessão (se já consultado nesta sessão)
   try {
