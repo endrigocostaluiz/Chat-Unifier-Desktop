@@ -1,6 +1,6 @@
 # 🌌 Chat Unifier Desktop - Multichat & Multistream para Stream no OBS 🚀
 
-[![Release](https://img.shields.io/badge/Release-v1.5.3-emerald?style=for-the-badge&logo=electron)](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases)
+[![Release](https://img.shields.io/badge/Release-v1.5.5-emerald?style=for-the-badge&logo=electron)](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
 [![Platforms](https://img.shields.io/badge/Platforms-Twitch%20|%20YouTube%20|%20Kick%20|%20TikTok-9146ff?style=for-the-badge)](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop)
 [![OBS Compatible](https://img.shields.io/badge/OBS%20Studio-Compatible-302e31?style=for-the-badge&logo=obsstudio)](https://obsproject.com/)
@@ -20,8 +20,9 @@ O **Chat Unifier** é o mais poderoso e completo aplicativo de **Multichat** e *
 
 O **Chat Unifier Desktop** é a ferramenta definitiva para quem faz **multistream** e quer centralizar todas as interações da sua **stream** em tempo real no **OBS**.
 
-### 🌟 Novidades da Versão (v1.4.0)
+### 🌟 Novidades da Versão (v1.5.5)
 
+- ❤️ **Meta de Likes (YouTube) com Som Opcional:** Overlay de meta de likes para o **OBS** com barra, card ou cápsula. Agora você pode ativar um **som a cada novo like**, escolhendo entre 6 sons (Som 1 a Som 6) e testando no botão de teste da prévia.
 - 🎁 **Novo Módulo de Sorteio (Giveaways) para Stream:**
   - Realize sorteios interativos entre os espectadores de todas as plataformas conectadas no **Multichat** (**Twitch, YouTube, Kick, TikTok**).
   - **Critérios de Entrada:** Inscrição por palavra-chave configurável (ex: `!sorteio`, `#sorteio`) ou por qualquer mensagem enviada no chat da **stream**.
@@ -73,8 +74,9 @@ O **Chat Unifier Desktop** é a ferramenta definitiva para quem faz **multistrea
 
 **Chat Unifier Desktop** is the ultimate **multichat** and **multistream** application designed for streamers looking to consolidate live chat, stream overlays, viewer counters, and giveaways directly inside **OBS Studio**.
 
-### ✨ What's New in Version (v1.4.0)
+### ✨ What's New in Version (v1.5.5)
 
+- ❤️ **Likes Goal (YouTube) with Optional Sound:** Likes goal overlay for **OBS** in bar, card or pill layouts. You can now enable a **sound for every new like**, picking from 6 sounds (Sound 1 to 6) and previewing it with the test button.
 - 🎁 **New Stream Giveaway & Raffle Module:**
   - Run interactive giveaways among viewers from all active chats in your **Multichat** (**Twitch, YouTube, Kick, TikTok**).
   - **Entry Rules:** Keyword-based entries (e.g., `!giveaway`, `!raffle`) or any message sent in the live stream chat.
