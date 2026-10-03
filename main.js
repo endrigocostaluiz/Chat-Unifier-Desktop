@@ -265,6 +265,8 @@ const defaultLikesGoalConfig = () => ({
   fontColor: '#ffffff',
   fontSize: 14,
   enablePulseAnim: true,
+  soundEnabled: false,
+  soundChoice: 1,
   showPercentage: true,
   customCSS: '',
   customCssEnabled: true
@@ -305,7 +307,8 @@ serverApp.use(express.static(path.join(__dirname, 'public/overlay')));
 serverApp.use('/viewers', express.static(path.join(__dirname, 'public/viewers')));
 serverApp.use('/viewers-monitor', express.static(path.join(__dirname, 'public/viewers-monitor')));
 serverApp.use('/likes-goal', express.static(path.join(__dirname, 'public/likes-goal')));
-serverApp.use('/icons', express.static(path.join(__dirname, 'public/icons')));
+serverApp.use('/sounds', express.static(path.join(__dirname, 'sounds')));
+serverApp.use('/icons',express.static(path.join(__dirname, 'public/icons')));
 
 serverApp.get('/chat', (req, res) => res.sendFile(path.join(__dirname, 'public/overlay/index.html')));
 serverApp.get('/monitor', (req, res) => res.sendFile(path.join(__dirname, 'public/overlay/index.html')));

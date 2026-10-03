@@ -625,6 +625,7 @@
                 const hasIncreased = (lastLikes !== -1 && currentLikes > prev);
                 lastLikes = currentLikes;
 
+                if (hasIncreased) playLikeSound();
                 render(hasIncreased);
             }
         });
@@ -633,6 +634,24 @@
             const n = parseInt(String(val).replace(/[^0-9]/g, ''));
             if (isNaN(n)) return '0';
             return n.toLocaleString('pt-BR');
+        }
+
+        const LIKE_SOUND_FILES = [
+            'freesound_community-button-pressed-38129.mp3',
+            'freesound_community-huh-88084.mp3',
+            'freesound_community-toy-button-105724.mp3',
+            'lazychillzone-woman-whispering-quotlike-and-subscribequot-232446.mp3',
+            'myinstant_2 (mp3cut.net).mp3',
+            'myinstant_2.mp3',
+            'u_xg7ssi08yr-button-clicks-572422.mp3'
+        ];
+
+        function playLikeSound() {
+            if (currentConfig.soundEnabled !== true) return;
+            const file = LIKE_SOUND_FILES[(parseInt(currentConfig.soundChoice) || 1) - 1] || LIKE_SOUND_FILES[0];
+            try {
+                new Audio('/sounds/' + encodeURIComponent(file)).play().catch(() => {});
+            } catch (e) { /* som é opcional */ }
         }
 
         function triggerLikeAnimation() {

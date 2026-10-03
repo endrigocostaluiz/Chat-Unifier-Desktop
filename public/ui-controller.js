@@ -157,6 +157,8 @@ const elements = {
     lBgOpacity: document.getElementById('l-bg-opacity'),
     lBgOpacityVal: document.getElementById('l-bg-opacity-val'),
     lPulseAnim: document.getElementById('l-pulse-anim'),
+    lSoundEnabled: document.getElementById('l-sound-enabled'),
+    lSoundChoice: document.getElementById('l-sound-choice'),
     lShowPercent: document.getElementById('l-show-percent'),
     lCustomCss: document.getElementById('l-custom-css'),
     lCustomCssEnabled: document.getElementById('l-custom-css-enabled'),
@@ -782,6 +784,8 @@ async function init() {
             if (elements.lBgOpacityVal) elements.lBgOpacityVal.innerText = `${elements.lBgOpacity.value}%`;
         }
         if (elements.lPulseAnim) elements.lPulseAnim.checked = lk.enablePulseAnim !== false;
+        if (elements.lSoundEnabled) elements.lSoundEnabled.checked = lk.soundEnabled === true;
+        if (elements.lSoundChoice) elements.lSoundChoice.value = String(lk.soundChoice || 1);
         if (elements.lShowPercent) elements.lShowPercent.checked = lk.showPercentage !== false;
         if (elements.lCustomCss) elements.lCustomCss.value = lk.customCSS || '';
         if (elements.lCustomCssEnabled) elements.lCustomCssEnabled.checked = lk.customCSSEnabled !== false;
@@ -2047,6 +2051,8 @@ async function saveAndUpdateLikes() {
         fontColor: elements.lFontColor ? elements.lFontColor.value : '#ffffff',
         fontSize: elements.lFontSize ? parseInt(elements.lFontSize.value) : 14,
         enablePulseAnim: elements.lPulseAnim ? elements.lPulseAnim.checked : true,
+        soundEnabled: elements.lSoundEnabled ? elements.lSoundEnabled.checked : false,
+        soundChoice: elements.lSoundChoice ? parseInt(elements.lSoundChoice.value) || 1 : 1,
         showPercentage: elements.lShowPercent ? elements.lShowPercent.checked : true,
         customCSS: elements.lCustomCss ? elements.lCustomCss.value : '',
         customCSSEnabled: elements.lCustomCssEnabled ? elements.lCustomCssEnabled.checked : true
@@ -2107,8 +2113,29 @@ if (elements.lFontColor) elements.lFontColor.oninput = saveAndUpdateLikes;
 if (elements.lBgOpacity) elements.lBgOpacity.oninput = saveAndUpdateLikes;
 if (elements.lPulseAnim) elements.lPulseAnim.onchange = saveAndUpdateLikes;
 if (elements.lShowPercent) elements.lShowPercent.onchange = saveAndUpdateLikes;
+if (elements.lSoundEnabled) elements.lSoundEnabled.onchange = saveAndUpdateLikes;
+if (elements.lSoundChoice) elements.lSoundChoice.onchange = () => { saveAndUpdateLikes(); playLikeSound(true); };
 if (elements.lCustomCss) elements.lCustomCss.oninput = saveAndUpdateLikes;
 if (elements.lCustomCssEnabled) elements.lCustomCssEnabled.onchange = saveAndUpdateLikes;
+
+// Som opcional ao receber like (mesmos arquivos da pasta /sounds usados no overlay)
+const LIKE_SOUND_FILES = [
+    'freesound_community-button-pressed-38129.mp3',
+    'freesound_community-huh-88084.mp3',
+    'freesound_community-toy-button-105724.mp3',
+    'lazychillzone-woman-whispering-quotlike-and-subscribequot-232446.mp3',
+    'myinstant_2 (mp3cut.net).mp3',
+    'myinstant_2.mp3',
+    'u_xg7ssi08yr-button-clicks-572422.mp3'
+];
+function playLikeSound(force = false) {
+    const lk = appConfig.likesGoalConfig || {};
+    if (!force && lk.soundEnabled !== true) return;
+    const file = LIKE_SOUND_FILES[(parseInt(lk.soundChoice) || 1) - 1] || LIKE_SOUND_FILES[0];
+    try {
+        new Audio('../sounds/' + encodeURIComponent(file)).play().catch(() => {});
+    } catch (e) { /* som é opcional */ }
+}
 
 // Botões de teste e simulação de Likes
 if (elements.btnTestLike) {
@@ -2123,6 +2150,7 @@ if (elements.btnTestLike) {
 }
 if (elements.btnPreviewAddLike) {
     elements.btnPreviewAddLike.onclick = () => {
+        playLikeSound(true);
         likesPreviewCount++;
         if (api && api.testLikeIncrement) {
             api.testLikeIncrement();
