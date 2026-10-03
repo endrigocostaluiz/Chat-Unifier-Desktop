@@ -2125,7 +2125,6 @@ const LIKE_SOUND_FILES = [
     'freesound_community-toy-button-105724.mp3',
     'lazychillzone-woman-whispering-quotlike-and-subscribequot-232446.mp3',
     'myinstant_2 (mp3cut.net).mp3',
-    'myinstant_2.mp3',
     'u_xg7ssi08yr-button-clicks-572422.mp3'
 ];
 function playLikeSound(force = false) {
