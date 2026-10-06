@@ -2442,16 +2442,71 @@ body {
 }
 
 /* Responsive Docs */
+.docs-summary-details {
+  display: none;
+}
+
 @media (max-width: 991px) {
   .docs-layout {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 24px;
+    margin-top: 10px;
   }
-  .docs-sidebar {
-    position: static;
-    max-height: none;
+
+  /* Em telas menores e mobile, a sidebar desktop fica oculta e o menu recolhível entra no lugar */
+  .docs-sidebar.desktop-only {
+    display: none;
+  }
+
+  .docs-summary-details {
+    display: block;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
     margin-bottom: 24px;
+    overflow: hidden;
+    backdrop-filter: blur(12px);
   }
+
+  .docs-summary-details summary {
+    padding: 14px 18px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--accent-emerald-light);
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    user-select: none;
+  }
+
+  .docs-summary-details summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .docs-summary-details summary::after {
+    content: '▾';
+    font-size: 1.1rem;
+    transition: transform 0.25s ease;
+  }
+
+  .docs-summary-details[open] summary::after {
+    transform: rotate(180deg);
+  }
+
+  .docs-summary-details .docs-nav-menu {
+    padding: 10px 14px 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 6px;
+  }
+
+  .docs-hero {
+    padding: 100px 0 24px;
+  }
+
   .platform-guide-grid {
     grid-template-columns: 1fr;
   }
@@ -2461,17 +2516,23 @@ body {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
+  .docs-summary-details .docs-nav-menu {
+    grid-template-columns: 1fr;
+  }
   .doc-step-card {
-    padding: 22px 16px;
+    padding: 20px 14px;
   }
   .doc-step-badge {
-    width: 32px;
-    height: 32px;
-    font-size: 0.95rem;
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
   }
   .doc-step-title {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
+  }
+  .doc-section-title {
+    font-size: 1.45rem;
   }
 }
 
