@@ -25,11 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
       mobileDrawer?.classList.add('open');
       mobileToggle?.setAttribute('aria-expanded', 'true');
       mobileDrawer?.setAttribute('aria-hidden', 'false');
+      mobileDrawer?.removeAttribute('inert');
     } else {
       mobileToggle?.classList.remove('active');
       mobileDrawer?.classList.remove('open');
       mobileToggle?.setAttribute('aria-expanded', 'false');
       mobileDrawer?.setAttribute('aria-hidden', 'true');
+      mobileDrawer?.setAttribute('inert', '');
     }
   }
 

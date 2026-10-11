@@ -46,7 +46,8 @@
   <!-- Fonts: Outfit & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
 
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css">
@@ -202,7 +203,7 @@
     </div>
 
     <!-- Mobile Drawer Navigation -->
-    <div class="mobile-nav-drawer" id="mobile-drawer" aria-hidden="true">
+    <div class="mobile-nav-drawer" id="mobile-drawer" aria-hidden="true" inert>
       <!-- Mobile Language Switcher -->
       <div class="mobile-lang-wrapper">
         <span class="mobile-lang-label" data-i18n="nav.languageLabel">Idioma / Language:</span>

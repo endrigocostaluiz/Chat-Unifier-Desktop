@@ -43,7 +43,8 @@
   <!-- Fonts: Outfit & JetBrains Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"></noscript>
 
   <!-- Stylesheet -->
   <link rel="stylesheet" href="style.css">
@@ -150,7 +151,7 @@
     </div>
 
     <!-- Mobile Drawer Navigation - Enxuto e Amigável para Telas Pequenas -->
-    <div class="mobile-nav-drawer" id="mobile-drawer" aria-hidden="true">
+    <div class="mobile-nav-drawer" id="mobile-drawer" aria-hidden="true" inert>
       <ul class="mobile-nav-links">
         <li><a href="index.html" class="mobile-nav-item" style="color: var(--accent-emerald-light); font-weight:700;" data-i18n="doc.navHome">← Voltar ao Início</a></li>
         <li><a href="#obs-studio" class="mobile-nav-item" data-i18n="doc.navObs">Passo a Passo no OBS Studio</a></li>
