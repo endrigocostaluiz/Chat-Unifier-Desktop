@@ -87,8 +87,15 @@ function parseMessageContent(msgEl) {
 function processKickEntry(kickEntry) {
   if (!kickEntry || kickEntry.dataset?.unifierProcessed) return;
   const authorEl = kickEntry.querySelector('.chat-entry-username, [data-chat-entry-user]');
-  const author = authorEl?.innerText?.trim() || authorEl?.textContent?.trim();
-  if (!author) return;
+  let author = authorEl?.innerText?.trim() || authorEl?.textContent?.trim();
+  // Layout atual do chat popout da Kick: autor em <button data-prevent-expand>, texto no <span> logo após o ":"
+  let newLayoutMsgEl = null;
+  if (!author) {
+    const newAuthorEl = kickEntry.querySelector('button[data-prevent-expand]');
+    newLayoutMsgEl = kickEntry.querySelector('span[aria-hidden="true"].font-bold + span');
+    author = newAuthorEl?.textContent?.trim();
+    if (!author || !newLayoutMsgEl) return;
+  }
   const chatEntry = kickEntry.querySelector('.chat-entry') || kickEntry;
   let entryId = kickEntry.getAttribute('data-chat-entry') || kickEntry.getAttribute('data-index') || '';
   if (!entryId) {
@@ -97,7 +104,12 @@ function processKickEntry(kickEntry) {
     }
     entryId = kickEntry.dataset.unifierId;
   }
-  const rawId = `kick-${author}-${entryId}`;
+  let rawId = `kick-${author}-${entryId}`;
+  if (newLayoutMsgEl) {
+    // No layout novo o data-index é posicional (virtualizado), então o id usa autor + texto + horário
+    const timeText = kickEntry.querySelector('span.text-neutral')?.textContent?.trim() || '';
+    rawId = `kick-${author}-${timeText}-${(newLayoutMsgEl.textContent || '').trim()}`;
+  }
   if (!isNewMessage(rawId, false)) return;
   let message = '';
   const walker = document.createTreeWalker(chatEntry, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
@@ -121,6 +133,7 @@ function processKickEntry(kickEntry) {
     }
     cur = walker.nextNode();
   }
+  if (newLayoutMsgEl) message = parseMessageContent(newLayoutMsgEl);
   message = message.trim();
   if (!message) return;
   kickEntry.dataset.unifierProcessed = 'true';

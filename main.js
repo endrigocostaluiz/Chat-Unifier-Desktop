@@ -936,9 +936,10 @@ function startScraper(platform) {
       }
     }
 
-  } else if (platform.type === 'kick' && !url.includes('chatroom')) {
-    const channel = url.replace(/\/$/, "").split('/').pop();
-    url = `https://kick.com/${channel}/chatroom`;
+  } else if (platform.type === 'kick' && !url.includes('/popout/')) {
+    // A rota antiga /<canal>/chatroom passou a retornar apenas JSON vazio; o chat popout é a rota que funciona
+    const channel = url.replace(/\/(chatroom|chat)?\/?$/, '').split('/').pop().split('?')[0];
+    url = `https://kick.com/popout/${channel}/chat`;
   } else if (platform.type === 'tiktok') {
     // Garante que a URL do TikTok termine em /live para carregar o chat
     if (!url.includes('/live')) {
@@ -1271,6 +1272,50 @@ ipcMain.on('download-update', (event, downloadUrl) => {
   ses.downloadURL(downloadUrl);
 });
 
+// Foto de perfil da Twitch: o DOM do chat não traz avatar, então consulta o GQL público (com cache)
+const twitchAvatarCache = new Map(); // login -> url | null
+const twitchAvatarPending = new Map(); // login -> Promise
+let twitchMessageQueue = Promise.resolve(); // mantém a ordem das mensagens da Twitch
+
+function fetchTwitchAvatar(author) {
+  const login = String(author || '').trim().toLowerCase();
+  if (!/^[a-z0-9_]{1,25}$/.test(login)) return Promise.resolve(null);
+  if (twitchAvatarCache.has(login)) return Promise.resolve(twitchAvatarCache.get(login));
+  if (twitchAvatarPending.has(login)) return twitchAvatarPending.get(login);
+
+  const p = new Promise((resolve) => {
+    const body = JSON.stringify({ query: `query{user(login:"${login}"){profileImageURL(width:150)}}` });
+    const req = https.request({
+      hostname: 'gql.twitch.tv',
+      path: '/gql',
+      method: 'POST',
+      headers: {
+        'Client-ID': 'kimne78kx3ncx6brgo4mv6wki5h1ko',
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      },
+      timeout: 3000
+    }, (res) => {
+      let data = '';
+      res.on('data', (c) => data += c);
+      res.on('end', () => {
+        let url = null;
+        try { url = JSON.parse(data)?.data?.user?.profileImageURL || null; } catch (e) {}
+        // Só guarda resultado definitivo; falha de rede/HTTP tenta de novo na próxima mensagem
+        if (res.statusCode === 200) twitchAvatarCache.set(login, url);
+        resolve(url);
+      });
+    });
+    req.on('timeout', () => req.destroy());
+    req.on('error', () => resolve(null));
+    req.write(body);
+    req.end();
+  }).finally(() => twitchAvatarPending.delete(login));
+
+  twitchAvatarPending.set(login, p);
+  return p;
+}
+
 // Listener Global para Mensagens (captura de qualquer janela, inclusive viewer scrapers)
 ipcMain.on('new-message', (event, msg) => {
 
@@ -1296,10 +1341,21 @@ ipcMain.on('new-message', (event, msg) => {
   delete finalMsg.rawId;
   delete finalMsg.isFallback;
   
-  // Envia para overlays e preview
-  io.to('overlay1').emit('chat-message', finalMsg);
-  io.to('overlay2').emit('chat-message', finalMsg);
-  if (mainWindow) mainWindow.webContents.send('preview-message', finalMsg);
+  const dispatchMessage = () => {
+    // Envia para overlays e preview
+    io.to('overlay1').emit('chat-message', finalMsg);
+    io.to('overlay2').emit('chat-message', finalMsg);
+    if (mainWindow) mainWindow.webContents.send('preview-message', finalMsg);
+  };
+
+  if (finalMsg.platform === 'twitch' && !finalMsg.avatar) {
+    twitchMessageQueue = twitchMessageQueue.then(async () => {
+      try { finalMsg.avatar = await fetchTwitchAvatar(finalMsg.author); } catch (e) {}
+      dispatchMessage();
+    });
+  } else {
+    dispatchMessage();
+  }
 });
 
 // Detecção de login do TikTok
