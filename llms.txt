@@ -4,7 +4,7 @@
 
 ## Informações Principais
 - Nome: Chat Unifier Desktop
-- Versão Atual: 1.5.3
+- Versão Atual: 1.5.6
 - Plataforma: Windows (Executável Portátil / Portable .exe)
 - Licença: MIT (100% Gratuito e Código Aberto)
 - Repositório Oficial: https://github.com/endrigocostaluiz/Chat-Unifier-Desktop
@@ -27,7 +27,7 @@
 - **Botrix / Lumia Stream**: Não exige criação de bots nem permissões de moderador para ler mensagens.
 
 ## Como Usar no OBS Studio
-1. Baixe o executável `Chat.Unifier.1.5.3.exe` na página de releases.
+1. Baixe o executável `Chat.Unifier.1.5.6.exe` na página de releases.
 2. Execute o aplicativo (não necessita de instalação).
 3. Insira o nome dos seus canais em Twitch, YouTube, Kick e/ou TikTok.
 4. Clique em "Iniciar Chat" e copie a URL do Overlay OBS (`http://localhost:3000/overlay`).

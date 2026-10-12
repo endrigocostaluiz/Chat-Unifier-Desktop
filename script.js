@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!release) return;
     currentReleaseData = release;
 
-    const tagName = release.tag_name || 'v1.5.3';
+    const tagName = release.tag_name || 'v1.5.6';
 
     // 1. Atualiza todos os badges e textos de versão
     const versionElements = document.querySelectorAll('.dynamic-version');

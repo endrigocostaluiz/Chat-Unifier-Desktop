@@ -25,12 +25,12 @@ const ChatUnifierI18n = (() => {
         comoUsarObs: "Como Usar no OBS",
         perguntasFrequentes: "Perguntas Frequentes",
         apoiarProjeto: "Apoiar o Projeto",
-        baixarChatUnifier: 'Baixar Chat Unifier (<span class="dynamic-version">v1.5.3</span>)',
+        baixarChatUnifier: 'Baixar Chat Unifier (<span class="dynamic-version">v1.5.6</span>)',
         acessarRepositorio: "Acessar Repositório no GitHub",
         languageLabel: "Idioma / Language:"
       },
       hero: {
-        pill: 'Versão <strong class="dynamic-version">v1.5.3</strong> Estável • 100% Gratuito & Open Source',
+        pill: 'Versão <strong class="dynamic-version">v1.5.6</strong> Estável • 100% Gratuito & Open Source',
         title: 'O <span class="gradient-text">Multichat Definitivo</span><br>Para Streamers no OBS Studio',
         subtitle: 'Centralize em tempo real as mensagens e espectadores de <strong>Twitch, YouTube (Lives & Shorts), Kick e TikTok</strong> em uma única tela e overlay transparente para sua transmissão, <strong>sem precisar de chaves de API</strong> ou cadastros burocráticos.',
         btnWindows: "Baixar para Windows (64-bit)",
@@ -176,7 +176,7 @@ const ChatUnifierI18n = (() => {
         title: "Como Configurar no OBS Studio em 3 Passos",
         subtitle: "Leve menos de 2 minutos para colocar seu chat e contador de viewers funcionando na sua stream.",
         step1Title: "Baixe o Chat Unifier",
-        step1Desc: 'Baixe o arquivo portátil <code class="dynamic-filename">Chat.Unifier.1.5.3.exe</code> e execute diretamente no seu computador. Não precisa instalar nada nem poluir o registro do Windows.',
+        step1Desc: 'Baixe o arquivo portátil <code class="dynamic-filename">Chat.Unifier.1.5.6.exe</code> e execute diretamente no seu computador. Não precisa instalar nada nem poluir o registro do Windows.',
         step1Btn: "Baixar Executável",
         step2Title: "Adicione seus Canais",
         step2Desc: 'Digite seus usernames da Twitch, Kick, TikTok ou link da live do YouTube. Clique no botão <strong>"Iniciar Chat"</strong> para começar a sincronização em tempo real.',
@@ -212,7 +212,7 @@ const ChatUnifierI18n = (() => {
       cta: {
         title: 'Pronto para Transformar<br>o Chat da Sua Live?',
         subtitle: 'Baixe agora mesmo o <strong>Chat Unifier Desktop</strong> e tenha o multichat mais completo do mercado no seu OBS Studio em menos de 2 minutos.',
-        btnDownload: 'Baixar Gratuitamente (<span class="dynamic-version">v1.5.3</span>)',
+        btnDownload: 'Baixar Gratuitamente (<span class="dynamic-version">v1.5.6</span>)',
         btnGithub: "Ver no GitHub"
       },
       footer: {
@@ -264,8 +264,8 @@ const ChatUnifierI18n = (() => {
         s1Title: "1. Download e Inicialização Portátil",
         s1Lead: "O Chat Unifier Desktop é um aplicativo <strong>portátil (portable)</strong> para Windows 10 e Windows 11 de 64 bits. Você não precisa passar por instaladores lentos nem poluir o registro do sistema operacional.",
         s1StepTitle: "Baixar a versão mais recente",
-        s1StepText: 'Acesse a área de lançamentos oficiais no GitHub e baixe o arquivo executável <code class="dynamic-filename">Chat.Unifier.1.5.3.exe</code> (~66 MB).',
-        s1BtnDownload: 'Baixar Chat Unifier Executável (<span class="dynamic-version">v1.5.3</span>)',
+        s1StepText: 'Acesse a área de lançamentos oficiais no GitHub e baixe o arquivo executável <code class="dynamic-filename">Chat.Unifier.1.5.6.exe</code> (~66 MB).',
+        s1BtnDownload: 'Baixar Chat Unifier Executável (<span class="dynamic-version">v1.5.6</span>)',
         s1TipFolder: "<strong>Dica de Organização:</strong> Crie uma pasta dedicada (ex: <code>C:\\StreamApps\\ChatUnifier\\</code>) e salve o executável lá. Assim todas as suas configurações, temas e canais salvos permanecerão sempre organizados.",
         s1WarnSmartScreen: '<strong>Aviso do Windows SmartScreen (\"O Windows protegeu o seu computador\"):</strong><br>Por ser um software livre, open-source e independente, o Windows pode exibir uma tela avisando que é um aplicativo desconhecido. Para abrir, basta clicar em <strong>\"Mais informações\"</strong> e depois em <strong>\"Executar assim mesmo\"</strong>. O código-fonte é 100% aberto e auditável no GitHub!',
         s2Tag: "Passo 02 • Sincronização",
@@ -331,7 +331,7 @@ const ChatUnifierI18n = (() => {
         s10Lead: "Respostas práticas para as situações mais comuns ao transmitir com o Chat Unifier.",
         ctaTitle: "Tudo Pronto para Começar?",
         ctaSubtitle: "Baixe gratuitamente a versão mais recente e transforme a interação do seu chat agora mesmo.",
-        ctaBtnDownload: 'Baixar Chat Unifier (<span class="dynamic-version">v1.5.3</span>)',
+        ctaBtnDownload: 'Baixar Chat Unifier (<span class="dynamic-version">v1.5.6</span>)',
         ctaBtnBack: "← Voltar à Página Inicial"
       }
     },
@@ -353,12 +353,12 @@ const ChatUnifierI18n = (() => {
         comoUsarObs: "How to Use in OBS",
         perguntasFrequentes: "Frequently Asked Questions",
         apoiarProjeto: "Support the Project",
-        baixarChatUnifier: 'Download Chat Unifier (<span class="dynamic-version">v1.5.3</span>)',
+        baixarChatUnifier: 'Download Chat Unifier (<span class="dynamic-version">v1.5.6</span>)',
         acessarRepositorio: "View GitHub Repository",
         languageLabel: "Language / Idioma:"
       },
       hero: {
-        pill: 'Stable <strong class="dynamic-version">v1.5.3</strong> • 100% Free & Open Source',
+        pill: 'Stable <strong class="dynamic-version">v1.5.6</strong> • 100% Free & Open Source',
         title: 'The <span class="gradient-text">Ultimate Multichat</span><br>For Streamers on OBS Studio',
         subtitle: 'Centralize real-time chat messages and viewers from <strong>Twitch, YouTube (Lives & Shorts), Kick, and TikTok</strong> into a single screen and transparent overlay for your stream, <strong>with zero API keys</strong> or tedious sign-ups.',
         btnWindows: "Download for Windows (64-bit)",
@@ -504,7 +504,7 @@ const ChatUnifierI18n = (() => {
         title: "How to Set Up in OBS Studio in 3 Steps",
         subtitle: "Take less than 2 minutes to get your chat and viewer counter running on stream.",
         step1Title: "Download Chat Unifier",
-        step1Desc: 'Download the portable <code class="dynamic-filename">Chat.Unifier.1.5.3.exe</code> and run it directly on your computer. No installation or Windows registry clutter.',
+        step1Desc: 'Download the portable <code class="dynamic-filename">Chat.Unifier.1.5.6.exe</code> and run it directly on your computer. No installation or Windows registry clutter.',
         step1Btn: "Download Executable",
         step2Title: "Add Your Channels",
         step2Desc: 'Enter your Twitch, Kick, TikTok usernames or YouTube stream URL. Click <strong>"Start Chat"</strong> to begin real-time synchronization.',
@@ -540,7 +540,7 @@ const ChatUnifierI18n = (() => {
       cta: {
         title: 'Ready to Transform<br>Your Live Stream Chat?',
         subtitle: 'Download <strong>Chat Unifier Desktop</strong> right now and get the most comprehensive multichat for OBS Studio in under 2 minutes.',
-        btnDownload: 'Download for Free (<span class="dynamic-version">v1.5.3</span>)',
+        btnDownload: 'Download for Free (<span class="dynamic-version">v1.5.6</span>)',
         btnGithub: "View on GitHub"
       },
       footer: {
@@ -592,8 +592,8 @@ const ChatUnifierI18n = (() => {
         s1Title: "1. Download & Portable Launch",
         s1Lead: "Chat Unifier Desktop is a <strong>portable</strong> app for 64-bit Windows 10 and Windows 11. No slow installers or registry bloat required.",
         s1StepTitle: "Download the Latest Version",
-        s1StepText: 'Go to official GitHub releases and download the executable <code class="dynamic-filename">Chat.Unifier.1.5.3.exe</code> (~66 MB).',
-        s1BtnDownload: 'Download Chat Unifier Executable (<span class="dynamic-version">v1.5.3</span>)',
+        s1StepText: 'Go to official GitHub releases and download the executable <code class="dynamic-filename">Chat.Unifier.1.5.6.exe</code> (~66 MB).',
+        s1BtnDownload: 'Download Chat Unifier Executable (<span class="dynamic-version">v1.5.6</span>)',
         s1TipFolder: "<strong>Organization Tip:</strong> Create a dedicated folder (e.g. <code>C:\\StreamApps\\ChatUnifier\\</code>) and save the executable there to keep your channels, themes and configs saved.",
         s1WarnSmartScreen: '<strong>Windows SmartScreen Notice (\"Windows protected your PC\"):</strong><br>Because it is an open-source, independent release, Windows may display a notice. Simply click <strong>\"More info\"</strong> and then <strong>\"Run anyway\"</strong>. The source code is 100% open and verifiable on GitHub!',
         s2Tag: "Step 02 • Synchronization",
@@ -659,7 +659,7 @@ const ChatUnifierI18n = (() => {
         s10Lead: "Practical answers for common questions and streaming tips with Chat Unifier.",
         ctaTitle: "Ready to Transform Your Stream?",
         ctaSubtitle: "Download the latest version for free and elevate your chat interaction today.",
-        ctaBtnDownload: 'Download Chat Unifier (<span class="dynamic-version">v1.5.3</span>)',
+        ctaBtnDownload: 'Download Chat Unifier (<span class="dynamic-version">v1.5.6</span>)',
         ctaBtnBack: "← Back to Home Page"
       }
     }
