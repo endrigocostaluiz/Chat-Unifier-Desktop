@@ -1,4 +1,4 @@
-# 🌌 Chat Unifier Desktop - Multichat & Multistream para Stream no OBS 🚀
+# 🌌 Chat Unifier Desktop - Multichat OBS & Multichat Ninja para Multi Canais 🚀
 
 [![Release](https://img.shields.io/badge/Release-v1.5.6-emerald?style=for-the-badge&logo=electron)](https://github.com/endrigocostaluiz/Chat-Unifier-Desktop/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](LICENSE)
@@ -10,7 +10,7 @@
 
 ---
 
-O **Chat Unifier** é o mais poderoso e completo aplicativo de **Multichat** e **Unificador de Chat** 100% gratuito para streamers. Projetado especificamente para quem faz **Multistream**, ele unifica as mensagens e espectadores simultâneos de **Twitch, YouTube (Lives & Shorts), Kick e TikTok** em um único feed e overlay profissional para o **OBS Studio**, **Streamlabs** ou navegador, sem necessidade de chaves de API ou cadastros complexos!
+O **Chat Unifier Desktop** é o mais poderoso e completo aplicativo de **multichat OBS** e a melhor alternativa nativa ao **StreamNinja** (Social Stream Ninja / **multichat ninja**) para transmissões em **multi canais**. 100% gratuito e de código aberto, ele unifica as mensagens e espectadores simultâneos de **Twitch, YouTube (Lives & Shorts), Kick e TikTok** em um único feed e overlay profissional para o **OBS Studio**, **Streamlabs** ou navegador, sem necessidade de chaves de API ou cadastros burocráticos!
 
 ---
 
@@ -18,7 +18,7 @@ O **Chat Unifier** é o mais poderoso e completo aplicativo de **Multichat** e *
 
 ## 🇧🇷 Português
 
-O **Chat Unifier Desktop** é a ferramenta definitiva para quem faz **multistream** e quer centralizar todas as interações da sua **stream** em tempo real no **OBS**.
+O **Chat Unifier Desktop** é a ferramenta definitiva para quem faz **multistream** em **multi canais** e quer centralizar todas as interações no melhor **multichat OBS** em tempo real, superando ferramentas como o **StreamNinja**.
 
 ### 🌟 Novidades da Versão (v1.5.6)
 
