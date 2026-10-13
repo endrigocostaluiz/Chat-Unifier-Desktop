@@ -1,9 +1,9 @@
-# Chat Unifier Desktop - Documentação Completa e Especificação Técnica
+# Chat Unifier Desktop - Multichat OBS & Multichat Ninja para Multi Canais
 
 ## Visão Geral
-O Chat Unifier Desktop é um software de produtividade para transmissões ao vivo (live streaming) e multistreaming. Ele foi desenvolvido com Electron, Node.js, Express e Socket.io, atuando como um servidor local (localhost:3000) e cliente para capturar, unificar e formatar chats de múltiplas plataformas em tempo real.
+O Chat Unifier Desktop é um software de produtividade para transmissões ao vivo (live streaming) e multistreaming, atuando como o melhor multichat OBS do mercado e a principal alternativa ao StreamNinja (Social Stream Ninja / multichat ninja). Ele foi desenvolvido com Electron, Node.js, Express e Socket.io, funcionando como um servidor local (localhost:3000) e cliente para capturar, unificar e formatar chats de multi canais em tempo real.
 
-O projeto resolve o principal problema dos criadores de conteúdo que transmitem simultaneamente para diversas redes sociais (multistream): a fragmentação de comentários e a dificuldade de gerenciar múltiplos chats em telas separadas durante a transmissão.
+O projeto resolve o principal problema dos criadores de conteúdo que transmitem simultaneamente para diversas redes sociais (multi canais / multistream): a fragmentação de comentários e a dificuldade de gerenciar múltiplos chats em telas separadas durante a transmissão.
 
 ## Plataformas Suportadas
 1. **Twitch**: Leitura de chat em tempo real e monitoramento de espectadores ao vivo.

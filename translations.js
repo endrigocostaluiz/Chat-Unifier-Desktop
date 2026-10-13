@@ -10,8 +10,8 @@ const ChatUnifierI18n = (() => {
   const translations = {
     pt: {
       page: {
-        title: "Chat Unifier Desktop | O Melhor Multichat & Multistream para OBS Studio",
-        description: "Unifique mensagens e espectadores simultâneos de Twitch, YouTube (Lives e Shorts), Kick e TikTok no OBS Studio em tempo real. 100% gratuito, sem chaves de API, com sorteios e overlays profissionais."
+        title: "Chat Unifier Desktop | O Melhor Multichat OBS & Multichat Ninja para Multi Canais",
+        description: "O melhor multichat OBS para transmissões em multi canais. Alternativa moderna e gratuita ao StreamNinja e multichat ninja: unifique Twitch, YouTube, Kick e TikTok no OBS Studio em tempo real sem chaves de API."
       },
       nav: {
         recursos: "Recursos",
@@ -31,8 +31,8 @@ const ChatUnifierI18n = (() => {
       },
       hero: {
         pill: 'Versão <strong class="dynamic-version">v1.5.6</strong> Estável • 100% Gratuito & Open Source',
-        title: 'O <span class="gradient-text">Multichat Definitivo</span><br>Para Streamers no OBS Studio',
-        subtitle: 'Centralize em tempo real as mensagens e espectadores de <strong>Twitch, YouTube (Lives & Shorts), Kick e TikTok</strong> em uma única tela e overlay transparente para sua transmissão, <strong>sem precisar de chaves de API</strong> ou cadastros burocráticos.',
+        title: 'O <span class="gradient-text">Multichat OBS Definitivo</span><br>Para Multi Canais no OBS Studio',
+        subtitle: 'Centralize em tempo real mensagens e espectadores de <strong>multi canais (Twitch, YouTube, Kick e TikTok)</strong> em uma única tela e overlay transparente para sua transmissão. O <strong>multichat OBS</strong> gratuito e local — a melhor alternativa ao <strong>StreamNinja</strong> e <strong>multichat ninja</strong>, sem precisar de chaves de API ou cadastros burocráticos.',
         btnWindows: "Baixar para Windows (64-bit)",
         btnDemo: "Ver Demonstração Real",
         subtextPortable: "Executável Portátil (Sem instalação)",
@@ -128,7 +128,7 @@ const ChatUnifierI18n = (() => {
       comp: {
         tag: "Análise Comparativa",
         title: "Por Que o Chat Unifier Supera os Concorrentes?",
-        subtitle: "Veja como o Chat Unifier Desktop se compara com alternativas populares como Restream Chat, Social Stream Ninja, Botrix e Casterlabs.",
+        subtitle: "Veja como o Chat Unifier Desktop se compara com alternativas para multi canais como StreamNinja (Social Stream Ninja / multichat ninja), Restream Chat, Botrix e Casterlabs.",
         thFeatures: "Recursos & Vantagens",
         row1Feature: "Preço e Acesso",
         row1Cu: "100% Gratuito / Open Source",
@@ -338,8 +338,8 @@ const ChatUnifierI18n = (() => {
 
     en: {
       page: {
-        title: "Chat Unifier Desktop | The Ultimate Multichat & Multistream for OBS Studio",
-        description: "Unify real-time chat messages and concurrent viewers from Twitch, YouTube (Lives & Shorts), Kick, and TikTok in OBS Studio. 100% free, zero API keys, with giveaways and pro overlays."
+        title: "Chat Unifier Desktop | The Best Multichat OBS & Multichat Ninja for Multi Channels",
+        description: "The best multichat OBS for multi channels streaming. A modern, free alternative to StreamNinja and multichat ninja: unify Twitch, YouTube, Kick, and TikTok into OBS Studio in real time with zero API keys."
       },
       nav: {
         recursos: "Features",
@@ -359,8 +359,8 @@ const ChatUnifierI18n = (() => {
       },
       hero: {
         pill: 'Stable <strong class="dynamic-version">v1.5.6</strong> • 100% Free & Open Source',
-        title: 'The <span class="gradient-text">Ultimate Multichat</span><br>For Streamers on OBS Studio',
-        subtitle: 'Centralize real-time chat messages and viewers from <strong>Twitch, YouTube (Lives & Shorts), Kick, and TikTok</strong> into a single screen and transparent overlay for your stream, <strong>with zero API keys</strong> or tedious sign-ups.',
+        title: 'The <span class="gradient-text">Ultimate Multichat OBS</span><br>For Multi Channels on OBS Studio',
+        subtitle: 'Centralize real-time chat messages and concurrent viewers from <strong>multi channels (Twitch, YouTube, Kick, and TikTok)</strong> into a single screen and transparent overlay. The free, local <strong>multichat OBS</strong> — the premier alternative to <strong>StreamNinja</strong> and <strong>multichat ninja</strong>, with zero API keys or tedious sign-ups.',
         btnWindows: "Download for Windows (64-bit)",
         btnDemo: "View Live Showcase",
         subtextPortable: "Portable Executable (No install required)",
@@ -456,7 +456,7 @@ const ChatUnifierI18n = (() => {
       comp: {
         tag: "Comparative Breakdown",
         title: "Why Chat Unifier Beats the Competition",
-        subtitle: "See how Chat Unifier Desktop compares against popular tools like Restream Chat, Social Stream Ninja, Botrix, and Casterlabs.",
+        subtitle: "See how Chat Unifier Desktop compares against multi-channel alternatives like StreamNinja (Social Stream Ninja / multichat ninja), Restream Chat, Botrix, and Casterlabs.",
         thFeatures: "Features & Perks",
         row1Feature: "Pricing & Access",
         row1Cu: "100% Free / Open Source",
